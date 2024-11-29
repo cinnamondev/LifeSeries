@@ -1,0 +1,4 @@
+name: LifeSeries
+version: '1.0-SNAPSHOT'
+main: com.github.cinnamondev.lifeSeries.LifeSeries
+api-version: '1.21'

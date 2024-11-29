@@ -1,0 +1,73 @@
+# there are 2 gamemodes, life and timed. if you are playing 'timed' (limited life), then lives and rewards and
+# punishments are measured in hours or minutes (where specified). if you are playing 'life' (players get a number of
+# lives), then lives/rewards/punishments are measured in number of lives.
+mode: timed # there are 2 game modes, `life` and `timed`.
+
+categories:
+  - green:
+    colour: '#111111'
+    lives: 16 # mininum number of hours required to be in this category OR mininum number of lives.
+
+  - yellow:
+    colour: '#222222'
+    lives: 8
+    can-kill:
+      - GREENS
+
+  - reds:
+    colour: '#333333' # as displayed in tab & above head
+    lives: 0 # the lowest category should set 0 here to ignore this category entirely.
+    can-kill: # does not prevent PvP, just determines which categories players can be rewarded time from.
+      - REDS
+      - YELLOWS
+      - GREENS
+
+# these items will delete from inventories if players have them. if a recipe exists, it will try to prevent crafting it
+# bypass permission: life.override.banned-items
+banned-items:
+  - BOOKSHELF
+  - ENCHANTED_GOLDEN_APPLE
+  - ENCHANTMENT_TABLE
+
+# this will prevent players from having certain enchantments
+# bypass permission: life.override.banned-enchantments
+banned-enchantments:
+  max-level: 3 # set to -1 to disable. 0 will disable enchantments
+  # blocklist of enchantments.
+  blocklist:
+    - BANE_OF_ARTHROPODS
+
+options:
+  count-sessions: true # increment a save variable
+  boogeyman:
+    enabled: true
+    min: 1
+    max: 3
+
+  rewards:
+    kill: 60
+    boogey-kill: 120
+
+  punishment:
+    offline: 120
+    death: 60
+    boogey-death: 120
+
+  # Options for player's final death (i.e. RED -> SPECTATOR)
+  final-death:
+    # Players will drop their heads on their final death (RED -> SPECTATOR)
+    drop-head: true
+    # DO not set keepInventory to true if you use this option. If this is set to true, the plugin will dictate when
+    # players keep their items.
+    keepinv-till-death: true
+
+  # Options for the end of the session ( /life endsession <delay> )
+  end-of-session:
+    # when <delay> is used, an announcement will be made with the time remaining, as well as 5 minutes before
+    # (if the delay is long enough)
+    warn-players: true
+    # kick players at end of session
+    kick-at-end: true
+    # for servers running behind a proxy that supports bungeecord messaging. if this is a valid option,
+    # and `kick-at-end` is also true, each player is sent to the specified server.
+    send-to-server: survival-2025
