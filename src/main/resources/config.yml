@@ -1,26 +1,26 @@
 # there are 2 gamemodes, life and timed. if you are playing 'timed' (limited life), then lives and rewards and
-# punishments are measured in hours or minutes (where specified). if you are playing 'life' (players get a number of
+# punishments are measured in minutes (unless specified). if you are playing 'life' (players get a number of
 # lives), then lives/rewards/punishments are measured in number of lives.
 mode: timed # there are 2 game modes, `life` and `timed`.
 
 categories:
-  - green:
-    colour: '#111111'
-    lives: 16 # mininum number of hours required to be in this category OR mininum number of lives.
+  green:
+    colour: 'GREEN'
+    lives: 960 # mininum number of minutes required to be in this category OR mininum number of lives.
 
-  - yellow:
-    colour: '#222222'
-    lives: 8
+  yellow:
+    colour: 'YELLOW'
+    lives: 480
     can-kill:
-      - GREENS
+      - green
 
-  - reds:
-    colour: '#333333' # as displayed in tab & above head
+  red:
+    colour: 'RED' # as displayed in tab & above head
     lives: 0 # the lowest category should set 0 here to ignore this category entirely.
     can-kill: # does not prevent PvP, just determines which categories players can be rewarded time from.
-      - REDS
-      - YELLOWS
-      - GREENS
+      - red
+      - yellow
+      - green
 
 # these items will delete from inventories if players have them. if a recipe exists, it will try to prevent crafting it
 # bypass permission: life.override.banned-items
