@@ -10,7 +10,6 @@ public class PlayerListener implements Listener {
     public void PlayerDeath(PlayerDeathEvent e) {
         Player player = e.getPlayer();
         Player killer = player.getKiller();
-        String gamemode = "timed"; // TODO TEMP
 
         if (killer != null) {
 
