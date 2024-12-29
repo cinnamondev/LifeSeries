@@ -1,0 +1,3 @@
+offlinePlayerTime: -1
+# next session is players:, cannot write in initial save config. offlinePlayerTime -1 is used to indicate reset
+# to Game implementation

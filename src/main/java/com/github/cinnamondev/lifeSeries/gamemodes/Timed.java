@@ -1,24 +1,48 @@
 package com.github.cinnamondev.lifeSeries.gamemodes;
 
-import com.github.cinnamondev.lifeSeries.Boogeyman;
-import com.github.cinnamondev.lifeSeries.Game;
+import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.teams.ScoreHandler;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scoreboard.ScoreboardManager;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public class Timed implements Game, Boogeyman {
+public class Timed implements Game, BoogeymanGame {
+    private File saveFile;
+    private FileConfiguration saveFileCfg;
+
+    private final int timerDecrementQuantity;
+
     private int unregisteredPlayerTime; // players who have not joined the game yet
     private HashMap<UUID, Integer> tracked_players;
-    private final Plugin p;
-
-    public Timed(Plugin p) {
+    private List<OfflinePlayer> boogeys;
+    private final LifeSeries p;
+    private final ScoreHandler scoreHandler;
+    public Timed(LifeSeries p, int callIntervalTicks) {
+        timerDecrementQuantity = callIntervalTicks / 20; // number of seconds to decremnt by (expect this is to be n*20)
         this.p = p;
+        this.scoreHandler = p.getScoreboardHandler();
+    }
+
+
+    /// tick the game.
+    @Override
+    public void accept(Runnable runnable) {
+        // decrement def
+        scoreHandler.decrementUntrackedPlayerScore(timerDecrementQuantity);
+        scoreHandler.getPlayerScores().replaceAll((k,v) -> Math.max(v - timerDecrementQuantity, 0));
     }
 
     @Override
@@ -34,32 +58,5 @@ public class Timed implements Game, Boogeyman {
     @Override
     public void onKilled(Player killed, Player killer) {
 
-    }
-
-    @Override
-    public void accept(Runnable runnable) {
-        unregisteredPlayerTime =- 1;
-
-        for (Integer time : tracked_players.values()) {
-            time -= 1;
-        }
-        // tick savegame player time by 1 tick
-        this.p.getServer().getOnlinePlayers()
-                .forEach(player -> tracked_players.getOrDefault(player.getUniqueId(), unregisteredPlayerTime));
-    }
-
-    @Override
-    public @NotNull Consumer<Runnable> andThen(@NotNull Consumer<? super Runnable> after) {
-        return Game.super.andThen(after);
-    }
-
-    @Override
-    public List<Player> roll(int min, int max) {
-        return List.of();
-    }
-
-    @Override
-    public boolean isBoogeyman(OfflinePlayer offlinePlayer) {
-        return false;
     }
 }

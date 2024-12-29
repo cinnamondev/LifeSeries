@@ -14,36 +14,36 @@ public class TeamMeta {
     private final String name;
     private final NamedTextColor color;
     private final List<String> canKill;
-    private final int livesRequirement;
+    private final int mininumScore;
     private final Team scoreboardTeam;
     private final GameMode gamemode;
 
-    public TeamMeta(final Team team, final String name, final NamedTextColor color, final List<String> canKill, final int livesRequirement, final GameMode gamemode) {
+    public TeamMeta(final Team team, final String name, final NamedTextColor color, final List<String> canKill, final int mininumScore, final GameMode gamemode) {
         this.scoreboardTeam = team;
         this.name = name;
         this.color = color;
         this.canKill = canKill;
-        this.livesRequirement = livesRequirement;
+        this.mininumScore = mininumScore;
         this.gamemode = gamemode;
     }
-    public TeamMeta(final Team team, final String name, final NamedTextColor color, final List<String> canKill, final int livesRequirement) {
+    public TeamMeta(final Team team, final String name, final NamedTextColor color, final List<String> canKill, final int mininumScore) {
         this(
                 team,
                 name,
                 color,
                 canKill,
-                livesRequirement,
+                mininumScore,
                 GameMode.SURVIVAL
         );
     }
-    public TeamMeta(final Team team, final String name, final String color, final List<String> canKill, final int livesRequirement) {
+    public TeamMeta(final Team team, final String name, final String color, final List<String> canKill, final int mininumScore) {
         this(
                 team,
                 name,
                 ColourConverter.tryNamedColourFromString(color)
                         .orElseThrow(() -> new IllegalArgumentException("aaargh")),
                 canKill,
-                livesRequirement
+                mininumScore
         );
     }
 
@@ -51,7 +51,7 @@ public class TeamMeta {
     public NamedTextColor getColor() { return color; }
     public List<String> getCanKill() { return canKill; }
     public boolean canKillTeam(final OfflinePlayer player) { return canKill.contains(player.getName()); }
-    public int getLivesRequirement() { return livesRequirement; }
+    public int getMininumScore() { return mininumScore; }
     public Team getScoreboardTeam() { return scoreboardTeam; }
     public GameMode getGameMode() { return gamemode; }
     public void setPlayerGameMode(Player p) {

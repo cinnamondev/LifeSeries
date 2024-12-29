@@ -3,6 +3,9 @@
 # lives), then lives/rewards/punishments are measured in number of lives.
 mode: timed # there are 2 game modes, `life` and `timed`.
 
+timed:
+  starting-time: 1440
+
 categories:
   green:
     colour: 'GREEN'

@@ -2,9 +2,9 @@ package com.github.cinnamondev.lifeSeries.teams;
 
 import com.github.cinnamondev.lifeSeries.util.ColourConverter;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.Scoreboard;
@@ -14,14 +14,18 @@ import org.bukkit.scoreboard.Team;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ScoreboardHandler {
+public class ScoreHandler {
     private final Plugin p;
     private final ScoreboardManager manager;
     private final Scoreboard scoreboard;
 
     private final TeamMeta spectatorTeam;
     private final SortedSet<TeamMeta> rankedTeams;
-    public ScoreboardHandler(Plugin p) {
+
+    private int untrackedPlayerScore;
+    private HashMap<UUID, Integer> playerScores = new HashMap<>();
+
+    public ScoreHandler(Plugin p, int defaultScore) {
         this.p = p;
         this.manager = p.getServer().getScoreboardManager();
         this.scoreboard = manager.getMainScoreboard();
@@ -69,20 +73,33 @@ public class ScoreboardHandler {
                     );
                 })
                 .collect(Collectors.toCollection(() ->
-                        new TreeSet<TeamMeta>(Comparator.comparingInt(TeamMeta::getLivesRequirement).reversed())
+                        new TreeSet<TeamMeta>(Comparator.comparingInt(TeamMeta::getMininumScore).reversed())
                 ));
     }
 
-    private TeamMeta getTeam(OfflinePlayer player, int timeRemaining) {
+    public int decrementUntrackedPlayerScore(int decrementValue) { untrackedPlayerScore -= decrementValue; return untrackedPlayerScore; }
+    public void setUntrackedPlayerScore(int defaultScore) { untrackedPlayerScore = defaultScore; }
+    public HashMap<UUID, Integer> getPlayerScores() { return playerScores; }
+    private Integer getOrUseDefaultScore(OfflinePlayer player) {
+        return getOrUseDefaultScore(player.getUniqueId());
+    }
+    private Integer getOrUseDefaultScore(UUID uuid) {
+        return playerScores.getOrDefault(uuid, untrackedPlayerScore);
+    }
+    public TeamMeta getTeam(OfflinePlayer player) {
+        return getTeam(player.getUniqueId());
+    }
+    public TeamMeta getTeam(UUID uuid) {
+        int score = getOrUseDefaultScore(uuid);
         return rankedTeams.stream()
-                .filter(team -> timeRemaining > team.getLivesRequirement()) // should not be >=, players on boundry
+                .filter(team -> score > team.getMininumScore()) // should not be >=, players on boundry
                 .findFirst()                                                // will be downgraded to next tier.
                 .orElse(this.spectatorTeam); // player has 0 time left!
     }
 
-    public TeamMeta updatePlayerTeam(OfflinePlayer p, int timeRemaining) {
+    private TeamMeta updatePlayerTeam(OfflinePlayer p) {
         Team oldTeam = scoreboard.getPlayerTeam(p);
-        TeamMeta teamMeta = getTeam(p, timeRemaining);
+        TeamMeta teamMeta = getTeam(p);
         if (oldTeam != null) {
             if (!oldTeam.equals(teamMeta.getScoreboardTeam())) { return teamMeta; }
 
@@ -104,4 +121,6 @@ public class ScoreboardHandler {
 
         newTeam.addPlayer(player);
     }
+
+
 }
