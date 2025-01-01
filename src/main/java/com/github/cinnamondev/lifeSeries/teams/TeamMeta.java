@@ -1,7 +1,10 @@
 package com.github.cinnamondev.lifeSeries.teams;
 
 import com.github.cinnamondev.lifeSeries.util.ColourConverter;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.GameMode;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -48,13 +51,19 @@ public class TeamMeta {
     }
 
     public String getName() { return name; }
-    public NamedTextColor getColor() { return color; }
     public List<String> getCanKill() { return canKill; }
-    public boolean canKillTeam(final OfflinePlayer player) { return canKill.contains(player.getName()); }
+    public boolean canKillTeam(final String targetTeamName) { return canKill.contains(targetTeamName); }
     public int getMininumScore() { return mininumScore; }
     public Team getScoreboardTeam() { return scoreboardTeam; }
     public GameMode getGameMode() { return gamemode; }
     public void setPlayerGameMode(Player p) {
         p.setGameMode(gamemode);
+    }
+    public NamedTextColor getColor() { return color; }
+    public Style style() {
+        return Style.style(color, TextDecoration.BOLD);
+    }
+    public Component decoratedString(String string) {
+        return Component.text(string).style(style());
     }
 }
