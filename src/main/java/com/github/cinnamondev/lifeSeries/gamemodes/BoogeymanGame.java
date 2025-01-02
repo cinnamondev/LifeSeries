@@ -23,35 +23,7 @@ public abstract class BoogeymanGame implements Game {
     }
     public Collection<UUID> getBoogeymen() { return boogeymen; }
     /// rolled using specified values.
-    public boolean roll(int min, int max) {
-        Random random = new Random();
-
-        // filter down what teams we can select from.
-        ArrayList<String> candidateTeams = p.getConfig().getStringList("options.boogeyman.allowed-teams")
-                .stream().filter(name -> p.getScoreboardHandler().tryForTeam(name).isPresent())
-                .collect(Collectors.toCollection(ArrayList::new));
-        if (candidateTeams.isEmpty()) { p.getLogger().info("no configured teams to select from"); return false; }
-        // select players from those teams
-        boogeymen = p.getServer().getOnlinePlayers().stream()
-                .filter(player -> candidateTeams.contains(p.getScoreboardHandler().getTeam(player).getName()))
-                .map(Entity::getUniqueId)
-                .collect(Collectors.toCollection(ArrayList::new));
-        if (boogeymen.size() >= min) {
-            boogeymen = new ArrayList<>(); // empty again
-            p.getLogger().info("couldnt find enough candidates!");
-            return false;
-        }
-
-        // bound min >= n >= max, where max will be bound by the number of available candidates.
-        var numberCandidates = Math.max(random.nextInt(max - min) + min, boogeymen.size());
-        // whittle down candidates until we have
-        while (boogeymen.size() > numberCandidates) {
-            var removeIndex = random.nextInt(boogeymen.size()-1);
-            boogeymen.remove(removeIndex); // keep removing candidates until we have reached the specified amount
-        }
-
-        return true;
-    }
+    public boolean roll(int min, int max) { return false;}
     public void setBoogeys(List<UUID> boogeymen) {
         this.boogeymen = boogeymen;
     }
@@ -85,18 +57,5 @@ public abstract class BoogeymanGame implements Game {
             Game.super.onKilled(p, killed, killer); // let default implementation handle it
         };
     }
-    @Override
-    public void configureFromResumedSave(ConfigurationSection saveSection) {
-        setBoogeys( // set boogeys from save file summaries.
-                saveSection.getKeys(false).stream().filter(username -> saveSection.getConfigurationSection(username)
-                        .getString("is-boogey")
-                        .equalsIgnoreCase("true")
-                ).map(username -> p.getServer().getOfflinePlayer(username).getUniqueId()).toList()
-        );
-    }
-    @Override
-    public void resetPerSessionData(ConfigurationSection saveSection) {
-        saveSection.getKeys(false).forEach(username -> saveSection
-                .getConfigurationSection(username).set("is-boogey", "no"));
-    }
+
 }

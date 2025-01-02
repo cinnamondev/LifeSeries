@@ -27,7 +27,7 @@ public class BoogeymanSubCommand {
                                         OfflinePlayer player =  p.getServer().getOfflinePlayer(uuid);
                                         String name = player.getName();
                                         if (name == null) { name = ""; }
-                                        TeamMeta team = p.getScoreboardHandler().getTeam(player);
+                                        TeamMeta team = null; //p.getScoreboardHandler().getTeam(player);
                                         return team.decoratedString(name).append(
                                                 Component.text(", ")
                                         );

@@ -18,26 +18,6 @@ public class OfflinePunishSubCommand {
         return Commands.literal("punishOffline")
                 .requires(src -> src.getSender().hasPermission("life.admin.game"))
                 .executes(ctx -> {
-                    Component message = Component.text("Punished the following players: ").appendNewline();
-                    List<UUID> onlinePlayers = p.getServer().getOnlinePlayers().stream()
-                            .map(Entity::getUniqueId).toList();
-                    List<OfflinePlayer> punishedPlayers = new ArrayList<>();
-
-                    p.getScoreboardHandler().updateAllTrackedScoresAndTeams((uuid, score) -> {
-                        if (onlinePlayers.contains(uuid)) { return score; } // online players left unmodified.
-                        punishedPlayers.add(p.getServer().getOfflinePlayer(uuid));
-                        return score - p.getConfig().getInt("options.punishment.offline");
-                    });
-
-                    for (var player: punishedPlayers) {
-                        String name = player.getName();
-                        TeamMeta team = p.getScoreboardHandler().getTeam(player);
-                        if (name == null) { name = ""; }
-                        message = message
-                                .append(team.decoratedString(name))
-                                .append(Component.text(", "));
-                    }
-                    ctx.getSource().getSender().sendMessage(message);
                     return 1;
                 });
     }
