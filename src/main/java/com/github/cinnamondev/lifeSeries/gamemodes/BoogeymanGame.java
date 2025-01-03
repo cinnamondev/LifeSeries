@@ -25,6 +25,12 @@ public abstract class BoogeymanGame implements Game {
     /// rolled using specified values.
     public boolean roll(int min, int max) { return false;}
     public void setBoogeys(List<UUID> boogeymen) {
+        for (var uuid: boogeymen) {
+            p.getConfig().getConfigurationSection("players").getKeys(false).forEach(savedUUID -> {
+
+            });
+            p.getSave().set("players." + uuid.toString() + ".is-boogey", "yes");
+        }
         this.boogeymen = boogeymen;
     }
 
@@ -36,7 +42,7 @@ public abstract class BoogeymanGame implements Game {
     }
     /// remove player from list - does NOT apply reward.
     public void cure(UUID uuid) {
-        p.getSaveFileCfg().set("players." + uuid.toString() + ".is-boogey", "cured");
+        p.getSave().set("players." + uuid.toString() + ".is-boogey", "cured");
         boogeymen.remove(uuid);
     }
     /// remove player from list apply reward
@@ -44,18 +50,16 @@ public abstract class BoogeymanGame implements Game {
         cure(offlinePlayer.getUniqueId());
     }
     @Override
-    public void onKilled(LifeSeries p, Player killed, Player killer) {
-        if (killed.getUniqueId().equals(killer.getUniqueId())) { onKilled(p,killed); return; } // death type suicide
-
+    public boolean onKilled(LifeSeries p, Player killed, Player killer) {
         if (isBoogeyman(killer)) {
-            onKilled(p,
+            cure(killer);
+            return onKilled(p,
                     killed, p.getConfig().getInt("options.punishment.boogey-death"),
                     killer, p.getConfig().getInt("options.reward.boogey-kill")
             );
-            cure(killer);
         } else {
-            Game.super.onKilled(p, killed, killer); // let default implementation handle it
-        };
+            return Game.super.onKilled(p, killed, killer); // let default implementation handle it
+        }
     }
 
 }

@@ -19,10 +19,8 @@ import java.time.Duration;
 
 public class Timed implements Game {
     private final LifeSeries p;
-    private int untrackedPlayerTime;
 
-    public Timed(LifeSeries p, int untrackedPlayerTime) {
-        this.untrackedPlayerTime = untrackedPlayerTime;
+    public Timed(LifeSeries p) {
         this.p = p;
     }
 
@@ -30,16 +28,21 @@ public class Timed implements Game {
     @Override
     public void run() {
         p.getLogger().warning("run!!");
-        untrackedPlayerTime = Math.max(untrackedPlayerTime-1,0);
+
+        p.getScoreHandler().updateTrackableScoresAndTeams((uuid, score) -> score - 1);
+        p.getScoreHandler().addUntrackedScore(-1);
+
         p.getServer().getOnlinePlayers().forEach(this::displayPlayerTime);
     }
 
     private void displayPlayerTime(Player player) {
         String time =DurationFormatUtils.formatDuration(
-                untrackedPlayerTime * 1000,
+                p.getScoreHandler().getScore(player) * 1000,
                 "HH':'mm':'ss",
                 true);
-        player.sendActionBar(Component.text(time).decorate(TextDecoration.BOLD));
+        player.sendActionBar(Component.text(time).decorate(TextDecoration.BOLD).color(
+                p.getScoreHandler().getTeam(player).getScoreboardTeam().color()
+        ));
     }
 
 }

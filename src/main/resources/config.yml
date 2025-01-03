@@ -8,17 +8,17 @@ starting-score: 1440
 categories:
   green:
     colour: GREEN
-    lives: 960 # mininum number of minutes required to be in this category OR mininum number of lives.
+    score: 960 # mininum number of minutes required to be in this category OR mininum number of lives.
 
   yellow:
     colour: YELLOW
-    lives: 480
+    score: 480
     can-kill:
       - green
 
   red:
     colour: 'RED' # as displayed in tab & above head
-    lives: 0 # the lowest category should set 0 here to ignore this category entirely.
+    score: 0 # the lowest category should set 0 here to ignore this category entirely.
     can-kill: # does not prevent PvP, just determines which categories players can be rewarded time from.
       - red
       - yellow

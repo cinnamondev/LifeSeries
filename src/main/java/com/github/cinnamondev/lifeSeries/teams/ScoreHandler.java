@@ -1,22 +1,173 @@
 package com.github.cinnamondev.lifeSeries.teams;
 
+import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.util.ColourConverter;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.apache.logging.log4j.util.TriConsumer;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
-import java.util.UUID;
+import java.io.File;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ScoreHandler {
-    private Plugin p;
-    private YamlConfiguration save;
+    private LifeSeries p;
+    private Scoreboard scoreboard;
+    private FileConfiguration save;
     private ConfigurationSection playerData;
-    public ScoreHandler(Plugin p) {
+    private final SortedSet<TeamMeta> rankedTeams;
+    private final TeamMeta spectatorTeam;
+
+    public ScoreHandler(LifeSeries p) {
         this.p = p;
+        this.save = p.getSave();
+        this.scoreboard = p.getServer().getScoreboardManager().getMainScoreboard();
+        this.playerData = save.getConfigurationSection("players");
+        if (playerData == null) { this.playerData = save.createSection("players"); }
+
+        this.rankedTeams = loadTeamsFromConfig(
+                Objects.requireNonNull(p.getConfig().getConfigurationSection("categories"))
+        );
+
+        Team team = scoreboard.getTeam("Dead");
+        if (team != null) { team.unregister(); }
+        team = scoreboard.registerNewTeam("Dead");
+        this.spectatorTeam = new TeamMeta(team, Collections.emptyList(), 0);
     }
 
-    public int getScore(OfflinePlayer player) { return 100;}
-    public int setScore(OfflinePlayer player) {
-        return 110;
+    private SortedSet<TeamMeta> loadTeamsFromConfig(ConfigurationSection categories) {
+        scoreboard.getTeams().forEach(Team::unregister);
+        return categories.getKeys(false).stream().map(name -> {
+           ConfigurationSection config = categories.getConfigurationSection(name);
+
+            NamedTextColor colour = ColourConverter.tryNamedColourFromString(config.getString("colour"))
+                    .orElse(NamedTextColor.LIGHT_PURPLE);
+
+            Team team = scoreboard.registerNewTeam(name);
+
+            team.color(colour);
+            team.setAllowFriendlyFire(true);
+            team.setCanSeeFriendlyInvisibles(false);
+            return new TeamMeta(team, config.getStringList("can-kill"), config.getInt("score"));
+        }).collect(Collectors.toCollection(() -> new TreeSet<>(
+                Comparator.comparingInt(TeamMeta::getMininumScore).reversed()
+        )));
     }
+
+    public int getUntrackedScore() {
+        int score = save.getInt("untrackedScore",-1);
+        if (score == -1) {
+            score = p.getConfig().getInt("starting-score");
+            save.set("untrackedScore", score);
+        }
+        return score;
+    }
+    public void setUntrackedScore(int untrackedScore) { save.set("untrackedScore", untrackedScore); }
+    public int addUntrackedScore(int score) {
+        int newScore = Math.max(getUntrackedScore() + score,0);
+        setUntrackedScore(newScore);
+        return newScore;
+    }
+
+    public int getScore(UUID uuid) {
+        int score = playerData.getInt(uuid.toString() + ".score", -1);
+        if (score == -1) {
+            score = getUntrackedScore();
+            playerData.set(uuid + ".score", score);
+        }
+        return score;
+    }
+    public int getScore(OfflinePlayer player) {  return getScore(player.getUniqueId()); }
+    protected void setScore(UUID uuid, int score) { playerData.set(uuid.toString() + ".score", score); }
+    protected void setScore(OfflinePlayer player, int score) { setScore(player.getUniqueId(), score); }
+    protected int addScore(UUID uuid, int score) {
+        int newScore = Math.max(getScore(uuid) + score, 0);
+        setScore(uuid, newScore);
+        return newScore;
+    }
+    public int addScore(OfflinePlayer player, int score) { return addScore(player.getUniqueId(), score); }
+
+    public TeamMeta getTeam(int score) {
+        TeamMeta team = rankedTeams.stream().filter(_team -> score > _team.getMininumScore()).findFirst().orElse(spectatorTeam);
+        p.getLogger().warning("team got team " + team.getScoreboardTeam().getName() + "min score " + team.getMininumScore() + "actual score" + score );
+        return team;
+    }
+    public TeamMeta getTeam(UUID uuid) { return getTeam(getScore(uuid)); }
+    public TeamMeta getTeam(OfflinePlayer player) { return getTeam(getScore(player.getUniqueId())); }
+    public TeamMeta getSpectatorTeam() { return this.spectatorTeam; }
+
+    public void updatePlayerScoreAndTeam(UUID uuid,
+                                         BiFunction<UUID, Integer, Integer> updater,
+                                         BiConsumer<Player, TeamMeta> onlinePlayerTeamHasChanged) {
+        TeamMeta oldTeam = getTeam(uuid);
+        setScore(uuid, Math.max(updater.apply(uuid, getScore(uuid)),0));
+        TeamMeta newTeam = getTeam(uuid);
+        Player player = p.getServer().getPlayer(uuid);
+        if (player != null) {
+            Team scoreboardTeam = scoreboard.getPlayerTeam(player); // attempt to update
+            Team newScoreboardTeam = newTeam.getScoreboardTeam();
+            if (scoreboardTeam != null) {
+                scoreboardTeam.removePlayer(player);
+            }
+            newScoreboardTeam.addPlayer(player);
+            if (!oldTeam.equals(newTeam)) { // changed team
+                onlinePlayerTeamHasChanged.accept(player, newTeam);
+            }
+        }
+    }
+
+    public void updatePlayerScoreAndTeam(UUID uuid,  BiFunction<UUID, Integer, Integer> updater) {
+        updatePlayerScoreAndTeam(uuid, updater, (_uuid, team) -> {
+            Player player = p.getServer().getPlayer(uuid);
+            if (player != null) { player.setHealth(0); }
+        });
+    }
+
+    public void updatePlayerScoreAndTeam(OfflinePlayer player,
+                                         BiFunction<UUID, Integer, Integer> updater,
+                                         BiConsumer<Player, TeamMeta> onlinePlayerTeamHasChanged) {
+        updatePlayerScoreAndTeam(player.getUniqueId(), updater, onlinePlayerTeamHasChanged);
+    }
+
+    public void updatePlayerScoreAndTeam(OfflinePlayer player,  BiFunction<UUID, Integer, Integer> updater) {
+        updatePlayerScoreAndTeam(player.getUniqueId(), updater);
+    }
+
+    public void updateAllTrackedScoresAndTeams(BiFunction<UUID, Integer, Integer> updater,
+                                               BiConsumer<Player,TeamMeta> onlinePlayerTeamHasChanged) {
+        List<UUID> deadPlayers = new ArrayList<>();
+        playerData.getKeys(false).forEach(uuidString -> {
+            UUID uuid = UUID.fromString(uuidString);
+            updatePlayerScoreAndTeam(uuid, updater, onlinePlayerTeamHasChanged);
+        });
+    }
+
+    public void updateAllTrackedScoresAndTeams(BiFunction<UUID, Integer, Integer> updater) {
+        List<UUID> deadPlayers = new ArrayList<>();
+        playerData.getKeys(false).forEach(uuidString -> {
+            UUID uuid = UUID.fromString(uuidString);
+            updatePlayerScoreAndTeam(uuid, updater);
+        });
+    }
+
+    public void updateTrackableScoresAndTeams(BiFunction<UUID, Integer, Integer> updater) {
+        p.getServer().getOnlinePlayers().forEach(this::getScore);
+        updateAllTrackedScoresAndTeams(updater);
+    }
+
+
+
+
 }

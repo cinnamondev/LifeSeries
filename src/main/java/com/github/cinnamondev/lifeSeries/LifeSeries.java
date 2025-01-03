@@ -3,16 +3,21 @@ package com.github.cinnamondev.lifeSeries;
 import com.github.cinnamondev.lifeSeries.commands.GameControlCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed;
+import com.github.cinnamondev.lifeSeries.listener.PlayerListener;
+import com.github.cinnamondev.lifeSeries.teams.ScoreHandler;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import io.papermc.paper.util.Tick;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
@@ -22,7 +27,8 @@ import java.util.concurrent.TimeUnit;
 
 public final class LifeSeries extends JavaPlugin {
     private File saveFile;
-    private FileConfiguration saveFileCfg;
+    private YamlConfiguration saveFileCfg;
+    private ScoreHandler scoreHandler;
     private Game game = null;
 
     private final ScheduledExecutorService asyncScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -31,13 +37,26 @@ public final class LifeSeries extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig(); // if doesnt exist
-        FileConfiguration config = getConfig();
-        String gamemode = config.getString("mode");
+        reloadConfig();
+
+        saveFile = new File(getDataFolder(), "save.yml");
+        if (!saveFile.exists()) {
+            saveFile.getParentFile().mkdirs();
+            saveResource("save.yml", false);
+        }
+        saveFileCfg = YamlConfiguration.loadConfiguration(saveFile);
+
+        getLogger().warning("starting score is" + getConfig().getInt("starting-score"));
+
+        scoreHandler = new ScoreHandler(this);
+
+
+        String gamemode = getConfig().getString("mode");
 
         switch (gamemode) {
             case "limitedlife":
             case "timed":
-                game = new Timed(this, 300);
+                game = new Timed(this);
                 break;
             case null:
             default:
@@ -56,6 +75,8 @@ public final class LifeSeries extends JavaPlugin {
                     GameControlCommand.aliases
             );
         });
+
+        Bukkit.getPluginManager().registerEvents(new PlayerListener(this), this);
         // Plugin startup logic
 
     }
@@ -65,21 +86,29 @@ public final class LifeSeries extends JavaPlugin {
         // Plugin shutdown logic
     }
 
-    public FileConfiguration getSaveFileCfg() { return saveFileCfg; }
+
+    public FileConfiguration getSave() { return saveFileCfg; }
     public File getSaveFile() { return saveFile; }
 
-    public void saveGame() {}
+    public void saveGame() {
+        try {
+            saveFileCfg.save(saveFile);
+        } catch (IOException e) {
+            getLogger().warning("couldnt save???");
+        }
+
+    }
 
     public void startSession() {
         gameTask = asyncScheduler.scheduleAtFixedRate(game, 1,1, TimeUnit.SECONDS);
     }
     public void stopSession() {
-        if (!gameTask.isDone()) { gameTask.cancel(false); }
+        if (!gameTask.isDone()) { gameTask.cancel(false); saveGame(); }
     }
     public void pauseSession() {
-        if (!gameTask.isDone()) { gameTask.cancel(false); }
+        if (!gameTask.isDone()) { gameTask.cancel(false); saveGame(); }
     }
 
     public Game getGame() { return this.game; }
-
+    public ScoreHandler getScoreHandler() { return this.scoreHandler; }
 }
