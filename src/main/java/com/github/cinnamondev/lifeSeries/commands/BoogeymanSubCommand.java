@@ -117,21 +117,21 @@ public class BoogeymanSubCommand {
 
                 p.getServer().sendMessage(Component.text("The boogeyman is being chosen..."));
                 scheduleBroadcastSingleTitleWithSound(p, 0, "3", Style.style(NamedTextColor.GREEN), tickSound);
-                scheduleBroadcastSingleTitleWithSound(p, 20, "2", Style.style(NamedTextColor.GREEN), tickSound);
-                scheduleBroadcastSingleTitleWithSound(p, 40, "1", Style.style(NamedTextColor.GREEN), tickSound);
-                scheduleBroadcastSingleTitleWithSound(p, 60, "You are...", Style.style(NamedTextColor.GREEN), tickSound);
+                scheduleBroadcastSingleTitleWithSound(p, 60, "2", Style.style(NamedTextColor.YELLOW), tickSound);
+                scheduleBroadcastSingleTitleWithSound(p, 120, "1", Style.style(NamedTextColor.RED), tickSound);
+                scheduleBroadcastSingleTitleWithSound(p, 180, "You are...", Style.style(NamedTextColor.RED), tickSound);
 
                 p.getServer().getScheduler().runTaskLater(p, () -> {
                     p.getServer().getOnlinePlayers().forEach(onlinePlayer -> {
                         TextComponent boogeymanAnnouncement  = Component.text("NOT the boogeyman!")
                                 .color(NamedTextColor.GREEN);
                         if (boogey.getBoogeymen().contains(onlinePlayer.getUniqueId())) {
-                            boogeymanAnnouncement = Component.text("NOT the boogeyman!")
+                            boogeymanAnnouncement = Component.text("The boogeyman!")
                                     .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD));
                         }
                         onlinePlayer.showTitle(Title.title(boogeymanAnnouncement, Component.empty()));
                     });
-                }, 80);
+                }, 240);
             }
         }, ticks);
         return 1;

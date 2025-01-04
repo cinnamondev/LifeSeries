@@ -110,6 +110,9 @@ public class ScoreHandler {
     public TeamMeta getTeam(OfflinePlayer player) { return getTeam(getScore(player.getUniqueId())); }
     public TeamMeta getSpectatorTeam() { return this.spectatorTeam; }
 
+    /// update a players score according to the returned value of `updater`. works for any player uuid, if they are not
+    /// already tracked, they will be assigned the default score before `updater` is called. if the player is online
+    /// and their team changes, `onlinePlayerTeamHasChanged` will be called.
     public void updatePlayerScoreAndTeam(UUID uuid,
                                          BiFunction<UUID, Integer, Integer> updater,
                                          BiConsumer<Player, TeamMeta> onlinePlayerTeamHasChanged) {
@@ -130,6 +133,9 @@ public class ScoreHandler {
         }
     }
 
+    /// update a players score according to the returned value of `updater`. works for any player uuid, if they are not
+    /// already tracked, they will be assigned the default score before `updater` is called. if the player is online,
+    /// and they run out of time (player has changed team to spectatorTeam), the player will be killed.
     public void updatePlayerScoreAndTeam(UUID uuid,  BiFunction<UUID, Integer, Integer> updater) {
         updatePlayerScoreAndTeam(uuid, updater, (_uuid, team) -> {
             if (getTeam(uuid).equals(spectatorTeam)) {
@@ -151,6 +157,10 @@ public class ScoreHandler {
         updatePlayerScoreAndTeam(player.getUniqueId(), updater);
     }
 
+    /// update all tracked players score according to the returned value of `updater`. works for any player uuid,
+    /// if they are not already tracked, they will be assigned the default score before `updater` is called.
+    /// if the player is online, and they change team category (including running out of time),
+    /// `onlinePlayerTeamHasChanged` will be called.
     public void updateAllTrackedScoresAndTeams(BiFunction<UUID, Integer, Integer> updater,
                                                BiConsumer<Player,TeamMeta> onlinePlayerTeamHasChanged) {
         List<UUID> deadPlayers = new ArrayList<>();
@@ -160,6 +170,10 @@ public class ScoreHandler {
         });
     }
 
+    /// update all tracked players score according to the returned value of `updater`. works for any player uuid,
+    /// if they are not already tracked, they will be assigned the default score before `updater` is called.
+    /// if the player is online, and they run out of time (player has changed team to spectatorTeam), the player will be
+    /// killed.
     public void updateAllTrackedScoresAndTeams(BiFunction<UUID, Integer, Integer> updater) {
         List<UUID> deadPlayers = new ArrayList<>();
         playerData.getKeys(false).forEach(uuidString -> {
@@ -168,10 +182,13 @@ public class ScoreHandler {
         });
     }
 
+    /// Similar to `updateAllTrackedScoresAndTeams`, except it will ensure all online players are currently being
+    /// tracked.
     public void updateTrackableScoresAndTeams(BiFunction<UUID, Integer, Integer> updater) {
         p.getServer().getOnlinePlayers().forEach(this::getScore);
         updateAllTrackedScoresAndTeams(updater);
     }
+
     public Collection<UUID> listTrackedUUIDs() {
         return playerData.getKeys(false).stream().map(UUID::fromString).collect(Collectors.toList());
     }
@@ -181,8 +198,4 @@ public class ScoreHandler {
                 .map(uuidString -> p.getServer().getOfflinePlayer(UUID.fromString(uuidString)))
                 .collect(Collectors.toList());
     }
-
-
-
-
 }

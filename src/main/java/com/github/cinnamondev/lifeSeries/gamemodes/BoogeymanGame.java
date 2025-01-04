@@ -37,7 +37,7 @@ public abstract class BoogeymanGame implements Game {
                         candidateTeams.contains(p.getScoreHandler().getTeam(player).getScoreboardTeam().getName())
                 ).map(Entity::getUniqueId)
                 .collect(Collectors.toCollection(ArrayList::new));
-        if (boogeymen.size() < min) {
+        if (min > boogeymen.size()) {
             boogeymen = new ArrayList<>(); // empty again
             p.getLogger().info("couldnt find enough candidates!");
             return false;
@@ -51,16 +51,12 @@ public abstract class BoogeymanGame implements Game {
             boogeymen.remove(removeIndex); // keep removing candidates until we have reached the specified amount
         }
 
-        return true;
-    }
-    public void setBoogeys(List<UUID> boogeymen) {
-        for (var uuid: boogeymen) {
-            p.getConfig().getConfigurationSection("players").getKeys(false).forEach(savedUUID -> {
-
-            });
+        for (UUID uuid : boogeymen) {
             p.getSave().set("players." + uuid.toString() + ".is-boogey", "yes");
         }
-        this.boogeymen = boogeymen;
+
+
+        return true;
     }
 
     public boolean isBoogeyman(OfflinePlayer offlinePlayer) {
@@ -74,7 +70,9 @@ public abstract class BoogeymanGame implements Game {
         p.getSave().set("players." + uuid.toString() + ".is-boogey", "cured");
         boogeymen.remove(uuid);
     }
-    public void addBoogey(UUID uuid) { boogeymen.add(uuid);}
+    public void addBoogey(UUID uuid) {
+        p.getSave().set("players." + uuid.toString() + ".is-boogey", "yes");
+        boogeymen.add(uuid);}
     public void addBoogey(OfflinePlayer offlinePlayer) { addBoogey(offlinePlayer.getUniqueId());}
     /// remove player from list apply reward
     public void cure(OfflinePlayer offlinePlayer) {
@@ -84,6 +82,7 @@ public abstract class BoogeymanGame implements Game {
     public boolean onKilled(LifeSeries p, Player killed, Player killer) {
         if (isBoogeyman(killer)) {
             cure(killer);
+            killer.sendMessage("You have been cured!");
             return onKilled(p,
                     killed, p.getConfig().getInt("options.punishment.boogey-death"),
                     killer, p.getConfig().getInt("options.reward.boogey-kill")

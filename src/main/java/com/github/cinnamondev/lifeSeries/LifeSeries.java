@@ -89,6 +89,11 @@ public final class LifeSeries extends JavaPlugin {
         });
 
         Bukkit.getPluginManager().registerEvents(new PlayerListener(this), this);
+
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
+            saveFileCfg.set("paused", true); // if the server crashes unnaturally, game should be able to resume.
+            saveGame();
+        }, 300,300);
         // Plugin startup logic
 
     }
@@ -96,6 +101,11 @@ public final class LifeSeries extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+        if (getConfig().getBoolean("options.pause-on-server-stop", false)) {
+            pauseSession();
+        } else {
+            stopSession();
+        }
     }
 
 
@@ -108,7 +118,6 @@ public final class LifeSeries extends JavaPlugin {
         } catch (IOException e) {
             getLogger().warning("couldnt save???");
         }
-
     }
 
     public void startSession() {
@@ -116,10 +125,18 @@ public final class LifeSeries extends JavaPlugin {
         gameTask = asyncScheduler.scheduleAtFixedRate(game, 1,1, TimeUnit.SECONDS);
     }
     public void stopSession() {
-        if (!gameTask.isDone()) { gameTask.cancel(false); saveGame(); }
+        if (!gameTask.isDone()) {
+            gameTask.cancel(false);
+        }
+        saveFileCfg.set("paused", false);
+        saveGame();
     }
     public void pauseSession() {
-        if (!gameTask.isDone()) { gameTask.cancel(false); saveGame(); }
+        if (!gameTask.isDone()) {
+            gameTask.cancel(false);
+        }
+        saveFileCfg.set("paused", true);
+        saveGame();
     }
 
     public Game getGame() { return this.game; }
