@@ -1,6 +1,8 @@
 package com.github.cinnamondev.lifeSeries;
 
+import com.github.cinnamondev.lifeSeries.commands.AmITheBoogeyMan;
 import com.github.cinnamondev.lifeSeries.commands.GameControlCommand;
+import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanGame;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed;
 import com.github.cinnamondev.lifeSeries.listener.PlayerListener;
@@ -18,6 +20,8 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
@@ -74,6 +78,14 @@ public final class LifeSeries extends JavaPlugin {
                     GameControlCommand.description,
                     GameControlCommand.aliases
             );
+
+            if (game instanceof BoogeymanGame boogeymanGame) {
+                commands.register(
+                        AmITheBoogeyMan.command(this, boogeymanGame),
+                        "Are you the boogeyman?",
+                        Arrays.asList("aib", "boogey")
+                );
+            }
         });
 
         Bukkit.getPluginManager().registerEvents(new PlayerListener(this), this);
@@ -100,6 +112,7 @@ public final class LifeSeries extends JavaPlugin {
     }
 
     public void startSession() {
+        //getServer().getScheduler().scheduleSyncRepeatingTask(this, game, 20,20);
         gameTask = asyncScheduler.scheduleAtFixedRate(game, 1,1, TimeUnit.SECONDS);
     }
     public void stopSession() {

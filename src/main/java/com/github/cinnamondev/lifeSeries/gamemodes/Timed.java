@@ -17,10 +17,11 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 
-public class Timed implements Game {
+public class Timed extends BoogeymanGame {
     private final LifeSeries p;
 
     public Timed(LifeSeries p) {
+        super(p);
         this.p = p;
     }
 
@@ -33,6 +34,7 @@ public class Timed implements Game {
         p.getScoreHandler().addUntrackedScore(-1);
 
         p.getServer().getOnlinePlayers().forEach(this::displayPlayerTime);
+
     }
 
     private void displayPlayerTime(Player player) {

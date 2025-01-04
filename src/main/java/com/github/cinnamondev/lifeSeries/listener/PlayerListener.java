@@ -72,6 +72,10 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void PlayerRespawn(PlayerRespawnEvent e) {
         Player player = e.getPlayer();
+
+        if (p.getScoreHandler().getTeam(player).equals(p.getScoreHandler().getSpectatorTeam()) && player.getGameMode() != GameMode.CREATIVE) {
+            player.setGameMode(GameMode.SPECTATOR);
+        }
     }
 
 }

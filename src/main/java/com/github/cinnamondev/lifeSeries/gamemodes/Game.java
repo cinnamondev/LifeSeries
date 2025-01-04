@@ -23,7 +23,7 @@ public interface Game extends Runnable {
                     true);
             killed.showTitle(Title.title(
                     Component.text(time).style(Style.style(NamedTextColor.RED, TextDecoration.BOLD)),
-                    Component.text("")
+                    Component.empty()
             ));
             return score - punishment;
         }, (_player, newTeam) -> {
@@ -66,7 +66,7 @@ public interface Game extends Runnable {
                     true);
             killer.showTitle(Title.title(
                     Component.text(time).style(Style.style(NamedTextColor.GREEN, TextDecoration.BOLD)),
-                    Component.text("")
+                    Component.empty()
             ));
             return score + reward;
         });

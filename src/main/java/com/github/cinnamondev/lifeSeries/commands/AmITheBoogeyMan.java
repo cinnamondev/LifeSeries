@@ -11,28 +11,25 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 
 public final class AmITheBoogeyMan {
     public final static List<String> aliases = List.of("boogeyman", "boogey");
     public final static String description = "Reports if player is the boogeyman";
-    public static LiteralCommandNode<CommandSourceStack> command(LifeSeries plugin) {
+    public static LiteralCommandNode<CommandSourceStack> command(Plugin plugin, BoogeymanGame game) {
         return Commands.literal("amitheboogeyman")
                 .requires(src -> (src.getSender() instanceof Player p) && p.hasPermission("life.boogeyman"))
                 .executes(ctx -> {
-                    if (plugin.getGame() instanceof BoogeymanGame game) {
-                        if (ctx.getSource().getSender() instanceof Player player) {
-                            boolean isBoogey = game.isBoogeyman(player);
-                            TextComponent message = isBoogey ?
-                                    Component.text("You ARE the Boogeyman!")
-                                            .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD))
-                                    : Component.text("You are NOT the Boogeyman!")
-                                    .style(Style.style(NamedTextColor.GREEN, TextDecoration.BOLD));
-                            ctx.getSource().getSender().sendMessage(message);
-                        }
-                    } else {
-                        ctx.getSource().getSender().sendMessage("This gamemode does not support the boogeyman!");
+                    if (ctx.getSource().getSender() instanceof Player player) {
+                        boolean isBoogey = game.isBoogeyman(player);
+                        TextComponent message = isBoogey ?
+                                Component.text("You ARE the Boogeyman!")
+                                        .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD))
+                                : Component.text("You are NOT the Boogeyman!")
+                                .style(Style.style(NamedTextColor.GREEN, TextDecoration.BOLD));
+                        ctx.getSource().getSender().sendMessage(message);
                     }
                     return 1;
                 })
