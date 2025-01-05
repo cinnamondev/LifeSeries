@@ -5,15 +5,23 @@ import com.github.cinnamondev.lifeSeries.commands.GameControlCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanGame;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed;
+import com.github.cinnamondev.lifeSeries.listener.EnchantmentNerfer;
 import com.github.cinnamondev.lifeSeries.listener.PlayerListener;
 import com.github.cinnamondev.lifeSeries.teams.ScoreHandler;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import io.papermc.paper.registry.data.EnchantmentRegistryEntry;
+import io.papermc.paper.registry.event.RegistryEvents;
+import io.papermc.paper.registry.keys.EnchantmentKeys;
+import io.papermc.paper.registry.keys.tags.ItemTypeTagKeys;
 import io.papermc.paper.util.Tick;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -33,6 +41,7 @@ public final class LifeSeries extends JavaPlugin {
     private File saveFile;
     private YamlConfiguration saveFileCfg;
     private ScoreHandler scoreHandler;
+    private EnchantmentNerfer enchantmentNerfer;
     private Game game = null;
 
     private final ScheduledExecutorService asyncScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -53,7 +62,7 @@ public final class LifeSeries extends JavaPlugin {
         getLogger().warning("starting score is" + getConfig().getInt("starting-score"));
 
         scoreHandler = new ScoreHandler(this);
-
+        enchantmentNerfer = new EnchantmentNerfer(this);
 
         String gamemode = getConfig().getString("mode");
 
@@ -69,6 +78,7 @@ public final class LifeSeries extends JavaPlugin {
         }
 
         LifecycleEventManager<Plugin> manager = this.getLifecycleManager();
+
 
         manager.registerEventHandler(LifecycleEvents.COMMANDS, e -> {
             Commands commands = e.registrar();
@@ -89,10 +99,12 @@ public final class LifeSeries extends JavaPlugin {
         });
 
         Bukkit.getPluginManager().registerEvents(new PlayerListener(this), this);
+        Bukkit.getPluginManager().registerEvents(enchantmentNerfer, this);
 
         getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             saveFileCfg.set("paused", true); // if the server crashes unnaturally, game should be able to resume.
             saveGame();
+            enchantmentNerfer.nerfOnlinePlayersItems();
         }, 300,300);
         // Plugin startup logic
 
