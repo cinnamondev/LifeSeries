@@ -29,7 +29,7 @@ categories:
 banned-items:
   - BOOKSHELF
   - ENCHANTED_GOLDEN_APPLE
-  - ENCHANTMENT_TABLE
+  - ENCHANTING_TABLE
 
 # this will prevent players from having certain enchantments
 # bypass permission: life.bypass.banned-enchantments
@@ -37,7 +37,7 @@ banned-enchantments:
   max-level: 3 # set to -1 to disable. 0 will disable enchantments entirely.
   # blocklist of enchantments.
   blocklist:
-    - BANE_OF_ARTHROPODS
+    - bane_of_arthropods
 
 revival: # TODO: NOT IMPLEMENTED
   enabled: true

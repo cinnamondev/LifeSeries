@@ -5,7 +5,9 @@ import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
@@ -34,37 +36,44 @@ public class InventoryNerfer implements Listener {
     List<NamespacedKey> bannedItems = new ArrayList<>();
     public InventoryNerfer(Plugin p) {
         this.p = p;
-        var bannedConfig = p.getConfig().getConfigurationSection("banned-items");
-        if (bannedConfig != null) {
-            bannedConfig.getKeys(false).stream().map(NamespacedKey::minecraft)
-                    .forEach(key -> {
-                        Recipe recipe = Bukkit.getRecipe(key);
-                        if (recipe == null) { return; }
-                        bannedItems.add(key);
-                        Bukkit.removeRecipe(key, true); // prevent crafting!
-                    });
-        }
+        var bannedItemList = p.getConfig().getStringList("banned-items");
+        bannedItemList.stream().map(String::toLowerCase).forEach(string -> {
+            try {
+                NamespacedKey key = NamespacedKey.minecraft(string);
+                bannedItems.add(key);
+                p.getLogger().info("Found item key in config: " + key.asString());
+            } catch (Exception e) {
+                p.getLogger().warning("Couldn't make namespace key for item. skipping. item: " + string);
+                p.getLogger().throwing("InventoryNerfer", "InventoryNerfer", e);
+            }
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void nerfEntityDrops(EntityDeathEvent e) {
-        if (e.getEntity() instanceof Player) { return; }
+        if (e.getEntity() instanceof Player) { return; } // dont try and nerf players
         e.getDrops().removeIf(item -> bannedItems.contains(item.getType().getKey()));
     }
 
     @EventHandler(priority = EventPriority.HIGH)
-    public void nerfLootTableDrops(LootGenerateEvent e) {
+    public void nerfLootDrops(LootGenerateEvent e) {
+        if (e.getEntity() instanceof Player p && p.hasPermission("life.bypass.banned-items")) { return; }
         e.getLoot().removeIf(item -> bannedItems.contains(item.getType().getKey()));
     }
 
     public void nerfOnlinePlayersItems() {
         p.getServer().getOnlinePlayers().forEach(player -> {
             if (player.hasPermission("life.bypass.banned-items")) { return; }
-
+            player.sendMessage(Component.text("processing"));
             var inventory = player.getInventory().getContents();
             for (int i=0; i < inventory.length; i++) {
-                if (bannedItems.contains(inventory[i].getType().getKey())) {
-                    player.getInventory().setItem(i, null);
+                player.sendMessage(Component.text("item"));
+                if (inventory[i] != null) {
+                    player.sendMessage(Component.text(inventory[i].getType().getKey().asString()));
+                    if (bannedItems.contains(inventory[i].getType().getKey())) {
+                        player.sendMessage(Component.text("you have blacklisted item angry"));
+                        player.getInventory().setItem(i, null);
+                    }
                 }
             }
         });
