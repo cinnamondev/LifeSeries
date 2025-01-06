@@ -6,6 +6,7 @@ import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanGame;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed;
 import com.github.cinnamondev.lifeSeries.listener.EnchantmentNerfer;
+import com.github.cinnamondev.lifeSeries.listener.InventoryNerfer;
 import com.github.cinnamondev.lifeSeries.listener.PlayerListener;
 import com.github.cinnamondev.lifeSeries.teams.ScoreHandler;
 import io.papermc.paper.command.brigadier.Commands;
@@ -42,6 +43,7 @@ public final class LifeSeries extends JavaPlugin {
     private YamlConfiguration saveFileCfg;
     private ScoreHandler scoreHandler;
     private EnchantmentNerfer enchantmentNerfer;
+    private InventoryNerfer inventoryNerfer;
     private Game game = null;
 
     private final ScheduledExecutorService asyncScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -63,6 +65,7 @@ public final class LifeSeries extends JavaPlugin {
 
         scoreHandler = new ScoreHandler(this);
         enchantmentNerfer = new EnchantmentNerfer(this);
+        inventoryNerfer = new InventoryNerfer(this);
 
         String gamemode = getConfig().getString("mode");
 
@@ -105,6 +108,7 @@ public final class LifeSeries extends JavaPlugin {
             saveFileCfg.set("paused", true); // if the server crashes unnaturally, game should be able to resume.
             saveGame();
             enchantmentNerfer.nerfOnlinePlayersItems();
+            inventoryNerfer.nerfOnlinePlayersItems();
         }, 300,300);
         // Plugin startup logic
 

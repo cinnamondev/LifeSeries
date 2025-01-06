@@ -25,14 +25,14 @@ categories:
       - green
 
 # these items will delete from inventories if players have them. if a recipe exists, it will try to prevent crafting it
-# bypass permission: life.override.banned-items
+# bypass permission: life.bypass.banned-items
 banned-items:
   - BOOKSHELF
   - ENCHANTED_GOLDEN_APPLE
   - ENCHANTMENT_TABLE
 
 # this will prevent players from having certain enchantments
-# bypass permission: life.override.banned-enchantments
+# bypass permission: life.bypass.banned-enchantments
 banned-enchantments:
   max-level: 3 # set to -1 to disable. 0 will disable enchantments entirely.
   # blocklist of enchantments.
@@ -43,9 +43,9 @@ revival: # TODO: NOT IMPLEMENTED
   enabled: true
   item:
     name: "Revival Clock"
-    block: minecraft:clock
-    custom-model-data: 0 # to allow you to give the revival item a custom model. set to something ignorable otherwise.
-    recipe: [ DIRT, DIRT, DIRT,
+    block: CLOCK
+    model: 0 # to allow you to give the revival item a custom model. set to something ignorable otherwise.
+    recipe: [ DIRT, DIRT, DIRT,     # replace empty slots with EMPTY
               DIRT, DIRT, DIRT,
               DIRT, DIRT, DIRT ]
   added-score: 300
@@ -56,7 +56,6 @@ revival: # TODO: NOT IMPLEMENTED
 
 
 options:
-  count-sessions: true # increment a save variable
   boogeyman:
     enabled: true
     min: 1
@@ -93,6 +92,7 @@ options:
     # (if the delay is long enough)
     warn-players: true
     # kick players at end of session
+    # bypass permission: life.bypass.kick
     kick-at-end: true
     # for servers running behind a proxy that supports bungeecord messaging. if this is a valid option,
     # and `kick-at-end` is also true, each player is sent to the specified server.

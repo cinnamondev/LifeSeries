@@ -10,6 +10,7 @@ import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentOffer;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -19,18 +20,19 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class EnchantmentNerfer implements Listener {
-    LifeSeries p;
+    Plugin p;
     final Registry<Enchantment> enchantmentRegistry = RegistryAccess
             .registryAccess()
             .getRegistry(RegistryKey.ENCHANTMENT);
     List<Enchantment> blacklistedEnchants = new ArrayList<>();
-    public EnchantmentNerfer(LifeSeries p) {
+    public EnchantmentNerfer(Plugin p) {
         this.p = p;
         var bannedEnchants = p.getConfig().getConfigurationSection("banned-enchantments.blocklist");
         if (bannedEnchants != null) {
@@ -43,6 +45,8 @@ public class EnchantmentNerfer implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void nerfEnchanting(PrepareItemEnchantEvent e) {
+        if (enchantBypassIsEnabledFor(e.getViewers())) { return; }
+
         int maxLevel = p.getConfig().getInt("banned-enchantments.max-level",0);
         if (maxLevel == -1) { return; }
         for (EnchantmentOffer offer : e.getOffers()) {
@@ -61,10 +65,11 @@ public class EnchantmentNerfer implements Listener {
     }
     @EventHandler(priority = EventPriority.HIGH)
     public void nerfAnvil(PrepareAnvilEvent e) {
-        if (p.getConfig().getInt("banned-enchantments.max-level",0) == -1) { return; }
+        if (enchantBypassIsEnabledFor(e.getViewers())) { return; }
+
         ItemStack result = e.getResult();
         if (result == null) { return; }
-        nerfEnchants(result, e.getViewers());
+        nerfEnchantedItem(result, e.getViewers());
         e.setResult(result);
     }
 
@@ -89,17 +94,14 @@ public class EnchantmentNerfer implements Listener {
                     ));
                     currentLevel = maxLevel;
                 }
-                return Stream.of(new AbstractMap.SimpleEntry<>(
-                        enc.getKey(),
-                        currentLevel
-                ));
+                return Stream.of(new AbstractMap.SimpleEntry<>(enc.getKey(), currentLevel));
             }
         }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
     private Map<Enchantment, Integer> nerfEnchants(Map<Enchantment, Integer> enchantments) {
         return nerfEnchants(enchantments, Collections.emptyList());
     }
-    private void nerfEnchants(ItemStack item, List<HumanEntity> viewers) {
+    private void nerfEnchantedItem(ItemStack item, List<HumanEntity> viewers) {
         ItemMeta resultMeta = item.getItemMeta();
         if (resultMeta == null) { return; }
         Map<Enchantment, Integer> enchantments;
@@ -121,15 +123,15 @@ public class EnchantmentNerfer implements Listener {
         }
 
     }
-    private void nerfEnchants(ItemStack item) {
-        nerfEnchants(item, Collections.emptyList());
+    private void nerfEnchantedItem(ItemStack item) {
+        nerfEnchantedItem(item, Collections.emptyList());
     }
 
     public void nerfOnlinePlayersItems() {
         p.getServer().getOnlinePlayers().forEach(player -> {
             for (var item : player.getInventory().getContents()) {
                 if (item == null) { continue; }
-                nerfEnchants(item, Collections.singletonList(player));
+                nerfEnchantedItem(item, Collections.singletonList(player));
             }
         });
     }
@@ -148,6 +150,14 @@ public class EnchantmentNerfer implements Listener {
                 validEnchants.get(random.nextInt(validEnchants.size())),
                 random.nextInt(p.getConfig().getInt("banned-enchantments.max-level",0)+1)
         );
+    }
+
+    private boolean enchantBypassIsEnabledFor(List<HumanEntity> players) {
+        return (players.stream().anyMatch(v -> v.hasPermission("life.bypass.banned-enchantments")))
+                || (p.getConfig().getInt("banned-enchantments.max-level",0) == -1);
+    }
+    private boolean enchantBypassIsEnabledFor(Player player) {
+        return enchantBypassIsEnabledFor(Collections.singletonList(player));
     }
 
 }
