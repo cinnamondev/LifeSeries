@@ -6,6 +6,7 @@ import io.papermc.paper.registry.RegistryKey;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -64,14 +65,14 @@ public class InventoryNerfer implements Listener {
     public void nerfOnlinePlayersItems() {
         p.getServer().getOnlinePlayers().forEach(player -> {
             if (player.hasPermission("life.bypass.banned-items")) { return; }
-            player.sendMessage(Component.text("processing"));
             var inventory = player.getInventory().getContents();
             for (int i=0; i < inventory.length; i++) {
-                player.sendMessage(Component.text("item"));
                 if (inventory[i] != null) {
-                    player.sendMessage(Component.text(inventory[i].getType().getKey().asString()));
                     if (bannedItems.contains(inventory[i].getType().getKey())) {
-                        player.sendMessage(Component.text("you have blacklisted item angry"));
+                        player.sendMessage(
+                                Component.text("Removed blacklisted item ").append(inventory[i].displayName())
+                                        .color(NamedTextColor.GRAY)
+                        );
                         player.getInventory().setItem(i, null);
                     }
                 }
