@@ -41,6 +41,14 @@ banned-enchantments:
 
 revival: # TODO: NOT IMPLEMENTED
   enabled: true
+  announce:
+    title:
+      enabled: true
+      totem: true # set to 'false' to use text title
+      sound: ENTITY_ENDER_DRAGON_DEATH # set to 'NONE' to disable announcement sound
+    beam:
+      enabled: true
+      time: 20
   item:
     name: "Revival Clock"
     block: CLOCK
@@ -49,8 +57,6 @@ revival: # TODO: NOT IMPLEMENTED
               DIRT, DIRT, DIRT,
               DIRT, DIRT, DIRT ]
   added-score: 300
-  teleport-to-saviour: true # will fall back to spawn location if false.
-  totem-head-on-revive: true # will fall back to a title if false.
 
 
 

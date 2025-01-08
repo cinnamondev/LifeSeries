@@ -8,33 +8,21 @@ import com.github.cinnamondev.lifeSeries.gamemodes.Timed;
 import com.github.cinnamondev.lifeSeries.listener.EnchantmentNerfer;
 import com.github.cinnamondev.lifeSeries.listener.InventoryNerfer;
 import com.github.cinnamondev.lifeSeries.listener.PlayerListener;
+import com.github.cinnamondev.lifeSeries.revival.RevivalItem;
 import com.github.cinnamondev.lifeSeries.teams.ScoreHandler;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
-import io.papermc.paper.registry.data.EnchantmentRegistryEntry;
-import io.papermc.paper.registry.event.RegistryEvents;
-import io.papermc.paper.registry.keys.EnchantmentKeys;
-import io.papermc.paper.registry.keys.tags.ItemTypeTagKeys;
-import io.papermc.paper.util.Tick;
-import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -46,6 +34,7 @@ public final class LifeSeries extends JavaPlugin {
     private ScoreHandler scoreHandler;
     private EnchantmentNerfer enchantmentNerfer;
     private InventoryNerfer inventoryNerfer;
+    private RevivalItem revivalItem;
     private Game game = null;
 
     private final ScheduledExecutorService asyncScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -68,6 +57,7 @@ public final class LifeSeries extends JavaPlugin {
         scoreHandler = new ScoreHandler(this);
         enchantmentNerfer = new EnchantmentNerfer(this);
         inventoryNerfer = new InventoryNerfer(this);
+        revivalItem = new RevivalItem(this, new NamespacedKey(this, "revival-item"));
 
         String gamemode = getConfig().getString("mode");
 
@@ -105,6 +95,8 @@ public final class LifeSeries extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new PlayerListener(this), this);
         Bukkit.getPluginManager().registerEvents(enchantmentNerfer, this);
+        Bukkit.getPluginManager().registerEvents(inventoryNerfer, this);
+        Bukkit.getPluginManager().registerEvents(revivalItem, this);
 
         getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             saveFileCfg.set("paused", true); // if the server crashes unnaturally, game should be able to resume.
