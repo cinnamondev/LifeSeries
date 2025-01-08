@@ -33,7 +33,7 @@ public class PlayerListener implements Listener {
         Player killer = killed.getKiller();
 
         boolean isFinalDeath;
-        if (killer != null && !killer.equals(killed)) {
+        if (killer != null && !killed.equals(killer)) {
             isFinalDeath = p.getGame().onKilled(p, killed, killer);
         } else {
             isFinalDeath = p.getGame().onKilled(p, killed);
@@ -43,7 +43,7 @@ public class PlayerListener implements Listener {
         if (isFinalDeath) { // final death
 
             Title deathTitle;
-            if (killer != null && !killer.equals(killed)) {
+            if (killer != null && !killed.equals(killer)) {
                 deathTitle = Title.title(
                         Component.text(killed.getName() + " ran out of time!").color(NamedTextColor.RED),
                         Component.text("... after being killed by ").color(NamedTextColor.RED).append(

@@ -29,11 +29,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class EnchantmentNerfer implements Listener {
-    Plugin p;
-    final Registry<Enchantment> enchantmentRegistry = RegistryAccess
-            .registryAccess()
-            .getRegistry(RegistryKey.ENCHANTMENT);
-    List<NamespacedKey> blacklistedEnchants = new ArrayList<>();
+    private final Plugin p;
+    private final List<NamespacedKey> blacklistedEnchants = new ArrayList<>();
+
     public EnchantmentNerfer(Plugin p) {
         this.p = p;
         var bannedEnchants = p.getConfig().getStringList("banned-enchantments.blocklist");

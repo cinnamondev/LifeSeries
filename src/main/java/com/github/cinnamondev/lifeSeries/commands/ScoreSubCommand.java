@@ -84,6 +84,12 @@ public class ScoreSubCommand{
                                     return 1;
                                 })
                         ))
+                )
+                .then(Commands.literal("untracked set").then(Commands.argument("score", IntegerArgumentType.integer(0))
+                        .executes(ctx -> {
+                            p.getScoreHandler().setUntrackedScore(ctx.getArgument("score", Integer.class));
+                            return 1;
+                        }))
                 );
     }
 
