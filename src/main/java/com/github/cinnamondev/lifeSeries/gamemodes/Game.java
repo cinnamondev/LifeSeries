@@ -25,9 +25,9 @@ public interface Game extends Runnable {
                     Component.text(time).style(Style.style(NamedTextColor.RED, TextDecoration.BOLD)),
                     Component.empty()
             ));
+            TeamMeta newTeam = p.getScoreHandler().getTeam(score-punishment);
+            if (newTeam.equals(p.getScoreHandler().getSpectatorTeam())) { isFinalDeath.set(true); }
             return score - punishment;
-        }, (_player, newTeam) -> {
-            if (newTeam.equals(p.getScoreHandler().getSpectatorTeam())) { isFinalDeath.set(true);}
         });
         return isFinalDeath.get();
     }
@@ -36,7 +36,7 @@ public interface Game extends Runnable {
         return onKilled(p, killed, p.getConfig().getInt("options.punishment.death"));
     }
     public default boolean onKilled(LifeSeries p, Player killed, int punishment, Player killer, int reward) {
-        rewardKiller(p, killed, reward);
+        rewardKiller(p, killer, reward);
         return onKilled(p, killed, punishment);
     }
     public default boolean onKilled(LifeSeries p, Player killed, Player killer) {
@@ -58,7 +58,7 @@ public interface Game extends Runnable {
         }
         return false;
     }
-    public default void rewardKiller(LifeSeries p, Player killer, int reward) {
+    private void rewardKiller(LifeSeries p, Player killer, int reward) {
         p.getScoreHandler().updatePlayerScoreAndTeam(killer, (uuid,score) -> {
             String time = DurationFormatUtils.formatDuration(
                     reward * 1000,
