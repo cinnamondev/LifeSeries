@@ -13,6 +13,7 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -57,7 +58,7 @@ public class RevivalMenu implements InventoryHolder, Listener {
         }
     }
 
-    public void fillPage(int page) {
+    public void fillPage(int newPage) {
         ArrayList<Button> headButtons = new ArrayList<>();
         erasePlayerHeadButtons();
 
@@ -66,11 +67,13 @@ public class RevivalMenu implements InventoryHolder, Listener {
                         .filter(player -> p.getScoreHandler().getTeam(player).equals(p.getScoreHandler().getSpectatorTeam()))
                         .filter(player -> player.hasPermission("life.revival"))
                         .map(player -> (Player) player)
-                        .toList(), 1//(27*2)-18
+                        .toList(),
+                1//(27*2)-18
         );
         List<Player> currentPage = Collections.emptyList();
         if (playerPages.isEmpty()) { p.getLogger().info("no online dead players"); return; }
-        if (page > playerPages.size()) { page = 0; }
+        this.page = newPage < playerPages.size() ? newPage : 0;
+        p.getLogger().info("page is"  + page);
         currentPage = playerPages.get(page);
 
         for (int i = 18; i < buttons.length && (i-18) < currentPage.size(); i++) { // note. currentPage should always be <=
@@ -87,6 +90,7 @@ public class RevivalMenu implements InventoryHolder, Listener {
         ClickButton button = new ClickButton(item, inventory, slot, (player) -> {
             page = Math.max(page + pageOffset, 0);
             player.sendMessage(displayName);
+            player.sendMessage(Component.text("page is " + page));
             fillPage(page);
         });
         button.updateDisplayBlock();
@@ -111,7 +115,6 @@ public class RevivalMenu implements InventoryHolder, Listener {
         button.updateDisplayBlock();
         return button;
     }
-
     private ClickButton revivePlayerButton(int slot, UUID uuid) {
         ItemStack item = playerHead(p.getServer().getOfflinePlayer(uuid));
         ClickButton button = new ClickButton(item, inventory, slot, (player) ->
@@ -142,18 +145,25 @@ public class RevivalMenu implements InventoryHolder, Listener {
         return button;
     }
 
-
-    private void fillEmptySlots(ItemStack emptySlot) {
-        ItemStack[] contents = inventory.getContents();
-        for (int i = 0; i < contents.length; i++) {
-            if (contents[i] == null) { inventory.setItem(i, emptySlot); }
+    private void summonParticleBeam(Player player) {
+        Location playerLocation = player.getLocation();
+        int playerY = playerLocation.getBlockY();
+        int maxHeight = playerLocation.getWorld().getMaxHeight();
+        for (int i = playerY+2; i < playerLocation.getWorld().getMaxHeight(); i++) { // get FIRST highest block thats sky accessible.
+            playerLocation.setY(i);
+            Block block = playerLocation.getBlock();
+            if (block.isEmpty() && block.getLightFromSky() == 15) {
+                p.getLogger().info("found free block at " + i);
+                block.setType(Material.END_GATEWAY, false);
+                p.getServer().getScheduler().runTaskLater(p, () -> {
+                    block.setType(Material.AIR);
+                }, 220);
+                break;
+            }
         }
     }
-    private void summonParticleBeam() {
 
-    }
-
-    private void announceRevival(OfflinePlayer player) {
+    private void announceRevival(Player player) {
         if (p.getConfig().getBoolean("revival.announce.title.enabled", true)) {
             if (!p.getConfig().getBoolean("revival.announce.title.totem", false)) {
                 p.getServer().showTitle(Title.title(
@@ -179,7 +189,9 @@ public class RevivalMenu implements InventoryHolder, Listener {
                 // show players totem :o
             }
         }
-        if (p.getConfig().getBoolean("revival.announce.beam.enabled", true)) {}
+        if (p.getConfig().getBoolean("revival.announce.beam.enabled", true)) {
+            summonParticleBeam(player);
+        }
     }
     @Override
     public @NotNull Inventory getInventory() {

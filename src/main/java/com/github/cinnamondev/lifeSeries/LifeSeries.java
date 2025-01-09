@@ -13,7 +13,6 @@ import com.github.cinnamondev.lifeSeries.teams.ScoreHandler;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -153,7 +152,6 @@ public final class LifeSeries extends JavaPlugin {
     }
 
     public FileConfiguration getSave() { return saveFileCfg; }
-    public File getSaveFile() { return saveFile; }
 
     public void saveGame() {
         try {
@@ -163,23 +161,29 @@ public final class LifeSeries extends JavaPlugin {
         }
     }
 
+    /// start ticking the game runner. note that the Game runnable runs in a separate thread to the rest of the game so
+    /// it runs at 1t/s, so any action in its run path that can trigger the Bukkit API / change world state should
+    /// be deferred to the bukkit scheduler
     public void startSession() {
         //getServer().getScheduler().scheduleSyncRepeatingTask(this, game, 20,20);
         gameTask = asyncScheduler.scheduleAtFixedRate(game, 1,1, TimeUnit.SECONDS);
     }
     public void stopSession() {
-        if (!gameTask.isDone()) {
-            gameTask.cancel(false);
-        }
         saveFileCfg.set("paused", false);
         saveGame();
-    }
-    public void pauseSession() {
+        if (gameTask == null) { return; }
         if (!gameTask.isDone()) {
             gameTask.cancel(false);
         }
+
+    }
+    public void pauseSession() {
         saveFileCfg.set("paused", true);
         saveGame();
+        if (gameTask == null) { return; }
+        if (!gameTask.isDone()) {
+            gameTask.cancel(false);
+        }
     }
 
     public Game getGame() { return this.game; }
