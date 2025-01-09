@@ -58,6 +58,27 @@ revival: # TODO: NOT IMPLEMENTED
               DIRT, DIRT, DIRT ]
   added-score: 300
 
+custom-recipes:
+  minimal-saddle:
+    block: SADDLE
+    recipe: [ EMPTY,  EMPTY,    EMPTY,     # replace empty slots with EMPTY
+              EMPTY,  LEATHER,  EMPTY,
+              LEATHER,EMPTY,    LEATHER ]
+  paper-tnt:
+    block: TNT
+    recipe: [ PAPER,  SAND,       PAPER,
+              SAND,   GUNPOWDER,  SAND,
+              PAPER,  SAND,       PAPER ]
+  slimeballs:
+    quantity: 3
+    block: SLIME_BALL
+    recipe: [ EMPTY,    BONE_MEAL,   EMPTY,
+              BONE_MEAL,SUGAR_CANE,  BONE_MEAL,
+              EMPTY,    WATER_BUCKET,EMPTY ]
+  craftable-tags:
+    block: NAME_TAG
+    shapeless: true
+    recipe: [STRING, PAPER]
 
 
 

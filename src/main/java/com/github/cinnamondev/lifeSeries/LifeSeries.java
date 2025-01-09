@@ -13,6 +13,7 @@ import com.github.cinnamondev.lifeSeries.teams.ScoreHandler;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -22,7 +23,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -35,6 +39,9 @@ public final class LifeSeries extends JavaPlugin {
     private EnchantmentNerfer enchantmentNerfer;
     private InventoryNerfer inventoryNerfer;
     private RevivalItem revivalItem;
+
+    private ArrayList<NamespacedKey> registeredRecipes = new ArrayList<>();
+
     private Game game = null;
 
     private final ScheduledExecutorService asyncScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -58,6 +65,8 @@ public final class LifeSeries extends JavaPlugin {
         enchantmentNerfer = new EnchantmentNerfer(this);
         inventoryNerfer = new InventoryNerfer(this);
         revivalItem = new RevivalItem(this, new NamespacedKey(this, "revival-item"));
+        Bukkit.addRecipe(revivalItem.getRecipe());
+
 
         String gamemode = getConfig().getString("mode");
 
@@ -103,8 +112,14 @@ public final class LifeSeries extends JavaPlugin {
             saveGame();
             enchantmentNerfer.nerfOnlinePlayersItems();
             inventoryNerfer.nerfOnlinePlayersItems();
+            getServer().getOnlinePlayers().forEach(player -> { // force players to know custom recipes
+                player.discoverRecipes(registeredRecipes);
+            });
         }, 300,300);
         // Plugin startup logic
+
+        registeredRecipes.addAll(discoverAndAddCustomRecipes());
+        registeredRecipes.add(new NamespacedKey(this, "revival-item"));
 
     }
 
@@ -118,6 +133,24 @@ public final class LifeSeries extends JavaPlugin {
         }
     }
 
+    private List<NamespacedKey> discoverAndAddCustomRecipes() {
+        var section =this.getConfig().getConfigurationSection("custom-recipes");
+        if (section == null) { return Collections.emptyList(); }
+
+        return section.getKeys(false).stream()
+                .map(keyString -> new NamespacedKey(this, keyString))
+                .peek(key -> {
+                    CustomRecipe recipe = new CustomRecipe(
+                            this,
+                            key,
+                            section.getConfigurationSection(key.getKey())
+                    );
+                    getServer().getConsoleSender().sendMessage(recipe.getRecipeMessage());
+                    Bukkit.addRecipe(recipe.getRecipe());
+                })
+                .toList();
+
+    }
 
     public FileConfiguration getSave() { return saveFileCfg; }
     public File getSaveFile() { return saveFile; }
