@@ -1,18 +1,15 @@
-# there are 2 gamemodes, life and timed. if you are playing 'timed' (limited life), then lives and rewards and
-# punishments are measured in minutes (unless specified). if you are playing 'life' (players get a number of
-# lives), then lives/rewards/punishments are measured in number of lives.
-mode: timed # there are 2 game modes, `life` and `timed`.
+mode: timed
 
-starting-score: 1440
+starting-score: 86400
 
 categories:
   green:
     colour: GREEN
-    score: 960 # mininum number of minutes required to be in this category OR mininum number of lives.
+    score: 57600 # mininum number of minutes required to be in this category OR mininum number of lives.
 
   yellow:
     colour: YELLOW
-    score: 480
+    score: 28800
     can-kill:
       - green
 
@@ -93,15 +90,15 @@ options:
       - yellow
 
   rewards:
-    disable-on-disallowed-team: false
-    kill: 60
-    boogey-kill: 120
+    disable-on-disallowed-team: true
+    kill: 1800
+    boogey-kill: 3600
 
   punishment:
     disable-on-disallowed-team: false
-    offline: 120
-    death: 60
-    boogey-death: 120
+    offline: 7200
+    death: 3600
+    boogey-death: 7200
 
   # Options for player's final death (i.e. RED -> SPECTATOR)
   final-death:
@@ -111,7 +108,8 @@ options:
     # players keep their items.
     keepinv-till-final: true
     lightning-strike: true
-    respawn-after-final: true
+    respawn-after-final: true # when players die on final they wont see screen
+    announce: true
 
   # Options for the end of the session ( /life endsession <delay> )
   end-of-session:

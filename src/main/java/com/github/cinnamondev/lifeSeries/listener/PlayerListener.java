@@ -16,6 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.ArrayList;
@@ -35,16 +36,9 @@ public class PlayerListener implements Listener {
         boolean isFinalDeath;
         if (killer != null && !killed.equals(killer)) {
             isFinalDeath = p.getGame().onKilled(p, killed, killer);
-        } else {
-            isFinalDeath = p.getGame().onKilled(p, killed);
-        }
 
-        // TODO: final death actions
-        if (isFinalDeath) { // final death
-
-            Title deathTitle;
-            if (killer != null && !killed.equals(killer)) {
-                deathTitle = Title.title(
+            if (isFinalDeath && p.getConfig().getBoolean("options.final-death.announce", true)) {
+                p.getServer().showTitle(Title.title(
                         Component.text(killed.getName() + " ran out of time!").color(NamedTextColor.RED),
                         Component.text("... after being killed by ").color(NamedTextColor.RED).append(
                                 Component.text(killer.getName())
@@ -53,17 +47,36 @@ public class PlayerListener implements Listener {
                                                 TextDecoration.BOLD
                                         ))
                         )
-                );
-            } else {
-                deathTitle = Title.title(
-                        Component.text(killed.getName() + " ran out of time!").color(NamedTextColor.RED),
-                        Component.text("... by succumbing to nature.").color(NamedTextColor.RED)
-                );
+                ));
             }
-            p.getServer().showTitle(deathTitle);
+        } else {
+            isFinalDeath = p.getGame().onKilled(p, killed);
+            if (isFinalDeath && p.getConfig().getBoolean("options.final-death.announce", true)) {
+                p.getServer().showTitle(Title.title(
+                        Component.text(killed.getName() + " ran out of time!").color(NamedTextColor.RED),
+                        Component.text("... after succumbing to nature.").color(NamedTextColor.RED)
+                ));
+            }
+        }
 
-            killed.getWorld().strikeLightningEffect(killed.getLocation());
-        } else if (p.getConfig().getBoolean("options.final-death.keepinv-till-final")) { // not final death
+        // TODO: final death actions
+        if (isFinalDeath) { // final death
+            if (p.getConfig().getBoolean("options.final-death.lightning-strike", true)) {
+                killed.getWorld().strikeLightningEffect(killed.getLocation());
+            }
+
+            if (p.getConfig().getBoolean("options.final-death.respawn-after-final", false)) {
+                p.getServer().getScheduler().runTaskLater(p, () -> killed.spigot().respawn(), 2);
+            }
+
+            if (p.getConfig().getBoolean("options.final-death.drop-head", true)) {
+                ItemStack head = ItemStack.of(Material.PLAYER_HEAD);
+                SkullMeta meta = (SkullMeta) head.getItemMeta();
+                meta.setOwningPlayer(killed);
+                head.setItemMeta(meta);
+                e.getDrops().add(head);
+            }
+        } else if (p.getConfig().getBoolean("options.final-death.keepinv-till-final", false)) { // not final death
             e.getDrops().clear();
             e.setKeepInventory(true);
         }

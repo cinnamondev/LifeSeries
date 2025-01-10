@@ -17,8 +17,6 @@ public class Timed extends BasicBoogeymanGameImpl {
     /// tick the game.
     @Override
     public void run() {
-        p.getLogger().warning("run!!");
-
         p.getScoreHandler().updateTrackableScoresAndTeams((uuid, score) -> score - 1);
         p.getScoreHandler().addUntrackedScore(-1);
 
