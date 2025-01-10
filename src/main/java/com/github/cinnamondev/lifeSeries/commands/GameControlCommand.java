@@ -1,7 +1,7 @@
 package com.github.cinnamondev.lifeSeries.commands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanGame;
+import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -23,7 +23,7 @@ public final class GameControlCommand {
                         .executes(ctx -> helpCommand(ctx.getSource().getSender())))
                 .executes(ctx -> helpCommand(ctx.getSource().getSender()));
 
-        if (p.getGame() instanceof BoogeymanGame game) {
+        if (p.getGame() instanceof Boogeyman game) {
             return command.then(BoogeymanSubCommand.boogeyman(p, game)).build();
         }
         return command.build();

@@ -1,24 +1,18 @@
 package com.github.cinnamondev.lifeSeries.gamemodes;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.title.Title;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class BoogeymanGame implements Game {
+public abstract class BasicBoogeymanGameImpl implements Boogeyman, Game {
     private final LifeSeries p;
 
     private List<UUID> boogeymen = new ArrayList<>();
-    public BoogeymanGame(LifeSeries p) {
+    public BasicBoogeymanGameImpl(LifeSeries p) {
         this.p = p;
     }
     public Collection<UUID> getBoogeymen() { return boogeymen; }
@@ -44,7 +38,7 @@ public abstract class BoogeymanGame implements Game {
         }
 
         // bound min >= n >= max, where max will be bound by the number of available candidates.
-        var numberCandidates = Math.max(random.nextInt(max - min) + min, boogeymen.size());
+        var numberCandidates = Math.min(random.nextInt(max - min + 1) + min, boogeymen.size());
         // whittle down candidates until we have
         while (boogeymen.size() > numberCandidates) {
             var removeIndex = random.nextInt(boogeymen.size()-1);

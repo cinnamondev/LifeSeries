@@ -2,7 +2,7 @@ package com.github.cinnamondev.lifeSeries;
 
 import com.github.cinnamondev.lifeSeries.commands.AmITheBoogeyMan;
 import com.github.cinnamondev.lifeSeries.commands.GameControlCommand;
-import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanGame;
+import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed;
 import com.github.cinnamondev.lifeSeries.listener.EnchantmentNerfer;
@@ -92,7 +92,7 @@ public final class LifeSeries extends JavaPlugin {
                     GameControlCommand.aliases
             );
 
-            if (game instanceof BoogeymanGame boogeymanGame) {
+            if (game instanceof Boogeyman boogeymanGame) {
                 commands.register(
                         AmITheBoogeyMan.command(this, boogeymanGame),
                         "Are you the boogeyman?",

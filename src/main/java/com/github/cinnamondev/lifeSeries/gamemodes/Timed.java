@@ -1,23 +1,12 @@
 package com.github.cinnamondev.lifeSeries.gamemodes;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
-import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
-
-public class Timed extends BoogeymanGame {
+public class Timed extends BasicBoogeymanGameImpl {
     private final LifeSeries p;
 
     public Timed(LifeSeries p) {

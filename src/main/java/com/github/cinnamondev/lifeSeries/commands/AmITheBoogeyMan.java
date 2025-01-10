@@ -1,7 +1,7 @@
 package com.github.cinnamondev.lifeSeries.commands;
 
-import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanGame;
+
+import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -18,7 +18,7 @@ import java.util.List;
 public final class AmITheBoogeyMan {
     public final static List<String> aliases = List.of("boogeyman", "boogey");
     public final static String description = "Reports if player is the boogeyman";
-    public static LiteralCommandNode<CommandSourceStack> command(Plugin plugin, BoogeymanGame game) {
+    public static LiteralCommandNode<CommandSourceStack> command(Plugin plugin, Boogeyman game) {
         return Commands.literal("amitheboogeyman")
                 .requires(src -> (src.getSender() instanceof Player p) && p.hasPermission("life.boogeyman"))
                 .executes(ctx -> {

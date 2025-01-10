@@ -1,7 +1,7 @@
 package com.github.cinnamondev.lifeSeries.commands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanGame;
+import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 
 public class BoogeymanSubCommand {
-    public static LiteralArgumentBuilder<CommandSourceStack> boogeyman(LifeSeries p, BoogeymanGame boogeymanGame) {
+    public static LiteralArgumentBuilder<CommandSourceStack> boogeyman(LifeSeries p, Boogeyman boogeymanGame) {
         return Commands.literal("boogeyman")
                 .requires(src -> src.getSender().hasPermission("life.admin.game"))
                 .then(Commands.literal("whois")
@@ -97,7 +97,7 @@ public class BoogeymanSubCommand {
                 ));
     }
 
-    public static int runRollTask(LifeSeries p, BoogeymanGame boogey, CommandSender src, int ticks, int min, int max) {
+    public static int runRollTask(LifeSeries p, Boogeyman boogey, CommandSender src, int ticks, int min, int max) {
         TextComponent message = Component.text("The boogeyman will be chosen in " + TimeUnit.SECONDS.toMinutes(ticks / 20) + " minutes!").color(NamedTextColor.RED);
         p.getServer().showTitle(Title.title(
                 message,
