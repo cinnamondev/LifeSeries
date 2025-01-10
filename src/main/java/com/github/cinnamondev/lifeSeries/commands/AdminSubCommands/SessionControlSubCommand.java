@@ -1,8 +1,7 @@
-package com.github.cinnamondev.lifeSeries.commands;
+package com.github.cinnamondev.lifeSeries.commands.AdminSubCommands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 

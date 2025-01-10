@@ -1,6 +1,7 @@
 package com.github.cinnamondev.lifeSeries.commands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.commands.AdminSubCommands.*;
 import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -10,7 +11,7 @@ import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
-public final class GameControlCommand {
+public final class AdminCommand {
     public final static List<String> aliases = List.of("lf");
     public final static String description = "Generic Life Series :)";
     public static LiteralCommandNode<CommandSourceStack> command(LifeSeries p) {
@@ -23,9 +24,14 @@ public final class GameControlCommand {
                         .executes(ctx -> helpCommand(ctx.getSource().getSender())))
                 .executes(ctx -> helpCommand(ctx.getSource().getSender()));
 
-        if (p.getGame() instanceof Boogeyman game) {
-            return command.then(BoogeymanSubCommand.boogeyman(p, game)).build();
+        if (p.getGame() instanceof Boogeyman boogeyman) {
+            command = command.then(BoogeymanSubCommand.boogeyman(p, boogeyman));
         }
+        if (p.getRevivalItem() != null) {
+            p.getLogger().info("revival item is availalbwe");
+            command = command.then(RevivalSubCommand.command(p.getRevivalItem()));
+        }
+
         return command.build();
     }
 

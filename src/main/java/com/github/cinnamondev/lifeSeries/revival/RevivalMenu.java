@@ -1,10 +1,7 @@
 package com.github.cinnamondev.lifeSeries.revival;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import io.papermc.paper.datacomponent.DataComponentBuilder;
-import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.DeathProtection;
 import net.kyori.adventure.text.Component;
@@ -14,7 +11,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Item;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.EquipmentSlot;
@@ -31,8 +28,7 @@ public class RevivalMenu implements InventoryHolder, Listener {
     private final LifeSeries p;
     private final Inventory inventory;
     private final UUID owningPlayer;
-    private Button[] buttons = new Button[27*2];
-    private HashMap<Integer, Button> buttonMap = new HashMap<>();
+    private final Button<?>[] buttons = new Button[27*2];
 
     private boolean teleportToPlayer = true;
     private int page = 0;
@@ -48,7 +44,7 @@ public class RevivalMenu implements InventoryHolder, Listener {
         //fillEmptySlots(new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE,1));
     }
 
-    public Optional<Button> getButton(int slot) {
+    public Optional<Button<?>> getButton(int slot) {
         if (slot < 0 || slot >= buttons.length) { return Optional.empty(); }
         return Optional.ofNullable(buttons[slot]);
     }
@@ -59,22 +55,21 @@ public class RevivalMenu implements InventoryHolder, Listener {
     }
 
     public void fillPage(int newPage) {
-        ArrayList<Button> headButtons = new ArrayList<>();
         erasePlayerHeadButtons();
 
+        // split online dead players into lists of size (27*2)-18 ( 1 dub - 2 rows)
         List<List<Player>> playerPages = Lists.partition(
                 p.getServer().getOnlinePlayers().stream()
                         .filter(player -> p.getScoreHandler().getTeam(player).equals(p.getScoreHandler().getSpectatorTeam()))
                         .filter(player -> player.hasPermission("life.revival"))
                         .map(player -> (Player) player)
                         .toList(),
-                1//(27*2)-18
+                (27*2)-18//1
         );
-        List<Player> currentPage = Collections.emptyList();
         if (playerPages.isEmpty()) { p.getLogger().info("no online dead players"); return; }
-        this.page = newPage < playerPages.size() ? newPage : 0;
+        this.page = newPage > playerPages.size() ? newPage : 0;
         p.getLogger().info("page is"  + page);
-        currentPage = playerPages.get(page);
+        List<Player> currentPage = playerPages.get(page);
 
         for (int i = 18; i < buttons.length && (i-18) < currentPage.size(); i++) { // note. currentPage should always be <=
             buttons[i] = revivePlayerButton(i, currentPage.get(i-18).getUniqueId()); // to remaining buttons capacity! :)
@@ -147,17 +142,13 @@ public class RevivalMenu implements InventoryHolder, Listener {
 
     private void summonParticleBeam(Player player) {
         Location playerLocation = player.getLocation();
-        int playerY = playerLocation.getBlockY();
-        int maxHeight = playerLocation.getWorld().getMaxHeight();
-        for (int i = playerY+2; i < playerLocation.getWorld().getMaxHeight(); i++) { // get FIRST highest block thats sky accessible.
+        for (int i = playerLocation.getBlockY() +2; i < playerLocation.getWorld().getMaxHeight(); i++) { // get FIRST highest block thats sky accessible.
             playerLocation.setY(i);
             Block block = playerLocation.getBlock();
             if (block.isEmpty() && block.getLightFromSky() == 15) {
                 p.getLogger().info("found free block at " + i);
                 block.setType(Material.END_GATEWAY, false);
-                p.getServer().getScheduler().runTaskLater(p, () -> {
-                    block.setType(Material.AIR);
-                }, 220);
+                p.getServer().getScheduler().runTaskLater(p, () -> block.setType(Material.AIR), 220);
                 break;
             }
         }

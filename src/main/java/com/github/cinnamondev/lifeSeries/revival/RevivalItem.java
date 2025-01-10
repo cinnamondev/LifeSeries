@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -51,15 +52,20 @@ public class RevivalItem extends CustomRecipe implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void openRevivalMenu(PlayerInteractEvent e) {
+    public void openRevivalMenuOnItemInteract(PlayerInteractEvent e) {
         if (e.getItem() == null) { return; }
         Action a = e.getAction();
         if (a != Action.RIGHT_CLICK_AIR && a != Action.RIGHT_CLICK_BLOCK) { return; }
         if (Boolean.TRUE.equals(e.getItem().getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.BOOLEAN))) {
             // it is the revival item
-            RevivalMenu menu = menus.computeIfAbsent(e.getPlayer().getUniqueId(), (uuid) -> new RevivalMenu(p, uuid));
-            e.getPlayer().openInventory(menu.getInventory());
+            e.getPlayer().openInventory(
+                    getPlayersMenu(e.getPlayer().getUniqueId()).getInventory()
+            );
         }
+    }
+
+    public RevivalMenu getPlayersMenu(UUID uuid) {
+        return menus.computeIfAbsent(uuid, (uuid1) -> new RevivalMenu(p, uuid1));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

@@ -1,4 +1,4 @@
-package com.github.cinnamondev.lifeSeries.commands;
+package com.github.cinnamondev.lifeSeries.commands.AdminSubCommands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
@@ -9,12 +9,6 @@ import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Team;
-
-import java.util.Collection;
 
 public class ScoreSubCommand{
 

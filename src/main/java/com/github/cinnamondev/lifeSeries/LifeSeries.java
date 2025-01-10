@@ -1,7 +1,7 @@
 package com.github.cinnamondev.lifeSeries;
 
 import com.github.cinnamondev.lifeSeries.commands.AmITheBoogeyMan;
-import com.github.cinnamondev.lifeSeries.commands.GameControlCommand;
+import com.github.cinnamondev.lifeSeries.commands.AdminCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed;
@@ -19,6 +19,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +59,11 @@ public final class LifeSeries extends JavaPlugin {
         }
         saveFileCfg = YamlConfiguration.loadConfiguration(saveFile);
 
+        if (saveFileCfg.getBoolean("paused", false)) {
+            // game coming back from paused
+        } else {
+            // game coming back a fresh session
+        }
         getLogger().warning("starting score is" + getConfig().getInt("starting-score"));
 
         scoreHandler = new ScoreHandler(this);
@@ -87,9 +93,9 @@ public final class LifeSeries extends JavaPlugin {
             Commands commands = e.registrar();
             // /life <session/lives/time>
             commands.register(
-                    GameControlCommand.command(this),
-                    GameControlCommand.description,
-                    GameControlCommand.aliases
+                    AdminCommand.command(this),
+                    AdminCommand.description,
+                    AdminCommand.aliases
             );
 
             if (game instanceof Boogeyman boogeymanGame) {
@@ -121,6 +127,8 @@ public final class LifeSeries extends JavaPlugin {
         registeredRecipes.add(new NamespacedKey(this, "revival-item"));
 
     }
+
+    public @Nullable RevivalItem getRevivalItem() { return this.revivalItem; }
 
     @Override
     public void onDisable() {

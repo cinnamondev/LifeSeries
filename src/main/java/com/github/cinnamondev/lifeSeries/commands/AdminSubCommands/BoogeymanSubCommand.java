@@ -1,4 +1,4 @@
-package com.github.cinnamondev.lifeSeries.commands;
+package com.github.cinnamondev.lifeSeries.commands.AdminSubCommands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman;
