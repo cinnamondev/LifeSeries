@@ -6,7 +6,7 @@ import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed;
 import com.github.cinnamondev.lifeSeries.listener.EnchantmentNerfer;
-import com.github.cinnamondev.lifeSeries.listener.InventoryNerfer;
+import com.github.cinnamondev.lifeSeries.listener.ItemNerfer;
 import com.github.cinnamondev.lifeSeries.listener.PlayerListener;
 import com.github.cinnamondev.lifeSeries.revival.RevivalItem;
 import com.github.cinnamondev.lifeSeries.teams.ScoreHandler;
@@ -37,7 +37,7 @@ public final class LifeSeries extends JavaPlugin {
     private YamlConfiguration saveFileCfg;
     private ScoreHandler scoreHandler;
     private EnchantmentNerfer enchantmentNerfer;
-    private InventoryNerfer inventoryNerfer;
+    private ItemNerfer itemNerfer;
     private RevivalItem revivalItem;
 
     private ArrayList<NamespacedKey> registeredRecipes = new ArrayList<>();
@@ -68,7 +68,7 @@ public final class LifeSeries extends JavaPlugin {
 
         scoreHandler = new ScoreHandler(this);
         enchantmentNerfer = new EnchantmentNerfer(this);
-        inventoryNerfer = new InventoryNerfer(this);
+        itemNerfer = new ItemNerfer(this);
         revivalItem = new RevivalItem(this, new NamespacedKey(this, "revival-item"));
         Bukkit.addRecipe(revivalItem.getRecipe());
 
@@ -109,14 +109,14 @@ public final class LifeSeries extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new PlayerListener(this), this);
         Bukkit.getPluginManager().registerEvents(enchantmentNerfer, this);
-        Bukkit.getPluginManager().registerEvents(inventoryNerfer, this);
+        Bukkit.getPluginManager().registerEvents(itemNerfer, this);
         Bukkit.getPluginManager().registerEvents(revivalItem, this);
 
         getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             saveFileCfg.set("paused", true); // if the server crashes unnaturally, game should be able to resume.
             saveGame();
             enchantmentNerfer.nerfOnlinePlayersItems();
-            inventoryNerfer.nerfOnlinePlayersItems();
+            itemNerfer.nerfOnlinePlayersItems();
             getServer().getOnlinePlayers().forEach(player -> { // force players to know custom recipes
                 player.discoverRecipes(registeredRecipes);
             });
