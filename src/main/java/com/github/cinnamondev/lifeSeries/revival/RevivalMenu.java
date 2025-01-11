@@ -20,6 +20,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -27,14 +28,18 @@ import java.util.*;
 public class RevivalMenu implements InventoryHolder, Listener {
     private final LifeSeries p;
     private final Inventory inventory;
+    private final ItemStack item;
+    private final NamespacedKey revivalItemKey;
     private final UUID owningPlayer;
     private final Button<?>[] buttons = new Button[27*2];
 
     private boolean teleportToPlayer = true;
     private int page = 0;
 
-    public RevivalMenu(LifeSeries p, UUID player) {
+    public RevivalMenu(LifeSeries p, NamespacedKey revivalItemKey, ItemStack item, UUID player) {
         this.p = p;
+        this.revivalItemKey = revivalItemKey;
+        this.item = item;
         this.inventory = p.getServer().createInventory(this, 27*2, Component.text("Revival Menu", NamedTextColor.AQUA));
         this.owningPlayer = player;
 
@@ -51,6 +56,7 @@ public class RevivalMenu implements InventoryHolder, Listener {
     public void erasePlayerHeadButtons() {
         for (int i = 18; i < buttons.length; i++) {
             buttons[i] = null;
+            inventory.getContents()[i] = null;
         }
     }
 
@@ -64,12 +70,11 @@ public class RevivalMenu implements InventoryHolder, Listener {
                         .filter(player -> player.hasPermission("life.revival"))
                         .map(player -> (Player) player)
                         .toList(),
-                (27*2)-18//1
+                1//(27*2)-18
         );
-        if (playerPages.isEmpty()) { p.getLogger().info("no online dead players"); return; }
-        this.page = newPage > playerPages.size() ? newPage : 0;
-        p.getLogger().info("page is"  + page);
-        List<Player> currentPage = playerPages.get(page);
+        if (playerPages.isEmpty()) { return; }
+        this.page = newPage < playerPages.size() ? newPage : 0;
+        List<Player> currentPage = playerPages.get(this.page);
 
         for (int i = 18; i < buttons.length && (i-18) < currentPage.size(); i++) { // note. currentPage should always be <=
             buttons[i] = revivePlayerButton(i, currentPage.get(i-18).getUniqueId()); // to remaining buttons capacity! :)
@@ -77,27 +82,25 @@ public class RevivalMenu implements InventoryHolder, Listener {
         }
     }
     private ClickButton buttonNextPage(int slot, Component displayName, int pageOffset) {
-        ItemStack item = new ItemStack(Material.ARROW,1);
+        ItemStack item = ItemStack.of(Material.ARROW,1);
         ItemMeta meta = item.getItemMeta();
         meta.displayName(displayName);
         item.setItemMeta(meta);
 
         ClickButton button = new ClickButton(item, inventory, slot, (player) -> {
-            page = Math.max(page + pageOffset, 0);
-            player.sendMessage(displayName);
-            player.sendMessage(Component.text("page is " + page));
-            fillPage(page);
+            this.page = Math.max(this.page + pageOffset, 0);
+            fillPage(this.page);
         });
         button.updateDisplayBlock();
         return button;
     }
     private ToggleButton buttonToggleRespawnLocation(int slot) {
-        ItemStack itemOn = new ItemStack(Material.TOTEM_OF_UNDYING,1);
+        ItemStack itemOn = ItemStack.of(Material.TOTEM_OF_UNDYING,1);
         ItemMeta meta = itemOn.getItemMeta();
         meta.displayName(Component.text("Teleport revived to me"));
         itemOn.setItemMeta(meta);
 
-        ItemStack itemOff = new ItemStack(Material.ENCHANTING_TABLE,1);
+        ItemStack itemOff = ItemStack.of(Material.ENCHANTING_TABLE,1);
         meta = itemOff.getItemMeta();
         meta.displayName(Component.text("Teleport revived to spawn"));
         itemOff.setItemMeta(meta);
@@ -112,9 +115,12 @@ public class RevivalMenu implements InventoryHolder, Listener {
     }
     private ClickButton revivePlayerButton(int slot, UUID uuid) {
         ItemStack item = playerHead(p.getServer().getOfflinePlayer(uuid));
-        ClickButton button = new ClickButton(item, inventory, slot, (player) ->
+        ClickButton button = new ClickButton(item, inventory, slot, (player) -> {
+            player.getInventory().removeItemAnySlot(this.item);
+
+            player.closeInventory();
             p.getScoreHandler().updatePlayerScoreAndTeam(uuid,
-                    (_uuid, currentScore) -> p.getConfig().getInt("revival.added-score",0),
+                    (_uuid, currentScore) -> p.getConfig().getInt("revival.added-score", 0),
                     (revived, newTeam) -> {
                         String respawnWorld = p.getConfig().getString("options.respawn-world", "auto");
                         if (teleportToPlayer) {
@@ -131,11 +137,14 @@ public class RevivalMenu implements InventoryHolder, Listener {
                                     );
                         } else {
                             World world = p.getServer().getWorld(respawnWorld);
-                            if (world != null) { revived.teleport(world.getSpawnLocation()); }
+                            if (world != null) {
+                                revived.teleport(world.getSpawnLocation());
+                            }
                         }
                         revived.setGameMode(GameMode.SURVIVAL);
                         announceRevival(revived);
-                    }));
+                    });
+        });
         button.updateDisplayBlock();
         return button;
     }
@@ -186,13 +195,13 @@ public class RevivalMenu implements InventoryHolder, Listener {
     }
     @Override
     public @NotNull Inventory getInventory() {
-        page = 0; // reset page
-        fillPage(page);
+        this.page = 0; // reset page
+        fillPage(this.page);
         return this.inventory;
     }
 
     private ItemStack playerHead(OfflinePlayer player) {
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+        ItemStack item = ItemStack.of(Material.PLAYER_HEAD);
         SkullMeta meta = (SkullMeta) item.getItemMeta();
         if (meta == null) { return item; }
         meta.setOwningPlayer(player);

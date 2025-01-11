@@ -56,7 +56,7 @@ public class RevivalItem extends CustomRecipe implements Listener {
         if (e.getItem() == null) { return; }
         Action a = e.getAction();
         if (a != Action.RIGHT_CLICK_AIR && a != Action.RIGHT_CLICK_BLOCK) { return; }
-        if (Boolean.TRUE.equals(e.getItem().getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.BOOLEAN))) {
+        if (e.getItem().getItemMeta().getPersistentDataContainer().getOrDefault(key, PersistentDataType.BOOLEAN, false)) {
             // it is the revival item
             e.getPlayer().openInventory(
                     getPlayersMenu(e.getPlayer().getUniqueId()).getInventory()
@@ -65,7 +65,7 @@ public class RevivalItem extends CustomRecipe implements Listener {
     }
 
     public RevivalMenu getPlayersMenu(UUID uuid) {
-        return menus.computeIfAbsent(uuid, (uuid1) -> new RevivalMenu(p, uuid1));
+        return menus.computeIfAbsent(uuid, (uuid1) -> new RevivalMenu(p, key, getItem(), uuid1));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
