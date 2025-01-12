@@ -77,9 +77,9 @@ public abstract class BasicBoogeymanGameImpl implements Boogeyman, Game {
         if (isBoogeyman(killer)) {
             cure(killer);
             killer.sendMessage("You have been cured!");
-            return onKilled(p,
+            return Game.super.onKilled(p,
                     killed, p.getConfig().getInt("options.punishment.boogey-death"),
-                    killer, p.getConfig().getInt("options.reward.boogey-kill")
+                    killer, p.getConfig().getInt("options.rewards.boogey-kill")
             );
         } else {
             return Game.super.onKilled(p, killed, killer); // let default implementation handle it

@@ -18,7 +18,7 @@ public interface Game extends Runnable {
         AtomicBoolean isFinalDeath = new AtomicBoolean(false);
         p.getScoreHandler().updatePlayerScoreAndTeam(killed, (uuid,score) -> {
             String time = DurationFormatUtils.formatDuration(
-                    punishment * 1000,
+                    punishment * 1000L,
                     "'-'HH':'mm':'ss",
                     true);
             killed.showTitle(Title.title(
@@ -61,7 +61,7 @@ public interface Game extends Runnable {
     private void rewardKiller(LifeSeries p, Player killer, int reward) {
         p.getScoreHandler().updatePlayerScoreAndTeam(killer, (uuid,score) -> {
             String time = DurationFormatUtils.formatDuration(
-                    reward * 1000,
+                    reward * 1000L,
                     "'+'HH':'mm':'ss",
                     true);
             killer.showTitle(Title.title(
