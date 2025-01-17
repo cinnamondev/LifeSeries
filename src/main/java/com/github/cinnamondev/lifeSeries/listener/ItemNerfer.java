@@ -100,7 +100,7 @@ public class ItemNerfer implements Listener {
         if (recipe == null) { return; }
         if (bannedItems.contains(recipe.getResult().getType())) {
             e.getViewers().forEach(player -> player.sendMessage(
-                    Component.text("You are not allowed to craft this item")
+                    Component.translatable("block-nerf.crafting-banned")
                             .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD))
             ));
         }
@@ -112,7 +112,7 @@ public class ItemNerfer implements Listener {
         if (bannedItems.contains(e.getRecipe().getResult().getType())) {
             ItemStack substitute = ItemStack.of(Material.BARRIER);
             ItemMeta meta = substitute.getItemMeta();
-            meta.displayName(Component.text("You are not allowed to craft this item")
+            meta.displayName(Component.translatable("block-nerf.crafting-banned")
                     .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD)));
             substitute.setItemMeta(meta);
             e.setCurrentItem(substitute);

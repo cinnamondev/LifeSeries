@@ -14,7 +14,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface Game extends Runnable {
-    public default boolean onKilled(LifeSeries p, Player killed, int punishment) {
+    default void onGameStart() {}
+    default void onGameStop() {}
+    default boolean onKilled(LifeSeries p, Player killed, int punishment) {
         AtomicBoolean isFinalDeath = new AtomicBoolean(false);
         p.getScoreHandler().updatePlayerScoreAndTeam(killed, (uuid,score) -> {
             String time = DurationFormatUtils.formatDuration(
@@ -31,15 +33,14 @@ public interface Game extends Runnable {
         });
         return isFinalDeath.get();
     }
-
-    public default boolean onKilled(LifeSeries p, Player killed) {
+    default boolean onKilled(LifeSeries p, Player killed) {
         return onKilled(p, killed, p.getConfig().getInt("options.punishment.death"));
     }
-    public default boolean onKilled(LifeSeries p, Player killed, int punishment, Player killer, int reward) {
+    default boolean onKilled(LifeSeries p, Player killed, int punishment, Player killer, int reward) {
         rewardKiller(p, killer, reward);
         return onKilled(p, killed, punishment);
     }
-    public default boolean onKilled(LifeSeries p, Player killed, Player killer) {
+    default boolean onKilled(LifeSeries p, Player killed, Player killer) {
         TeamMeta killerTeam = p.getScoreHandler().getTeam(killer);
         TeamMeta killedTeam = p.getScoreHandler().getTeam(killed);
 

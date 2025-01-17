@@ -6,11 +6,10 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.bukkit.entity.Player;
 
-public class Timed extends BasicBoogeymanGameImpl {
+public class Timed implements Game {
     private final LifeSeries p;
 
     public Timed(LifeSeries p) {
-        super(p);
         this.p = p;
     }
 

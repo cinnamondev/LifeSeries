@@ -2,6 +2,10 @@ mode: timed
 
 starting-score: 86400
 
+server-locale: en_US # default to en_US if not specified. as interactable menus (revival menu)
+                     # cannot have items be translated server side, we need to specify which bundle to get them from
+                     # here.
+
 categories:
   green:
     colour: GREEN
@@ -84,7 +88,12 @@ options:
     enabled: true
     min: 1
     max: 3
+    failure:
+      punish-lowest-team: false
+      demote-to-next-team: true
+      demotion-score: 10000 # used if `demote-to-next-team` is false
     lowest-tier-is-penalised: false # lowest lives team is not penalized when true. (i.e if red is allowed, reds wont -2h)
+
     allowed-teams: # names must match categories in `categories` configuration.
       - green
       - yellow
@@ -122,3 +131,4 @@ options:
     # for servers running behind a proxy that supports bungeecord messaging. if this is a valid option,
     # and `kick-at-end` is also true, each player is sent to the specified server.
     send-to-server: survival-2025
+    punish-boogeys: true # auto punish boogeys at end of session

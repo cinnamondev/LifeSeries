@@ -80,9 +80,8 @@ public class EnchantmentNerfer implements Listener {
 
     private Optional<Map.Entry<Enchantment, Integer>> nerfEnchant(Map.Entry<Enchantment, Integer> enchantment, List<HumanEntity> viewers) {
         if (blacklistedEnchants.contains(enchantment.getKey().getKey())) {
-            viewers.forEach(viewer -> viewer.sendMessage(enchantment.getKey().displayName(enchantment.getValue())
-                    .appendSpace()
-                    .append(Component.text("is blacklisted!"))
+            viewers.forEach(viewer -> viewer.sendMessage(Component.translatable("enchanting-nerf.blocklisted-item")
+                    .arguments(enchantment.getKey().displayName(enchantment.getValue()))
             ));
             return Optional.empty(); // remove enchantment
         } else {
@@ -90,11 +89,11 @@ public class EnchantmentNerfer implements Listener {
             Integer currentLevel = enchantment.getValue();
             if (currentLevel > maxLevel) {
                 viewers.forEach(viewer -> viewer.sendMessage(
-                        enchantment.getKey().displayName(enchantment.getValue())
-                                .appendSpace()
-                                .append(Component.text("has been nerfed to"))
-                                .appendSpace()
-                                .append(enchantment.getKey().displayName(maxLevel))
+                        Component.translatable("enchanting-nerf.nerfed-item")
+                                        .arguments(
+                                                enchantment.getKey().displayName(enchantment.getValue()),
+                                                enchantment.getKey().displayName(maxLevel)
+                                        )
                 ));
                 currentLevel = maxLevel;
             }

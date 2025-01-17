@@ -9,6 +9,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
+import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.HumanEntity;
@@ -44,8 +45,16 @@ public class RevivalMenu implements InventoryHolder, Listener {
         this.owningPlayer = player;
 
         buttons[4] = buttonToggleRespawnLocation(4);
-        buttons[0] = buttonNextPage(0, Component.text("Previous page"), -1);
-        buttons[8] = buttonNextPage(8, Component.text("Next page"), 1);
+        buttons[0] = buttonNextPage(0,
+                GlobalTranslator.translator()
+                        .translate(Component.translatable("revival-item.buttons.prev-page"), p.getServerLocale()),
+                -1
+        );
+        buttons[8] = buttonNextPage(8,
+                GlobalTranslator.translator()
+                        .translate(Component.translatable("revival-item.buttons.next-page"), p.getServerLocale()),
+                1
+        );
         //fillEmptySlots(new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE,1));
     }
 
@@ -77,7 +86,7 @@ public class RevivalMenu implements InventoryHolder, Listener {
         List<Player> currentPage = playerPages.get(this.page);
 
         for (int i = 18; i < buttons.length && (i-18) < currentPage.size(); i++) { // note. currentPage should always be <=
-            buttons[i] = revivePlayerButton(i, currentPage.get(i-18).getUniqueId()); // to remaining buttons capacity! :)
+            buttons[i] = revivePlayerButton(i, currentPage.get(i-18)); // to remaining buttons capacity! :)
             buttons[i].updateDisplayBlock();
         }
     }
@@ -97,37 +106,37 @@ public class RevivalMenu implements InventoryHolder, Listener {
     private ToggleButton buttonToggleRespawnLocation(int slot) {
         ItemStack itemOn = ItemStack.of(Material.TOTEM_OF_UNDYING,1);
         ItemMeta meta = itemOn.getItemMeta();
-        meta.displayName(Component.text("Teleport revived to me"));
+
+        meta.displayName(GlobalTranslator.translator().translate(
+                Component.translatable("revival-item.buttons.location-player"),  p.getServerLocale()
+        ));
         itemOn.setItemMeta(meta);
 
         ItemStack itemOff = ItemStack.of(Material.ENCHANTING_TABLE,1);
         meta = itemOff.getItemMeta();
-        meta.displayName(Component.text("Teleport revived to spawn"));
+        meta.displayName(GlobalTranslator.translator().translate(
+                Component.translatable("revival-item.buttons.location-spawn"),  p.getServerLocale()
+        ));
         itemOff.setItemMeta(meta);
 
-        ToggleButton button = new ToggleButton(itemOn, itemOff,true, inventory, slot, (player, state) -> {
-            player.sendMessage(Component.text(state ? "Player will now teleport to you on revival"
-                    : " Player will now teleport to spawn on revival"));
-            teleportToPlayer = state;
-        });
+        ToggleButton button = new ToggleButton(itemOn, itemOff,true, inventory, slot, (player, state) ->
+                teleportToPlayer = state
+        );
         button.updateDisplayBlock();
         return button;
     }
-    private ClickButton revivePlayerButton(int slot, UUID uuid) {
-        ItemStack item = playerHead(p.getServer().getOfflinePlayer(uuid));
-        ClickButton button = new ClickButton(item, inventory, slot, (player) -> {
-            player.getInventory().removeItemAnySlot(this.item);
+    private ClickButton revivePlayerButton(int slot, Player player) {
+        ItemStack item = playerHead(player);
+        ClickButton button = new ClickButton(item, inventory, slot, (reviver) -> {
+            reviver.getInventory().removeItemAnySlot(this.item);
+            reviver.closeInventory();
 
-            player.closeInventory();
-            p.getScoreHandler().updatePlayerScoreAndTeam(uuid,
+            p.getScoreHandler().updatePlayerScoreAndTeam(player.getUniqueId(),
                     (_uuid, currentScore) -> p.getConfig().getInt("revival.added-score", 0),
                     (revived, newTeam) -> {
                         String respawnWorld = p.getConfig().getString("options.respawn-world", "auto");
                         if (teleportToPlayer) {
-                            Player reviver = p.getServer().getPlayer(owningPlayer);
-                            if (reviver != null) {
-                                revived.teleport(reviver.getLocation());
-                            }
+                            revived.teleport(reviver.getLocation());
                         } else if (respawnWorld.equalsIgnoreCase("auto")) {
                             p.getServer().getWorlds().stream()
                                     .filter(w -> w.getEnvironment() == World.Environment.NORMAL)
@@ -167,8 +176,9 @@ public class RevivalMenu implements InventoryHolder, Listener {
         if (p.getConfig().getBoolean("revival.announce.title.enabled", true)) {
             if (!p.getConfig().getBoolean("revival.announce.title.totem", false)) {
                 p.getServer().showTitle(Title.title(
-                        Component.text(player.getName() + " has been revived!")
-                                .style(Style.style(NamedTextColor.GOLD, TextDecoration.BOLD)),
+                        Component.translatable("revival-item.announce-revival")
+                                .style(Style.style(NamedTextColor.GOLD, TextDecoration.BOLD))
+                                .arguments(player.displayName()),
                         Component.empty()
                 ));
                 // show players title
@@ -200,13 +210,15 @@ public class RevivalMenu implements InventoryHolder, Listener {
         return this.inventory;
     }
 
-    private ItemStack playerHead(OfflinePlayer player) {
+    private ItemStack playerHead(Player player) {
         ItemStack item = ItemStack.of(Material.PLAYER_HEAD);
         SkullMeta meta = (SkullMeta) item.getItemMeta();
         if (meta == null) { return item; }
         meta.setOwningPlayer(player);
-        String username = player.getName();
-        meta.displayName(Component.text("Revive " + (username != null ? username : "USERNAME BROKE")));
+        meta.displayName(
+                Component.translatable("revival-item.buttons.revive-player")
+                        .arguments(player.displayName())
+        );
         item.setItemMeta(meta);
 
         return item;

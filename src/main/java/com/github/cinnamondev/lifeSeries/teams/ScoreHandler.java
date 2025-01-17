@@ -111,7 +111,7 @@ public class ScoreHandler {
     public TeamMeta getTeam(UUID uuid) { return getTeam(getScore(uuid)); }
     public TeamMeta getTeam(OfflinePlayer player) { return getTeam(getScore(player.getUniqueId())); }
     public TeamMeta getSpectatorTeam() { return this.spectatorTeam; }
-
+    public SortedSet<TeamMeta> getRankedTeams() { return new TreeSet<>(this.rankedTeams); }
     /// update a players score according to the returned value of `updater`. works for any player uuid, if they are not
     /// already tracked, they will be assigned the default score before `updater` is called. if the player is online
     /// and their team changes, `onlinePlayerTeamHasChanged` will be called.

@@ -14,7 +14,7 @@ public class RevivalSubCommand {
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
                     if (revivalItem == null) {
-                        player.sendMessage(Component.text("revival item unavail."));
+                        player.sendMessage(Component.translatable("revival-item.command-fail"));
                         return 0;
                     }
                     player.openInventory(

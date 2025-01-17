@@ -32,7 +32,7 @@ public class BoogeymanSubCommand {
                 .then(Commands.literal("whois")
                         .executes(ctx -> {
                             // create stylized text for each player (their team colour) and fold into one big message :)
-                            Component message = boogeymanGame.getBoogeymen().stream()
+                            Component message = boogeymanGame.getBoogeyList().stream()
                                     .map((uuid) -> {
                                         OfflinePlayer player =  p.getServer().getOfflinePlayer(uuid);
                                         String name = player.getName();
@@ -83,7 +83,7 @@ public class BoogeymanSubCommand {
                         .executes(ctx -> {
                             ctx.getArgument("player", PlayerSelectorArgumentResolver.class)
                                     .resolve(ctx.getSource())
-                                    .forEach(boogeymanGame::addBoogey);
+                                    .forEach(boogeymanGame::addBoogeyman);
                             return 1;
                         })
                 ))
@@ -91,7 +91,7 @@ public class BoogeymanSubCommand {
                         .executes(ctx -> {
                             ctx.getArgument("player", PlayerSelectorArgumentResolver.class)
                                     .resolve(ctx.getSource())
-                                    .forEach(boogeymanGame::cure);
+                                    .forEach(boogeymanGame::cureBoogeyman);
                             return 1;
                         })
                 ));
@@ -111,7 +111,7 @@ public class BoogeymanSubCommand {
                 src.sendMessage(Component.text(" cannot roll for 0 boogies! (perhaps disable boogey instead"));
                 return;
             }
-            boolean res = boogey.roll(min,max);
+            boolean res = boogey.rollBoogeyman(p, min, max);
             if (!res) { src.sendMessage(Component.text("not enough candidates")); } else {
                 Sound tickSound = Sound.sound(Key.key("block.note_block.hat"), Sound.Source.AMBIENT, 1f,1f);
 
@@ -125,7 +125,7 @@ public class BoogeymanSubCommand {
                     p.getServer().getOnlinePlayers().forEach(onlinePlayer -> {
                         TextComponent boogeymanAnnouncement  = Component.text("NOT the boogeyman!")
                                 .color(NamedTextColor.GREEN);
-                        if (boogey.getBoogeymen().contains(onlinePlayer.getUniqueId())) {
+                        if (boogey.getBoogeyList().contains(onlinePlayer.getUniqueId())) {
                             boogeymanAnnouncement = Component.text("The boogeyman!")
                                     .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD));
                         }

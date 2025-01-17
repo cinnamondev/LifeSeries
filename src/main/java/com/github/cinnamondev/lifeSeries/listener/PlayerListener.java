@@ -18,6 +18,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,22 +40,22 @@ public class PlayerListener implements Listener {
 
             if (isFinalDeath && p.getConfig().getBoolean("options.final-death.announce", true)) {
                 p.getServer().showTitle(Title.title(
-                        Component.text(killed.getName() + " ran out of time!").color(NamedTextColor.RED),
-                        Component.text("... after being killed by ").color(NamedTextColor.RED).append(
-                                Component.text(killer.getName())
-                                        .style(Style.style(
-                                                p.getScoreHandler().getTeam(killer).getColor(),
-                                                TextDecoration.BOLD
-                                        ))
-                        )
+                        Component.translatable("final-death.title")
+                                .arguments(killed.displayName())
+                                .color(NamedTextColor.RED),
+                        Component.translatable("final-death.cause-player")
+                                .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD))
+                                .arguments(killer.displayName())
                 ));
             }
         } else {
             isFinalDeath = p.getGame().onKilled(p, killed);
             if (isFinalDeath && p.getConfig().getBoolean("options.final-death.announce", true)) {
                 p.getServer().showTitle(Title.title(
-                        Component.text(killed.getName() + " ran out of time!").color(NamedTextColor.RED),
-                        Component.text("... after succumbing to nature.").color(NamedTextColor.RED)
+                        Component.translatable("final-death.title")
+                                .arguments(killed.displayName())
+                                .color(NamedTextColor.RED),
+                        Component.translatable("final-death.cause-other").color(NamedTextColor.RED)
                 ));
             }
         }
