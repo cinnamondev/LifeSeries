@@ -93,6 +93,7 @@ public final class LifeSeries extends JavaPlugin {
             case "limited-life":
             case "limitedlife":
                 game = new LimitedLife(this);
+                break;
             case "timed":
                 game = new Timed(this);
                 break;
