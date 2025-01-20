@@ -13,7 +13,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public interface Boogeyman {
+public interface Boogeyman extends CommandContainer {
     public ArrayList<UUID> getBoogeyList();
 
     default boolean rollBoogeyman(LifeSeries p, int min, int max) {
@@ -68,7 +68,7 @@ public interface Boogeyman {
             }
             if (p.getConfig().getBoolean("options.boogeyman.demote-to-next-team", false)) {
                 int teamMinScore = playerTeam.getMininumScore();
-                p.getScoreHandler().updatePlayerScoreAndTeam(uuid, (_uuid,_score) -> teamMinScore);
+                p.getScoreHandler().updatePlayerScoreAndTeam(uuid, (_uuid, _score) -> teamMinScore);
             } else {
                 int demotionScore = p.getConfig().getInt("options.boogeyman.failure.demotion-score", 0);
                 p.getScoreHandler().updatePlayerScoreAndTeam(uuid, (_uuid, score) -> score - demotionScore);

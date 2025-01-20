@@ -1,7 +1,7 @@
 package com.github.cinnamondev.lifeSeries.commands;
 
 
-import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman;
+import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanFeature.Boogeyman;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
