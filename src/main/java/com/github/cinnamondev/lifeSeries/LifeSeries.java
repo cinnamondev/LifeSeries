@@ -1,21 +1,18 @@
 package com.github.cinnamondev.lifeSeries;
 
-import com.github.cinnamondev.lifeSeries.commands.AmITheBoogeyMan;
+import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanFeature.AmITheBoogeyMan;
 import com.github.cinnamondev.lifeSeries.commands.AdminCommand;
-import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman;
+import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanFeature.Boogeyman;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.LimitedLife;
-import com.github.cinnamondev.lifeSeries.gamemodes.Timed;
+import com.github.cinnamondev.lifeSeries.gamemodes.Timed.Timed;
 import com.github.cinnamondev.lifeSeries.listener.EnchantmentNerfer;
 import com.github.cinnamondev.lifeSeries.listener.ItemNerfer;
 import com.github.cinnamondev.lifeSeries.listener.PlayerListener;
 import com.github.cinnamondev.lifeSeries.revival.RevivalItem;
 import com.github.cinnamondev.lifeSeries.teams.ScoreHandler;
 import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
-import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.TranslationRegistry;
 import net.kyori.adventure.util.UTF8ResourceBundleControl;
@@ -24,7 +21,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
@@ -142,13 +138,13 @@ public final class LifeSeries extends JavaPlugin {
                     AdminCommand.aliases
             );
 
-            if (game instanceof Boogeyman boogeymanGame) {
+            game.gameCommands(this).forEach(command -> {
                 commands.register(
-                        AmITheBoogeyMan.command(this, boogeymanGame),
-                        "Are you the boogeyman?",
-                        Arrays.asList("aib", "boogey")
+                        command.command(),
+                        command.getDescription(),
+                        command.getAliases()
                 );
-            }
+            });
         });
     }
 
@@ -228,7 +224,7 @@ public final class LifeSeries extends JavaPlugin {
     public void endOfSession() {
         stopSession();
         gameTask.cancel(false);
-        game.onGameStop();
+        game.onGameStop(this);
     }
 
     public void trySendAllToServer() {

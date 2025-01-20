@@ -1,20 +1,23 @@
 package com.github.cinnamondev.lifeSeries.gamemodes;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-import org.apache.commons.lang3.time.DurationFormatUtils;
+import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanFeature.Boogeyman;
+import com.github.cinnamondev.lifeSeries.gamemodes.Timed.ModifyTimeSubCommand;
+import com.github.cinnamondev.lifeSeries.gamemodes.Timed.Timed;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class LimitedLife extends Timed implements Boogeyman {
-    private final LifeSeries p;
     private final ArrayList<UUID> boogeymen = new ArrayList<>();
     public LimitedLife(LifeSeries p) {
         super(p);
-        this.p = p;
     }
 
     @Override
@@ -37,7 +40,8 @@ public class LimitedLife extends Timed implements Boogeyman {
     }
 
     @Override
-    public void onGameStop() {
-        punishBoogeymen(p);
+    public Collection<LiteralArgumentBuilder<CommandSourceStack>> adminSubCommands(LifeSeries p) {
+        return Stream.of(super.adminSubCommands(p), Boogeyman.super.adminSubCommands(p))
+                .flatMap(Collection::stream).toList();
     }
 }

@@ -1,16 +1,14 @@
-package com.github.cinnamondev.lifeSeries.gamemodes;
+package com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanFeature;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.github.cinnamondev.lifeSeries.teams.ScoreHandler;
+import com.github.cinnamondev.lifeSeries.gamemodes.CommandContainer;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public interface Boogeyman extends CommandContainer {
@@ -74,5 +72,14 @@ public interface Boogeyman extends CommandContainer {
                 p.getScoreHandler().updatePlayerScoreAndTeam(uuid, (_uuid, score) -> score - demotionScore);
             }
         }
+    }
+
+    @Override
+    default Collection<FilledLiteralCommand> gameCommands(LifeSeries p) {
+        return List.of(new AmITheBoogeyMan(this, p));
+    }
+    @Override
+    default Collection<LiteralArgumentBuilder<CommandSourceStack>> adminSubCommands(LifeSeries p) {
+        return Collections.singletonList(BoogeymanSubCommand.boogeyman(p, this));
     }
 }

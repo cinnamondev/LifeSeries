@@ -1,13 +1,27 @@
-package com.github.cinnamondev.lifeSeries.gamemodes;
+package com.github.cinnamondev.lifeSeries.gamemodes.Timed;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.gamemodes.Game;
+import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
+import com.github.cinnamondev.lifeSeries.util.TickTimeUtils;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.title.Title;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.bukkit.entity.Player;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class Timed implements Game {
-    private final LifeSeries p;
+    protected final LifeSeries p;
 
     public Timed(LifeSeries p) {
         this.p = p;
@@ -24,13 +38,35 @@ public class Timed implements Game {
     }
 
     private void displayPlayerTime(Player player) {
-        String time =DurationFormatUtils.formatDuration(
-                p.getScoreHandler().getScore(player) * 1000,
-                "HH':'mm':'ss",
-                true);
-        player.sendActionBar(Component.text(time).decorate(TextDecoration.BOLD).color(
-                p.getScoreHandler().getTeam(player).getScoreboardTeam().color()
+        player.sendActionBar(TickTimeUtils.playerTime(
+                p.getScoreHandler().getScore(player),
+                TimeUnit.SECONDS,
+                p.getScoreHandler().getTeam(player).getColor()
         ));
+
     }
 
+    @Override
+    public Collection<LiteralArgumentBuilder<CommandSourceStack>> adminSubCommands(LifeSeries p) {
+        return Collections.singletonList(ModifyTimeSubCommand.command(p));
+    }
+
+    @Override
+    public boolean onKilled(LifeSeries p, Player killed, int punishment) {
+        boolean isFinalDeath = Game.super.onKilled(p, killed, punishment);
+        killed.showTitle(Title.title(
+                TickTimeUtils.playerTimeChange(-1 * punishment, TimeUnit.SECONDS),
+                Component.empty()
+        ));
+        return isFinalDeath;
+    }
+
+    @Override
+    public void rewardKiller(LifeSeries p, Player killer, int reward) {
+        Game.super.rewardKiller(p, killer, reward);
+        killer.showTitle(Title.title(
+                TickTimeUtils.playerTimeChange(reward, TimeUnit.SECONDS),
+                Component.empty()
+        ));
+    }
 }

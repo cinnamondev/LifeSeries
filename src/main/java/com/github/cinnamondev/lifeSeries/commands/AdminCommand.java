@@ -2,7 +2,6 @@ package com.github.cinnamondev.lifeSeries.commands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.commands.AdminSubCommands.*;
-import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -24,9 +23,10 @@ public final class AdminCommand {
                         .executes(ctx -> helpCommand(ctx.getSource().getSender())))
                 .executes(ctx -> helpCommand(ctx.getSource().getSender()));
 
-        if (p.getGame() instanceof Boogeyman boogeyman) {
-            command = command.then(BoogeymanSubCommand.boogeyman(p, boogeyman));
+        for (var subCommand : p.getGame().adminSubCommands(p)) {
+            command = command.then(subCommand);
         }
+
         if (p.getRevivalItem() != null) {
             p.getLogger().info("revival item is availalbwe");
             command = command.then(RevivalSubCommand.command(p.getRevivalItem()));

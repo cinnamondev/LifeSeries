@@ -85,7 +85,6 @@ custom-recipes:
 
 options:
   boogeyman:
-    enabled: true
     min: 1
     max: 3
     failure:
@@ -130,5 +129,5 @@ options:
     kick-at-end: true
     # for servers running behind a proxy that supports bungeecord messaging. if this is a valid option,
     # and `kick-at-end` is also true, each player is sent to the specified server.
-    send-to-server: survival-2025
+    send-to-server: survival-2025 # set to null or remove if not desired.
     punish-boogeys: true # auto punish boogeys at end of session

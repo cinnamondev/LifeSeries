@@ -1,13 +1,11 @@
-package com.github.cinnamondev.lifeSeries.gamemodes;
+package com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanFeature;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import net.kyori.adventure.text.Component;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public abstract class BasicBoogeymanGameImpl implements Boogeyman, Game {
     private final LifeSeries p;
