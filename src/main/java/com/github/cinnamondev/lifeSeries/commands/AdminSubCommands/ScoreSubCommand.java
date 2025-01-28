@@ -1,6 +1,7 @@
 package com.github.cinnamondev.lifeSeries.commands.AdminSubCommands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -41,6 +42,20 @@ public class ScoreSubCommand{
                                     return 1;
                                 })
                         ))
+                        .then(Commands.literal("get").executes(ctx -> {
+                            ctx.getArgument("player", PlayerSelectorArgumentResolver.class)
+                                    .resolve(ctx.getSource()).forEach(player -> {
+                                        TeamMeta playerTeam = p.getScoreHandler().getTeam(player);
+                                        int playerScore = p.getScoreHandler().getScore(player);
+                                        ctx.getSource().getSender().sendMessage(
+                                                Component.translatable("score-command.get-score",
+                                                        player.displayName(),
+                                                        Component.text(playerScore).color(playerTeam.getColor())
+                                                )
+                                        );
+                                    });
+                            return 1;
+                        }))
                 )
                 .then(Commands.literal("untracked")
                         .then(Commands.literal("modify").then(Commands.argument("score", IntegerArgumentType.integer())
@@ -63,6 +78,18 @@ public class ScoreSubCommand{
                                     return 1;
                                 })
                         ))
+                        .then(Commands.literal("get").executes(ctx -> {
+                            int untrackedScore = p.getScoreHandler().getUntrackedScore();
+                            TeamMeta untrackedTeam = p.getScoreHandler().getTeam(untrackedScore);
+                            ctx.getSource().getSender().sendMessage(
+                                    Component.translatable("score-command.get-score",
+                                            Component.translatable("score-command.updated-score")
+                                                    .color(untrackedTeam.getColor()),
+                                            Component.text(untrackedScore).color(untrackedTeam.getColor())
+                                    )
+                            );
+                            return 1;
+                        }))
                 );
     }
 

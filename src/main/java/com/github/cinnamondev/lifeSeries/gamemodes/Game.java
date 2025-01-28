@@ -28,10 +28,8 @@ public interface Game extends Runnable, CommandContainer {
     default void onGameStop(LifeSeries p) {}
     default boolean onKilled(LifeSeries p, Player killed, int punishment) {
         AtomicBoolean isFinalDeath = new AtomicBoolean(false);
-        p.getScoreHandler().updatePlayerScoreAndTeam(killed, (uuid,score) -> {
-            TeamMeta newTeam = p.getScoreHandler().getTeam(score-punishment);
-            if (newTeam.equals(p.getScoreHandler().getSpectatorTeam())) { isFinalDeath.set(true); }
-            return score - punishment;
+        p.getScoreHandler().updatePlayerScoreAndTeam(killed, (uuid,score) -> score - punishment, (player, newTeam) -> {
+            isFinalDeath.set(p.getScoreHandler().isPlayerSpectator(player)); // only on team change.
         });
         return isFinalDeath.get();
     }
@@ -64,5 +62,4 @@ public interface Game extends Runnable, CommandContainer {
         }
         return false;
     }
-
 }

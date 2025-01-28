@@ -111,6 +111,9 @@ public class ScoreHandler {
     public TeamMeta getTeam(UUID uuid) { return getTeam(getScore(uuid)); }
     public TeamMeta getTeam(OfflinePlayer player) { return getTeam(getScore(player.getUniqueId())); }
     public TeamMeta getSpectatorTeam() { return this.spectatorTeam; }
+    public boolean isPlayerSpectator(UUID uuid) { return getTeam(uuid).equals(spectatorTeam); }
+    public boolean isPlayerSpectator(OfflinePlayer player) { return getTeam(player).equals(spectatorTeam); }
+
     public SortedSet<TeamMeta> getRankedTeams() { return new TreeSet<>(this.rankedTeams); }
     /// update a players score according to the returned value of `updater`. works for any player uuid, if they are not
     /// already tracked, they will be assigned the default score before `updater` is called. if the player is online
@@ -140,7 +143,7 @@ public class ScoreHandler {
     /// and they run out of time (player has changed team to spectatorTeam), the player will be killed.
     public void updatePlayerScoreAndTeam(UUID uuid,  BiFunction<UUID, Integer, Integer> updater) {
         updatePlayerScoreAndTeam(uuid, updater, (_uuid, team) -> {
-            if (getTeam(uuid).equals(spectatorTeam)) {
+            if (isPlayerSpectator(uuid)) {
                 p.getServer().getScheduler().runTask(p, () -> { // run updater in main task.
                     Player player = p.getServer().getPlayer(uuid);
                     if (player != null) { player.setHealth(0); }

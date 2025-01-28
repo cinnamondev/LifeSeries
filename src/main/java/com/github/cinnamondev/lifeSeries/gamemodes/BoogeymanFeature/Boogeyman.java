@@ -6,6 +6,7 @@ import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 
 import java.util.*;
@@ -60,10 +61,12 @@ public interface Boogeyman extends CommandContainer {
     default void punishBoogeymen(LifeSeries p) {
         for (UUID uuid : getBoogeyList()) {
             TeamMeta playerTeam = p.getScoreHandler().getTeam(uuid);
-            if (p.getScoreHandler().getRankedTeams().getLast().equals(playerTeam)
-                    && p.getConfig().getBoolean("options.boogeyman.failure.punish-lowest-team", false)) {
-                continue; // do not punish this player
-            }
+            boolean playerTeamNotPunishable = p.getConfig()
+                    .getStringList("options.boogeyman.failure.do-not-punish-teams")
+                    .stream().map(str -> p.getScoreHandler().tryForTeam(str))
+                    .<TeamMeta>mapMulti(Optional::ifPresent)
+                    .anyMatch(playerTeam::equals);
+            if (playerTeamNotPunishable || p.getScoreHandler().isPlayerSpectator(uuid)) { continue; }
             if (p.getConfig().getBoolean("options.boogeyman.demote-to-next-team", false)) {
                 int teamMinScore = playerTeam.getMininumScore();
                 p.getScoreHandler().updatePlayerScoreAndTeam(uuid, (_uuid, _score) -> teamMinScore);

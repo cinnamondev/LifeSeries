@@ -2,23 +2,16 @@ package com.github.cinnamondev.lifeSeries.gamemodes.Timed;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
-import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import com.github.cinnamondev.lifeSeries.util.TickTimeUtils;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
-import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Timed implements Game {
     protected final LifeSeries p;
@@ -48,7 +41,7 @@ public class Timed implements Game {
 
     @Override
     public Collection<LiteralArgumentBuilder<CommandSourceStack>> adminSubCommands(LifeSeries p) {
-        return Collections.singletonList(ModifyTimeSubCommand.command(p));
+        return Collections.singletonList(TimeSubCommand.command(p));
     }
 
     @Override

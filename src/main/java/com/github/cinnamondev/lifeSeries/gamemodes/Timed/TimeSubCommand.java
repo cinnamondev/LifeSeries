@@ -1,24 +1,23 @@
 package com.github.cinnamondev.lifeSeries.gamemodes.Timed;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import com.github.cinnamondev.lifeSeries.util.TickTimeUtils;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
-import io.papermc.paper.util.Tick;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Collection;
-import java.util.List;
+import java.sql.Time;
 import java.util.concurrent.TimeUnit;
 
-public class ModifyTimeSubCommand {
+public class TimeSubCommand {
     public static LiteralArgumentBuilder<CommandSourceStack> command(LifeSeries p) {
         return Commands.literal("time")
                 .then(Commands.argument("player", ArgumentTypes.players())
@@ -59,6 +58,20 @@ public class ModifyTimeSubCommand {
                                     return 1;
                                 })
                         ))
+                        .then(Commands.literal("get").executes(ctx -> {
+                            ctx.getArgument("player", PlayerSelectorArgumentResolver.class)
+                                    .resolve(ctx.getSource()).forEach(player -> ctx.getSource().getSender().sendMessage(
+                                            Component.translatable("time-command.get-score",
+                                                    player.displayName(),
+                                                    TickTimeUtils.playerTime(
+                                                            p.getScoreHandler().getScore(player),
+                                                            TimeUnit.SECONDS,
+                                                            p.getScoreHandler().getTeam(player).getColor()
+                                                    )
+                                            )
+                                    ));
+                            return 1;
+                        }))
                 )
                 .then(Commands.literal("untracked")
                         .then(Commands.literal("modify").then(Commands.argument("time", ArgumentTypes.time())
@@ -89,6 +102,15 @@ public class ModifyTimeSubCommand {
                                     return 1;
                                 })
                         ))
+                        .then(Commands.literal("get").executes(ctx -> {
+                            int untrackedScore = p.getScoreHandler().getUntrackedScore();
+                            TeamMeta untrackedTeam = p.getScoreHandler().getTeam(untrackedScore);
+                            ctx.getSource().getSender().sendMessage(Component.translatable("time-command.get-score",
+                                    Component.translatable("update-score-commands.untracked-name"),
+                                    TickTimeUtils.playerTime(untrackedScore, TimeUnit.SECONDS, untrackedTeam.getColor())
+                            ));
+                            return 1;
+                        }))
                 );
     }
 
