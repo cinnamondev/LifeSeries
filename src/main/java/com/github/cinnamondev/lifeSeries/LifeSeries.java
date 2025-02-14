@@ -1,8 +1,6 @@
 package com.github.cinnamondev.lifeSeries;
 
-import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanFeature.AmITheBoogeyMan;
 import com.github.cinnamondev.lifeSeries.commands.AdminCommand;
-import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanFeature.Boogeyman;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.LimitedLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed.Timed;

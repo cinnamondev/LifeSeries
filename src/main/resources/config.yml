@@ -53,7 +53,7 @@ revival: # TODO: NOT IMPLEMENTED
   item:
     name: "Revival Clock"
     block: CLOCK
-    model: 0 # to allow you to give the revival item a custom model. set to something ignorable otherwise.
+    model: "cosmetics:witch_hat" # comment out to omit
     recipe: [ DIRT, DIRT, DIRT,     # replace empty slots with EMPTY
               DIRT, DIRT, DIRT,
               DIRT, DIRT, DIRT ]
@@ -84,6 +84,10 @@ custom-recipes:
 
 
 options:
+  spawn-eggs:
+    droppable: true
+    chance: 5 # 0-100
+
   boogeyman:
     min: 1
     max: 3
@@ -100,16 +104,29 @@ options:
       - green
       - yellow
 
+  secret-life:
+    tasks:
+      normal:
+        - StayTogetherTask
+      hard:
+        - ExplosiveTrapTask
+    failure:
+      do-not-punish-teams:
+        - red
+
   rewards:
     disable-on-disallowed-team: true
     kill: 1800
     boogey-kill: 3600
+    task-success: 0
 
   punishment:
     disable-on-disallowed-team: false
     offline: 7200
     death: 3600
-    boogey-death: 7200
+    boogey-death: 7200 # boogeyman
+    task-failure: 7200 # secret/cat life
+
 
   # Options for player's final death (i.e. RED -> SPECTATOR)
   final-death:

@@ -1,0 +1,137 @@
+mode: timed
+
+starting-score: 86400
+
+server-locale: en_US # default to en_US if not specified. as interactable menus (revival menu)
+                     # cannot have items be translated server side, we need to specify which bundle to get them from
+                     # here.
+
+categories:
+  green:
+    colour: GREEN
+    score: 57600 # mininum number of minutes required to be in this category OR mininum number of lives.
+
+  yellow:
+    colour: YELLOW
+    score: 28800
+    can-kill:
+      - green
+
+  red:
+    colour: RED # as displayed in tab & above head
+    score: 0 # the lowest category should set 0 here to ignore this category entirely.
+    can-kill: # does not prevent PvP, just determines which categories players can be rewarded time from.
+      - red
+      - yellow
+      - green
+
+# these items will delete from inventories if players have them. if a recipe exists, it will try to prevent crafting it
+# bypass permission: life.bypass.banned-items
+banned-items:
+  - BOOKSHELF
+  - ENCHANTED_GOLDEN_APPLE
+  - ENCHANTING_TABLE
+
+# this will prevent players from having certain enchantments
+# bypass permission: life.bypass.banned-enchantments
+banned-enchantments:
+  max-level: 3 # set to -1 to disable. 0 will disable enchantments entirely.
+  # blocklist of enchantments.
+  #blocklist:
+  #  - bane_of_arthropods
+
+revival: # TODO: NOT IMPLEMENTED
+  enabled: true
+  announce:
+    title:
+      enabled: true
+      totem: true # set to 'false' to use text title
+      sound: ENTITY_ENDER_DRAGON_DEATH # set to 'NONE' to disable announcement sound
+    beam:
+      enabled: true
+      time: 20
+  item:
+    name: "Revival Clock"
+    block: CLOCK
+    model: 0 # to allow you to give the revival item a custom model. set to something ignorable otherwise.
+    #recipe: [ BLAZE_ROD, DIAMOND_BLOCK, BLAZE_ROD,     # replace empty slots with EMPTY
+    #          REDSTONE_BLOCK, CLOCK, REDSTONE_BLOCK,
+    #          GOLDEN_APPLE, DIAMOND_BLOCK, GOLDEN_APPLE ]
+    recipe: [ BLAZE_ROD,      NETHERITE_INGOT,  BLAZE_ROD,     # replace empty slots with EMPTY
+              REDSTONE_BLOCK, CLOCK,            REDSTONE_BLOCK,
+              GOLDEN_APPLE,   DIAMOND_BLOCK,    GOLDEN_APPLE ]
+  added-score: 10800
+
+custom-recipes:
+  minimal-saddle:
+    block: SADDLE
+    recipe: [ EMPTY,  EMPTY,    EMPTY,     # replace empty slots with EMPTY
+              EMPTY,  LEATHER,  EMPTY,
+              LEATHER,EMPTY,    LEATHER ]
+  paper-tnt:
+    block: TNT
+    recipe: [ PAPER,  SAND,       PAPER,
+              SAND,   GUNPOWDER,  SAND,
+              PAPER,  SAND,       PAPER ]
+  craftable-balls:
+    quantity: 3
+    block: SLIME_BALL
+    recipe: [ EMPTY,    BONE_MEAL,   EMPTY,
+              BONE_MEAL,SUGAR_CANE,  BONE_MEAL,
+              EMPTY,    WATER_BUCKET,EMPTY ]
+  craftable-tags:
+    block: NAME_TAG
+    shapeless: true
+    recipe: [STRING, PAPER]
+
+
+
+options:
+  boogeyman:
+    min: 1
+    max: 3
+    failure:
+      do-not-punish-teams: # if a red player is boogey, they cannot be punished.
+        - red
+      punish-lowest-team: false
+      demote-to-next-team: true
+      demotion-score: 10000 # used if `demote-to-next-team` is false
+    punish-boogeys: true # auto punish boogeys at end of session
+
+    allowed-teams: # names must match categories in `categories` configuration.
+      - green      # red player is not allowed to be boogeyman in this scenario
+      - yellow
+
+  rewards:
+    disable-on-disallowed-team: true
+    kill: 1800
+    boogey-kill: 3600
+
+  punishment:
+    disable-on-disallowed-team: false
+    offline: 7200
+    death: 3600
+    boogey-death: 7200
+
+  # Options for player's final death (i.e. RED -> SPECTATOR)
+  final-death:
+    # Players will drop their heads on their final death (RED -> SPECTATOR)
+    drop-head: true
+    # DO not set keepInventory to true if you use this option. If this is set to true, the plugin will dictate when
+    # players keep their items.
+    keepinv-till-final: true
+    lightning-strike: true
+    respawn-after-final: true # when players die on final they wont see screen
+    announce: true
+
+  # Options for the end of the session ( /life endsession <delay> )
+  end-of-session:
+    # when <delay> is used, an announcement will be made with the time remaining, as well as 5 minutes before
+    # (if the delay is long enough)
+    warn-players: true
+    # kick players at end of session
+    # bypass permission: life.bypass.kick
+    kick-at-end: true
+    # for servers running behind a proxy that supports bungeecord messaging. if this is a valid option,
+    # and `kick-at-end` is also true, each player is sent to the specified server.
+    send-to-server: survival-2025 # set to null or remove if not desired.

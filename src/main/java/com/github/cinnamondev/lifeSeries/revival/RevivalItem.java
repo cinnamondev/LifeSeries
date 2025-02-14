@@ -2,6 +2,7 @@ package com.github.cinnamondev.lifeSeries.revival;
 
 import com.github.cinnamondev.lifeSeries.CustomRecipe;
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -45,8 +46,10 @@ public class RevivalItem extends CustomRecipe implements Listener {
         itemMeta.setUnbreakable(true);
         itemMeta.setEnchantmentGlintOverride(true);
         itemMeta.setMaxStackSize(1);
-        itemMeta.setCustomModelData(recipeConfig.getInt("model"));
-
+        String itemModelString = recipeConfig.getString("model", null);
+        if (itemModelString != null) {
+            itemMeta.setItemModel(NamespacedKey.fromString(itemModelString));
+        }
         item.setItemMeta(itemMeta);
         return item;
     }

@@ -6,12 +6,21 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
-public class DoubleLife implements Game {
+public class DoubleLife implements Game, Listener {
+    private LifeSeries p;
+
+    public DoubleLife(LifeSeries p) {
+        this.p = p;
+    }
+
     BidiMap<UUID,UUID> linkedPlayers = new DualHashBidiMap<UUID,UUID>();
     public void unlinkPlayer(UUID player) {
         linkedPlayers.remove(player);

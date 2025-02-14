@@ -1,7 +1,7 @@
 package com.github.cinnamondev.lifeSeries.gamemodes;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanFeature.Boogeyman;
+import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman.Boogeyman;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed.Timed;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;

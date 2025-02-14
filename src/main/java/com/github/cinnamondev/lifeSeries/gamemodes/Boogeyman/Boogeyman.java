@@ -1,12 +1,13 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanFeature;
+package com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman.Commands.AmITheBoogeyMan;
+import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman.Commands.BoogeymanSubCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.CommandContainer;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 
 import java.util.*;

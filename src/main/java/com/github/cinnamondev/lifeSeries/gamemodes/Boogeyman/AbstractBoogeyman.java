@@ -1,4 +1,4 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanFeature;
+package com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
@@ -7,11 +7,11 @@ import org.bukkit.entity.Player;
 
 import java.util.*;
 
-public abstract class BasicBoogeymanGameImpl implements Boogeyman, Game {
+public abstract class AbstractBoogeyman implements Boogeyman, Game {
     private final LifeSeries p;
     private ArrayList<UUID> boogeymen = new ArrayList<>();
 
-    public BasicBoogeymanGameImpl(LifeSeries p) {
+    public AbstractBoogeyman(LifeSeries p) {
         this.p = p;
     }
 

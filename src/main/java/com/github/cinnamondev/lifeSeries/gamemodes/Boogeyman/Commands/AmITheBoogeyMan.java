@@ -1,18 +1,17 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanFeature;
+package com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman.Commands;
 
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman.Boogeyman;
 import com.github.cinnamondev.lifeSeries.gamemodes.CommandContainer;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 

@@ -1,17 +1,17 @@
 package com.github.cinnamondev.lifeSeries.util;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.title.Title;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.bukkit.entity.Player;
 
 import java.util.concurrent.TimeUnit;
 
-public class TickTimeUtils {
+public class UtilityComponents {
     public static Component playerTimeChange(int ticks) {
         return playerTimeChange(ticks/20, TimeUnit.SECONDS);
     }
@@ -38,5 +38,11 @@ public class TickTimeUtils {
                 "HH':'mm':'ss",
                 true);
         return Component.text(timeString).style(Style.style(color, TextDecoration.BOLD));
+    }
+
+    public static Component teleportButton(Player teleportTo) {
+        return Component.translatable("general.teleport-to-player")
+                .style(Style.style(NamedTextColor.GRAY, TextDecoration.BOLD))
+                .clickEvent(ClickEvent.runCommand("/minecraft:tp " + teleportTo.getName()));
     }
 }

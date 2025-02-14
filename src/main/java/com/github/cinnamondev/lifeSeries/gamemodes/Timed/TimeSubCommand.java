@@ -2,7 +2,7 @@ package com.github.cinnamondev.lifeSeries.gamemodes.Timed;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
-import com.github.cinnamondev.lifeSeries.util.TickTimeUtils;
+import com.github.cinnamondev.lifeSeries.util.UtilityComponents;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -14,7 +14,6 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.sql.Time;
 import java.util.concurrent.TimeUnit;
 
 public class TimeSubCommand {
@@ -63,7 +62,7 @@ public class TimeSubCommand {
                                     .resolve(ctx.getSource()).forEach(player -> ctx.getSource().getSender().sendMessage(
                                             Component.translatable("time-command.get-score",
                                                     player.displayName(),
-                                                    TickTimeUtils.playerTime(
+                                                    UtilityComponents.playerTime(
                                                             p.getScoreHandler().getScore(player),
                                                             TimeUnit.SECONDS,
                                                             p.getScoreHandler().getTeam(player).getColor()
@@ -107,7 +106,7 @@ public class TimeSubCommand {
                             TeamMeta untrackedTeam = p.getScoreHandler().getTeam(untrackedScore);
                             ctx.getSource().getSender().sendMessage(Component.translatable("time-command.get-score",
                                     Component.translatable("update-score-commands.untracked-name"),
-                                    TickTimeUtils.playerTime(untrackedScore, TimeUnit.SECONDS, untrackedTeam.getColor())
+                                    UtilityComponents.playerTime(untrackedScore, TimeUnit.SECONDS, untrackedTeam.getColor())
                             ));
                             return 1;
                         }))
@@ -120,7 +119,7 @@ public class TimeSubCommand {
 
     private static void setUntrackedScore(LifeSeries p, CommandSender sender, int seconds) {
         int oldScore = p.getScoreHandler().getUntrackedScore();
-        Component oldTime = TickTimeUtils.playerTime(
+        Component oldTime = UtilityComponents.playerTime(
                 oldScore,
                 TimeUnit.SECONDS,
                 p.getScoreHandler().getTeam(oldScore).getColor()
@@ -130,7 +129,7 @@ public class TimeSubCommand {
 
         int newScore = p.getScoreHandler().getUntrackedScore();
         TextColor newScoreColor = p.getScoreHandler().getTeam(newScore).getColor();
-        Component newTime = TickTimeUtils.playerTime(
+        Component newTime = UtilityComponents.playerTime(
                 newScore,
                 TimeUnit.SECONDS,
                 newScoreColor
@@ -155,7 +154,7 @@ public class TimeSubCommand {
 
     private static void setPlayerScore(LifeSeries p, CommandSender sender, Player player, int seconds, boolean tellPlayer) {
         int oldScore = p.getScoreHandler().getScore(player);
-        Component oldTime = TickTimeUtils.playerTime(
+        Component oldTime = UtilityComponents.playerTime(
                 oldScore,
                 TimeUnit.SECONDS,
                 p.getScoreHandler().getTeam(player).getColor()
@@ -164,7 +163,7 @@ public class TimeSubCommand {
         p.getScoreHandler().updatePlayerScoreAndTeam(player, (uuid, score) -> seconds);
 
         int newScore = p.getScoreHandler().getScore(player);
-        Component newTime = TickTimeUtils.playerTime(
+        Component newTime = UtilityComponents.playerTime(
                 newScore,
                 TimeUnit.SECONDS,
                 p.getScoreHandler().getTeam(player).getColor()
@@ -178,7 +177,7 @@ public class TimeSubCommand {
 
         if (tellPlayer) {
             player.showTitle(Title.title(
-                    TickTimeUtils.playerTimeChange(Math.abs(newScore - oldScore), TimeUnit.SECONDS),
+                    UtilityComponents.playerTimeChange(Math.abs(newScore - oldScore), TimeUnit.SECONDS),
                     Component.empty()
             ));
         }

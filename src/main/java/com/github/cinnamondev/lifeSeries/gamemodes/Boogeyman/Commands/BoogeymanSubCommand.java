@@ -1,6 +1,7 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.BoogeymanFeature;
+package com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman.Commands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman.Boogeyman;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;

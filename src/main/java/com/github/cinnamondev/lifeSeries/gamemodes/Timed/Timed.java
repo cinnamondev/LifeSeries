@@ -2,7 +2,7 @@ package com.github.cinnamondev.lifeSeries.gamemodes.Timed;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
-import com.github.cinnamondev.lifeSeries.util.TickTimeUtils;
+import com.github.cinnamondev.lifeSeries.util.UtilityComponents;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
@@ -31,7 +31,7 @@ public class Timed implements Game {
     }
 
     private void displayPlayerTime(Player player) {
-        player.sendActionBar(TickTimeUtils.playerTime(
+        player.sendActionBar(UtilityComponents.playerTime(
                 p.getScoreHandler().getScore(player),
                 TimeUnit.SECONDS,
                 p.getScoreHandler().getTeam(player).getColor()
@@ -48,7 +48,7 @@ public class Timed implements Game {
     public boolean onKilled(LifeSeries p, Player killed, int punishment) {
         boolean isFinalDeath = Game.super.onKilled(p, killed, punishment);
         killed.showTitle(Title.title(
-                TickTimeUtils.playerTimeChange(-1 * punishment, TimeUnit.SECONDS),
+                UtilityComponents.playerTimeChange(-1 * punishment, TimeUnit.SECONDS),
                 Component.empty()
         ));
         return isFinalDeath;
@@ -58,7 +58,7 @@ public class Timed implements Game {
     public void rewardKiller(LifeSeries p, Player killer, int reward) {
         Game.super.rewardKiller(p, killer, reward);
         killer.showTitle(Title.title(
-                TickTimeUtils.playerTimeChange(reward, TimeUnit.SECONDS),
+                UtilityComponents.playerTimeChange(reward, TimeUnit.SECONDS),
                 Component.empty()
         ));
     }

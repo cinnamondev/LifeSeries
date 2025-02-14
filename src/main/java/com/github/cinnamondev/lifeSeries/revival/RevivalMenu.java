@@ -130,7 +130,10 @@ public class RevivalMenu implements InventoryHolder, Listener {
         ClickButton button = new ClickButton(item, inventory, slot, (reviver) -> {
             reviver.getInventory().removeItemAnySlot(this.item);
             reviver.closeInventory();
-
+            if (p.getScoreHandler().getScore(player) != 0) {
+                reviver.sendMessage("Cannot revive, player is not dead!");
+                return;
+            }
             p.getScoreHandler().updatePlayerScoreAndTeam(player.getUniqueId(),
                     (_uuid, currentScore) -> p.getConfig().getInt("revival.added-score", 0),
                     (revived, newTeam) -> {
