@@ -1,7 +1,8 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
+package com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Task;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TranslatableComponent;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Player;
@@ -11,11 +12,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class ExplosiveTrapTask extends AbstractPlayerTask implements Listener, SelfCompletableTask {
-
-    public ExplosiveTrapTask(LifeSeries p, Player owningPlayer) {
-        super(p, owningPlayer);
+    public ExplosiveTrapTask(LifeSeries p, Player owningPlayer, Consumer<PlayerTask> onTaskCompletion) {
+        super(p, owningPlayer, onTaskCompletion);
     }
     private int recentExplosionDeaths = 0;
     @EventHandler(priority = EventPriority.MONITOR)
@@ -35,8 +36,9 @@ public class ExplosiveTrapTask extends AbstractPlayerTask implements Listener, S
     public boolean conditionalCompleteTask() {
         if (recentExplosionDeaths > 0) {
             complete();
+            return true;
         } else {
-            getTaskOwner().sendMessage(Component.translatable("secret-life.conditional-task.didnt-complete"));
+            return false;
         }
     }
 
@@ -57,17 +59,19 @@ public class ExplosiveTrapTask extends AbstractPlayerTask implements Listener, S
     }
 
     @Override
-    public Component getTaskName() {
-        return null;
+    public TranslatableComponent getTaskName() {
+        return Component.translatable("secret-life.tasks.explode-player.name");
+    }
+    @Override
+    public TranslatableComponent getTaskDescription() {
+        return Component.translatable("secret-life.tasks.explode-player.description");
     }
 
-    @Override
-    public Component getTaskDescription() {
-        return null;
-    }
 
-    @Override
-    public Player getTaskOwner() {
-        return pla
+    public static class Builder extends AbstractPlayerTask.Builder<Builder> {
+        @Override
+        public AbstractPlayerTask build(LifeSeries p) {
+            return new ExplosiveTrapTask(p, owningPlayer, onTaskCompletion);
+        }
     }
 }

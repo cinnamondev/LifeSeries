@@ -107,14 +107,14 @@ public class RevivalMenu implements InventoryHolder, Listener {
         ItemStack itemOn = ItemStack.of(Material.TOTEM_OF_UNDYING,1);
         ItemMeta meta = itemOn.getItemMeta();
 
-        meta.displayName(GlobalTranslator.translator().translate(
+        meta.displayName(GlobalTranslator.render(
                 Component.translatable("revival-item.buttons.location-player"),  p.getServerLocale()
         ));
         itemOn.setItemMeta(meta);
 
         ItemStack itemOff = ItemStack.of(Material.ENCHANTING_TABLE,1);
         meta = itemOff.getItemMeta();
-        meta.displayName(GlobalTranslator.translator().translate(
+        meta.displayName(GlobalTranslator.render(
                 Component.translatable("revival-item.buttons.location-spawn"),  p.getServerLocale()
         ));
         itemOff.setItemMeta(meta);

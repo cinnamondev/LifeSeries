@@ -24,14 +24,4 @@ public class Lives implements Game {
     public void onGameStop(LifeSeries p) {
         Game.super.onGameStop(p);
     }
-
-    @Override
-    public boolean onKilled(LifeSeries p, Player killed, int punishment) {
-        return Game.super.onKilled(p, killed, punishment);
-    }
-
-    @Override
-    public boolean onKilled(LifeSeries p, Player killed, int punishment, Player killer, int reward) {
-        return Game.super.onKilled(p, killed, punishment, killer, reward);
-    }
 }

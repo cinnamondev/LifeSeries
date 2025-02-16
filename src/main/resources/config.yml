@@ -105,7 +105,9 @@ options:
       - yellow
 
   secret-life:
-    tasks:
+    task-deck:
+      easy:
+        -
       normal:
         - StayTogetherTask
       hard:

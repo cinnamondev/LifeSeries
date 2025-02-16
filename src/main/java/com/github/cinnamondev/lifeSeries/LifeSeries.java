@@ -3,6 +3,9 @@ package com.github.cinnamondev.lifeSeries;
 import com.github.cinnamondev.lifeSeries.commands.AdminCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.LimitedLife;
+import com.github.cinnamondev.lifeSeries.gamemodes.Lives;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.CatLife;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.SecretLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed.Timed;
 import com.github.cinnamondev.lifeSeries.listener.EnchantmentNerfer;
 import com.github.cinnamondev.lifeSeries.listener.ItemNerfer;
@@ -17,6 +20,7 @@ import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.apache.commons.lang3.LocaleUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -62,10 +66,12 @@ public final class LifeSeries extends JavaPlugin {
         GlobalTranslator.translator().addSource(registry);
         // used for items and stuff.
         try {
-            serverLocale = LocaleUtils.toLocale(getConfig().getString("server-locale", "en-US"));
+            serverLocale = LocaleUtils.toLocale(getConfig().getString("server-locale"));
         } catch (IllegalArgumentException e) {
             getLogger().warning("couldn't get locale, defaulting to en-US");
             serverLocale = Locale.US;
+        } finally {
+            getLogger().info("uses server locale: " + serverLocale);
         }
 
         getServer().getMessenger()
@@ -87,18 +93,18 @@ public final class LifeSeries extends JavaPlugin {
         }
         getLogger().warning("starting score is" + getConfig().getInt("starting-score"));
 
-        switch (getConfig().getString("mode", null)) {
-            case "limited-life":
-            case "limitedlife":
-                game = new LimitedLife(this);
-                break;
-            case "timed":
-                game = new Timed(this);
-                break;
-            case null:
-            default:
-                getLogger().warning("invalid gamemode, cannot continue!!! ");
-                break;
+        try {
+            game = switch(getConfig().getString("mode", null)) {
+                case "cat-life" -> new CatLife(this);
+                case "secret-life" -> new SecretLife(this);
+                case "limited-life" -> new LimitedLife(this);
+                case "timed" -> new Timed(this);
+                case "lives" -> new Lives(this);
+                default -> throw new InvalidConfigurationException("Unexpected value: " + getConfig().getString("mode", null));
+            };
+        } catch (InvalidConfigurationException e) {
+            getLogger().throwing("LifeSeries", "onEnable", e);
+            return;
         }
 
         scoreHandler = new ScoreHandler(this);

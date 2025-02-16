@@ -1,14 +1,17 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
+package com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Task;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
-public interface PlayerTask {
+import java.util.function.Consumer;
+
+public interface PlayerTask extends Listener {
     public enum TaskStatus {
         COMPLETE,
         IN_PROGRESS,
@@ -31,18 +34,13 @@ public interface PlayerTask {
     }
     TaskStatus getTaskProgress();
     boolean isTaskGuessable();
-    Component getTaskName();
-    Component getTaskDescription();
+    TranslatableComponent getTaskName();
+    TranslatableComponent getTaskDescription();
     Player getTaskOwner();
-    // implementation notes:
-    // available arguments from brigadier commands
-    static LiteralArgumentBuilder<CommandSourceStack> assignPlayerTaskSubCommand() {
-        return null;
-    }
     default ItemStack createTaskBook() {
         ItemStack book =ItemStack.of(Material.WRITTEN_BOOK,1);
         book.setItemMeta(((BookMeta) book.getItemMeta()).toBuilder()
-                .author(Component.text("God UwU"))
+                .author(Component.text("God"))
                 .title(Component.text("Your task."))
                 .addPage(getTaskName().appendNewline().append(getTaskDescription()))
                 .build()
