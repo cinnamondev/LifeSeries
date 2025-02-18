@@ -102,7 +102,8 @@ public final class LifeSeries extends JavaPlugin {
                 case "lives" -> new Lives(this);
                 default -> throw new InvalidConfigurationException("Unexpected value: " + getConfig().getString("mode", null));
             };
-        } catch (InvalidConfigurationException e) {
+            getLogger().info("Gamemode is" + game.toString());
+        } catch (InvalidConfigurationException | MissingResourceException e) {
             getLogger().throwing("LifeSeries", "onEnable", e);
             return;
         }

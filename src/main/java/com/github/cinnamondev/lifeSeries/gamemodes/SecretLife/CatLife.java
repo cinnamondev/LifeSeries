@@ -1,17 +1,29 @@
 package com.github.cinnamondev.lifeSeries.gamemodes.SecretLife;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Commands.CatDisguiseSubCommand;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Commands.CatSitCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Commands.MeowCommand;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
+import me.libraryaddict.disguise.disguisetypes.watchers.CatWatcher;
+import net.kyori.adventure.key.Key;
+import org.bukkit.DyeColor;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Cat;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class CatLife extends SecretLife {
     private final MeowCommand meowCommand;
+    private final HashMap<UUID, CatWatcher> disguiseManager = new HashMap<>();
 
     public CatLife(LifeSeries p) {
         super(p);
@@ -19,22 +31,102 @@ public class CatLife extends SecretLife {
     }
 
     @Override
+    public void run() {
+
+    }
+
+    public void savePlayerDisguises() {
+        disguiseManager.entrySet().stream().forEach(entry -> {
+            p.getSave().set("players." + entry.getKey() + ".cat.type", entry.getValue().getType().getKey().toString());
+            p.getSave().set("players." + entry.getKey() + ".cat.collar", entry.getValue().getCollarColor().toString());
+        });
+        //  TODO
+        // should save cat type and collar! then on session start its disguisemeasacat with the options poof kbity!
+    }
+
+    public boolean tryPlayerDisguiseFromConfig(Player player) {
+        String keyString = p.getSave().getString("players." + player.getUniqueId() + ".cat.type");
+        if (keyString == null) {
+            p.getLogger().info("no catsguise type saved for player: " + player.getName());
+            return false;
+        }
+        Cat.Type type = RegistryAccess.registryAccess().getRegistry(RegistryKey.CAT_VARIANT)
+                .get(Key.key(p.getSave().getString("players." + player.getUniqueId() + ".cat.type")));
+        if (type == null) {
+            p.getLogger().warning("invalid cat type key in save for player " + player.getName());
+            return false;
+        }
+
+        String dyeString = p.getSave().getString("players." + player.getUniqueId() + ".cat.collar");
+        if (dyeString == null) {
+            p.getLogger().info("no catsguise collar saved for player: " + player.getName());
+            return false;
+        }
+
+        DyeColor colour;
+        try {
+            colour = DyeColor.valueOf(dyeString.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            p.getLogger().warning("invalid cat collar saved for player: " + player.getName());
+            return false;
+        }
+
+        addPlayerDisguise(player.getUniqueId(), CatDisguiser.catDisguise(player, type, colour));
+        return true;
+    }
+    public void addPlayerDisguise(UUID uuid, CatWatcher catWatcher) {
+        removePlayerDisguise(uuid);
+        disguiseManager.put(uuid, catWatcher);
+    }
+    public void addPlayerDisguise(OfflinePlayer player, CatWatcher catWatcher) {
+        addPlayerDisguise(player.getUniqueId(), catWatcher);
+    }
+    public void removePlayerDisguise(UUID uuid) {
+        disguiseManager.computeIfPresent(uuid, (_uuid, watcher) -> {
+            watcher.getDisguise().removeDisguise();
+            return null;
+        });
+    }
+    public Optional<CatWatcher> getCatWatcher(UUID uuid) {
+        return Optional.ofNullable(disguiseManager.get(uuid));
+    }
+    public Optional<CatWatcher> getCatWatcher(OfflinePlayer player) { return getCatWatcher(player.getUniqueId()); }
+
+    public MeowCommand getMeowCommand() { return this.meowCommand; }
+
+    public void removePlayerDisguise(OfflinePlayer player) {
+        removePlayerDisguise(player.getUniqueId());
+    }
+
+    @Override
     public Collection<FilledLiteralCommand> gameCommands(LifeSeries p) {
-        ArrayList<FilledLiteralCommand> commands = new ArrayList<>(super.gameCommands(p));
-        commands.add(meowCommand);
-        return commands;
+        return Stream.concat(super.gameCommands(p).stream(),
+                Stream.of(
+                        meowCommand,
+                        new CatSitCommand(p, this)
+                )
+        ).toList();
     }
 
     @Override
     public Collection<LiteralArgumentBuilder<CommandSourceStack>> adminSubCommands(LifeSeries p) {
         var commands = new ArrayList<>(super.adminSubCommands(p));
+        commands.add(CatDisguiseSubCommand.command(p, this));
         return commands;
     }
 
-    private static void disguisePlayerAsCat(Player player) {
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerJoin(PlayerJoinEvent e) {
+        tryDisguiseFromConfigOrUseTabby(e.getPlayer());
+    }
 
-        // ARGGg!!!!!!!]
-
-        // TODO: cat type randomizer or command to customize your cat.
+    public void tryDisguiseFromConfigOrUseTabby(Player player) {
+        boolean success = tryPlayerDisguiseFromConfig(player);
+        if (!success) {
+            CatDisguiser.catDisguise(player,
+                    Cat.Type.TABBY,
+                    DyeColor.RED
+            );
+        }
     }
 }

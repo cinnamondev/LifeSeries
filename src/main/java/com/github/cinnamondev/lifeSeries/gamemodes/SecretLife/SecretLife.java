@@ -67,4 +67,15 @@ public class SecretLife extends Lives implements SecretTasks {
     public Optional<PlayerTask> getSecretTask(OfflinePlayer taskOwner) {
         return Optional.ofNullable(tasks.get(taskOwner.getUniqueId()));
     }
+
+    @Override
+    public boolean teamCanGuessTasks(String teamString) {
+        return p.getConfig().getStringList("options.secret-life.can-guess-tasks").stream()
+                .anyMatch(str -> str.equalsIgnoreCase(teamString));
+    }
+
+    @Override
+    public boolean playerCanGuessTasks(OfflinePlayer guesser) {
+        return teamCanGuessTasks(p.getScoreHandler().getTeam(guesser).getScoreboardTeam().toString());
+    }
 }

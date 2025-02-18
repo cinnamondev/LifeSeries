@@ -2,6 +2,10 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Task;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.event.HoverEventSource;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -48,4 +52,7 @@ public interface PlayerTask extends Listener {
         return book;
     }
     default void givePlayerTaskBook(Player player) { player.give(createTaskBook()); }
+    default Component componentWithLore() {
+        return getTaskName().style(Style.style(NamedTextColor.LIGHT_PURPLE, TextDecoration.BOLD)).hoverEvent(getTaskDescription());
+    }
 }

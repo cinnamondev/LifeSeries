@@ -105,6 +105,9 @@ options:
       - yellow
 
   secret-life:
+    can-guess-tasks:
+      - red
+      - yellow
     task-deck:
       easy:
         -

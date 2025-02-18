@@ -51,7 +51,7 @@ public class MeowCommand implements CommandContainer.FilledLiteralCommand {
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
                     p.getServer().playSound(
-                            Sound.sound(Key.key("purreowTODO"), Sound.Source.VOICE, 1,1),
+                            Sound.sound(Key.key("minecraft:entity.cat.ambient"), Sound.Source.VOICE, 1,1),
                             player
                     );
                     return 1;

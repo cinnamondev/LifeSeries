@@ -32,7 +32,7 @@ public class ExplosiveTrapTask extends AbstractPlayerTask implements Listener, S
     }
 
 
-    @Override
+ well tha   @Override
     public boolean conditionalCompleteTask() {
         if (recentExplosionDeaths > 0) {
             complete();
