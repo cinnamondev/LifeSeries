@@ -1,8 +1,8 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Commands;
+package com.github.cinnamondev.lifeSeries.gamemodes.CatLife.Commands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.CommandContainer;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.CatLife;
+import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.CatLife;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;

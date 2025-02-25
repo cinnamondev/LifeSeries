@@ -1,12 +1,6 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Task;
+package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
 
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class TaskLookup {

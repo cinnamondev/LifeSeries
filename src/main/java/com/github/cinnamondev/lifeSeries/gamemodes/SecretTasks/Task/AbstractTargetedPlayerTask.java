@@ -1,6 +1,7 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Task;
+package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -13,13 +14,12 @@ import java.util.function.Consumer;
 
 public abstract class AbstractTargetedPlayerTask extends AbstractPlayerTask implements TargetedPlayerTask {
     protected OfflinePlayer targetedPlayer;
-    public AbstractTargetedPlayerTask(LifeSeries p, Player owningPlayer, OfflinePlayer targetedPlayer, Consumer<PlayerTask> onTaskCompletion) {
-        super(p, owningPlayer, onTaskCompletion);
+    public AbstractTargetedPlayerTask(LifeSeries p, Player owningPlayer, OfflinePlayer targetedPlayer, SecretTasks.TaskDifficulty difficulty, Consumer<PlayerTask> onTaskCompletion) {
+        super(p, owningPlayer, onTaskCompletion, difficulty);
         this.targetedPlayer = targetedPlayer;
     }
     public AbstractTargetedPlayerTask(LifeSeries p, Builder builder) {
-        super(p, builder.owningPlayer, builder.onTaskCompletion);
-        this.targetedPlayer = builder.targetPlayer;
+        this(p, builder.owningPlayer, builder.targetPlayer, builder.assignedDifficulty, builder.onTaskCompletion);
     }
 
     @Override
@@ -49,6 +49,19 @@ public abstract class AbstractTargetedPlayerTask extends AbstractPlayerTask impl
                                 return 1;
                             })
                     );
+        }
+
+        @Override
+        public AbstractPlayerTask buildWithAnySettings(LifeSeries p, SecretTasks game) {
+            var players = p.getServer().getOnlinePlayers();
+            var oPlayer = players.stream().filter(player -> player.hasPermission("lf.game.bypass-roll"))
+                    .skip((int) (players.size() * Math.random()))
+                    .findFirst();
+
+            if (oPlayer.isPresent()) {
+                return this.target(oPlayer.get()).build(p);
+            }
+            throw new RuntimeException("buildWithAnySettings couldnt get random");
         }
     }
 }

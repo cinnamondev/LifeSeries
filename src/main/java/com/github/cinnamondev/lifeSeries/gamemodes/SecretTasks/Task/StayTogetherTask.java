@@ -1,6 +1,7 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Task;
+package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
@@ -25,11 +26,11 @@ public class StayTogetherTask extends AbstractTargetedPlayerTask implements List
     private final double maxDistance = 10;
     private final int timeoutMinutes = 10;
     private int strikes = 2;
-    public StayTogetherTask(LifeSeries p, Player owningPlayer, OfflinePlayer target, Consumer<PlayerTask> onTaskCompletion) {
-        super(p, owningPlayer, target, onTaskCompletion);
+    public StayTogetherTask(LifeSeries p, Player owningPlayer, OfflinePlayer target, Consumer<PlayerTask> onTaskCompletion, SecretTasks.TaskDifficulty difficulty) {
+        super(p, owningPlayer, target, difficulty, onTaskCompletion);
     }
     public StayTogetherTask(LifeSeries p, Builder builder) {
-        super(p, builder.owningPlayer, builder.targetPlayer, builder.onTaskCompletion);
+        this(p, builder.owningPlayer, builder.targetPlayer, builder.onTaskCompletion, builder.assignedDifficulty);
     }
 
     private ScheduledTask task = null;
@@ -107,7 +108,7 @@ public class StayTogetherTask extends AbstractTargetedPlayerTask implements List
     public static class Builder extends AbstractTargetedPlayerTask.Builder<Builder> {
         @Override
         public AbstractPlayerTask build(LifeSeries p) {
-            return new StayTogetherTask(p, owningPlayer, targetPlayer, onTaskCompletion);
+            return new StayTogetherTask(p, owningPlayer, targetPlayer, onTaskCompletion, assignedDifficulty);
         }
     }
 

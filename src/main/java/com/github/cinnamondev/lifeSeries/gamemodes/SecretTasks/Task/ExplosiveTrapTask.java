@@ -1,6 +1,7 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Task;
+package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
 import org.bukkit.damage.DamageSource;
@@ -15,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class ExplosiveTrapTask extends AbstractPlayerTask implements Listener, SelfCompletableTask {
-    public ExplosiveTrapTask(LifeSeries p, Player owningPlayer, Consumer<PlayerTask> onTaskCompletion) {
-        super(p, owningPlayer, onTaskCompletion);
+    public ExplosiveTrapTask(LifeSeries p, Player owningPlayer, Consumer<PlayerTask> onTaskCompletion, SecretTasks.TaskDifficulty difficulty) {
+        super(p, owningPlayer, onTaskCompletion, difficulty);
     }
     private int recentExplosionDeaths = 0;
     @EventHandler(priority = EventPriority.MONITOR)
@@ -31,8 +32,7 @@ public class ExplosiveTrapTask extends AbstractPlayerTask implements Listener, S
                         TimeUnit.MINUTES.toSeconds(3) * 20);
     }
 
-
- well tha   @Override
+    @Override
     public boolean conditionalCompleteTask() {
         if (recentExplosionDeaths > 0) {
             complete();
@@ -71,7 +71,12 @@ public class ExplosiveTrapTask extends AbstractPlayerTask implements Listener, S
     public static class Builder extends AbstractPlayerTask.Builder<Builder> {
         @Override
         public AbstractPlayerTask build(LifeSeries p) {
-            return new ExplosiveTrapTask(p, owningPlayer, onTaskCompletion);
+            return new ExplosiveTrapTask(p, owningPlayer, onTaskCompletion, assignedDifficulty);
+        }
+
+        @Override
+        public AbstractPlayerTask buildWithAnySettings(LifeSeries p, SecretTasks game) {
+            return build(p);
         }
     }
 }

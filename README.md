@@ -28,3 +28,49 @@ revival clock can be crafted
 ```
 
 ## Wildcards
+
+
+## Secret Life
+
+Available tasks:
+umm
+
+- gamemaster
+
+### commands:
+
+#### Players
+
+- `/secretTask`: Get your secret task book again (if you have one) 
+- `/guess <player> <task description>`: Guess a players task!
+    - IF `gamemaster-enabled: true`
+        - all players with `life.gamemaster` permission will be given a message to accept or deny a guess.
+            - (these player should also have the ability to use minecraft:tp, and permission `life.admin.game` to be able to pass or fail tasks)
+    - `life.game.can-always.guess` - player can always guess a task irregadless of team
+
+
+### explode-another-player
+
+Explode a player (any), then run the task complete command.
+
+## Cat Life
+
+Secret Life for silly kittys!! Less focus on PVP (see example configurations for catlife for a deck of tasks)
+
+### customizing your kttty!
+
+For players:
+`/catsumize <cat type> <collar colour>`
+Required permission: `life.player.cat-customize`
+
+For admins:
+`/lf meowmeowmeowmeow <player selector/random (TODO)> <enable/disable/customize> <type (customize)> <collar colour (customize)>
+Required permission: `life.admin.game`
+
+rerolling tasks:
+
+- tasks do not have to belong to a difficulty that that team can normally recieve
+- tasks will always be of the harder category W.R.T original task
+    - if player has EASY task, reroll will give them a NORMAL or HARD task.
+    - if a player has NORMAL task, reroll will give them a HARD TASK
+    - otherwise, HARD task.

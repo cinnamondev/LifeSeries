@@ -4,8 +4,8 @@ import com.github.cinnamondev.lifeSeries.commands.AdminCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.LimitedLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.Lives;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.CatLife;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.SecretLife;
+import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.CatLife;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed.Timed;
 import com.github.cinnamondev.lifeSeries.listener.EnchantmentNerfer;
 import com.github.cinnamondev.lifeSeries.listener.ItemNerfer;
@@ -23,6 +23,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,6 +51,7 @@ public final class LifeSeries extends JavaPlugin {
 
     private final ScheduledExecutorService asyncScheduler = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> gameTask;
+    private int scoreHandlerUpdaterTaskID;
     private boolean doAutosave = true;
 
     @Override
@@ -118,6 +120,9 @@ public final class LifeSeries extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(enchantmentNerfer, this);
         Bukkit.getPluginManager().registerEvents(itemNerfer, this);
         Bukkit.getPluginManager().registerEvents(revivalItem, this);
+        if (game instanceof Listener gameListener) {
+            Bukkit.getPluginManager().registerEvents(gameListener, this);
+        }
 
         getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             if (doAutosave) {
@@ -205,6 +210,13 @@ public final class LifeSeries extends JavaPlugin {
     public void startSession() {
         //getServer().getScheduler().scheduleSyncRepeatingTask(this, game, 20,20);
         doAutosave = true;
+        scoreHandlerUpdaterTaskID = getServer().getScheduler().scheduleSyncRepeatingTask(
+                this,
+                () -> getScoreHandler().updateTrackableScoresAndTeams((_uuid, score) -> score),
+                20,
+                20
+        );
+
         gameTask = asyncScheduler.scheduleAtFixedRate(game, 1,1, TimeUnit.SECONDS);
     }
     public void stopSession() {

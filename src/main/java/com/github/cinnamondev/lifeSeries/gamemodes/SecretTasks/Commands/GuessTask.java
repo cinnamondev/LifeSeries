@@ -1,8 +1,8 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Commands;
+package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.CommandContainer;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.SecretTasks;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.github.cinnamondev.lifeSeries.util.UtilityComponents;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -26,50 +26,52 @@ public class GuessTask implements CommandContainer.FilledLiteralCommand {
 
     @Override
     public List<String> getAliases() {
-        return List.of();
+        return List.of("guessTask");
     }
 
     @Override
     public String getDescription() {
-        return "";
+        return "Guess another player's task.";
     }
 
     @Override
     public LiteralCommandNode<CommandSourceStack> command() {
         return Commands.literal("guess")
                 .requires(src -> src.getSender() instanceof Player)
-                .requires(src -> src.getSender().hasPermission("lf.secretlife.guess"))
                 .then(Commands.argument("player", ArgumentTypes.player()).then(Commands.argument("task", StringArgumentType.greedyString())
                         .executes(ctx -> {
                             Player guesser = (Player) ctx.getSource().getSender();
-                            if (!game.playerCanGuessTasks(guesser)) { return 1; } // TODO: rejection message
+                            if (!game.canGuessTask(guesser)) {
+                                guesser.sendMessage(Component.translatable("secret-life.guessing.cannot-guess-tasks"));
+                                return 1;
+                            }
 
                             Player target = ctx.getArgument("player", PlayerSelectorArgumentResolver.class)
                                     .resolve(ctx.getSource()).getFirst();
 
                             game.getSecretTask(target).ifPresentOrElse(secretTask -> {
-                                if (!secretTask.isTaskGuessable()) { return; } // TODO: rejection message
+                                if (!secretTask.isTaskGuessable()) {
+                                    guesser.sendMessage(Component.translatable("secret-life.guessing.unguessable-task"));
+                                    return;
+                                }
 
                                 p.getServer().getOnlinePlayers().stream()
-                                        .filter(player -> player.hasPermission("lf.gamemaster"))
-                                        .forEach(player -> player.sendMessage(
+                                        .filter(player -> player.hasPermission("life.gamemaster"))
+                                        .forEach(gamemaster -> gamemaster.sendMessage(
                                                 Component.translatable("secret-life.gamemaster.guess")
                                                         .arguments(
-                                                                player.displayName(),
+                                                                guesser.displayName(),
                                                                 target.displayName(),
                                                                 Component.text(ctx.getArgument("task", String.class)),
                                                                 secretTask.componentWithLore(),
-                                                                SecretTasks.rejectGuessButton(secretTask),
-                                                                SecretTasks.acceptGuessButton(secretTask),
+                                                                game.rejectGuessButton(guesser),
+                                                                SecretTasks.acceptGuessButton(secretTask, guesser),
                                                                 UtilityComponents.teleportToPlayer(target)
                                                         )
                                         ));
                             }, () -> {
-                                // TODO: rejection message
+                                guesser.sendMessage(Component.translatable("secret-life.guessing.no-or-complete-task"));
                             });
-
-
-
                             return 1;
                         })
         )).build();

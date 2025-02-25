@@ -40,7 +40,7 @@ banned-enchantments:
   blocklist:
     - bane_of_arthropods
 
-revival: # TODO: NOT IMPLEMENTED
+revival:
   enabled: true
   announce:
     title:
@@ -104,18 +104,36 @@ options:
       - green
       - yellow
 
+  cat-life:
+    auto-disguise: true
+
   secret-life:
+    gamemaster-enabled: true # set to false to place onus of task guess acceptance on owning player, tasks that use
+                             # GM verification will be automatically accepted.
     can-guess-tasks:
       - red
       - yellow
+    can-infinite-roll:      # TODO: to be finished- players in this category can infinitely roll tasks (others can roll once)
+      - red
     task-deck:
-      easy:
-        -
+      easy:                 # Currently there is no concept outside of `easy, medium, hard`. do not try to add additional categories.
+        teams:              # Teams that are eligible to recieve these tasks
+          - green
+          - yellow
+        deck:               # Tasks that are considered "easy"
+          - StayTogetherTask # todo more tasks
       normal:
-        - StayTogetherTask
+        teams:
+          - yellow
+          - red
+        deck:
+          - StayTogetherTask
       hard:
-        - ExplosiveTrapTask
-    failure:
+        teams:
+          - red
+        deck:
+          - ExplosiveTrapTask
+    failure:              # prevent a specific team from
       do-not-punish-teams:
         - red
 

@@ -36,7 +36,7 @@ public final class AdminCommand {
     }
 
     private static int helpCommand(CommandSender sender) {
-        // TODO: NOT IMPLEMENTED
+
         sender.sendMessage(Component.text(description));
         return 1;
     }

@@ -40,7 +40,7 @@ banned-enchantments:
   #blocklist:
   #  - bane_of_arthropods
 
-revival: # TODO: NOT IMPLEMENTED
+revival:
   enabled: true
   announce:
     title:

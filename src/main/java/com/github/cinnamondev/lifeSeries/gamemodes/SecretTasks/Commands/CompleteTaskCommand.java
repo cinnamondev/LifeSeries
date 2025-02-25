@@ -1,9 +1,9 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Commands;
+package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.CommandContainer;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.SecretTasks;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretLife.Task.SelfCompletableTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.SelfCompletableTask;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
