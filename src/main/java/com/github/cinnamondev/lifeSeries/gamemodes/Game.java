@@ -24,8 +24,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface Game extends Runnable, CommandContainer {
-    default void onGameStart(LifeSeries p) {}
-    default void onGameStop(LifeSeries p) {}
+    default void onGameStart() {}
+    default void onGameStop() {}
     default boolean onKilled(LifeSeries p, Player killed, int punishment) {
         AtomicBoolean isFinalDeath = new AtomicBoolean(false);
         p.getScoreHandler().updatePlayerScoreAndTeam(killed, (uuid,score) -> score - punishment, (player, newTeam) -> {

@@ -1,4 +1,4 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
+package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
@@ -8,7 +8,9 @@ import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.util.function.Consumer;
 
@@ -27,9 +29,30 @@ public abstract class AbstractTargetedPlayerTask extends AbstractPlayerTask impl
         return this.targetedPlayer;
     }
 
+    @Override
+    public ConfigurationSection saveTask(ConfigurationSection taskSection) {
+        var task = super.saveTask(taskSection);
+        taskSection.set("target", this.targetedPlayer.getUniqueId());
+        return task;
+    }
+
     public abstract static class Builder<T extends Builder<T>> extends AbstractPlayerTask.Builder<T> {
         protected OfflinePlayer targetPlayer;
         public T target(OfflinePlayer targetPlayer) { this.targetPlayer = targetPlayer; return (T) this; }
+        protected T randomTarget(Plugin p) {
+            var players = p.getServer().getOnlinePlayers();
+            var oPlayer = players.stream()
+                    .filter(player -> !player.hasPermission("lf.game.bypass-roll"))
+                    .filter(player -> !player.equals(this.owningPlayer))
+                    .skip((int) (players.size() * Math.random()))
+                    .findFirst();
+
+            if (oPlayer.isPresent()) {
+                return this.target(oPlayer.get());
+            } else {
+                throw new RuntimeException("no valid target candidate found when rolling task for player " + this.owningPlayer.getName());
+            }
+        }
         @Override
         public LiteralArgumentBuilder<CommandSourceStack> builderCommand(LifeSeries p, LiteralArgumentBuilder<CommandSourceStack> root, Consumer<PlayerTask> onTaskAdded) {
             return root
@@ -53,15 +76,7 @@ public abstract class AbstractTargetedPlayerTask extends AbstractPlayerTask impl
 
         @Override
         public AbstractPlayerTask buildWithAnySettings(LifeSeries p, SecretTasks game) {
-            var players = p.getServer().getOnlinePlayers();
-            var oPlayer = players.stream().filter(player -> player.hasPermission("lf.game.bypass-roll"))
-                    .skip((int) (players.size() * Math.random()))
-                    .findFirst();
-
-            if (oPlayer.isPresent()) {
-                return this.target(oPlayer.get()).build(p);
-            }
-            throw new RuntimeException("buildWithAnySettings couldnt get random");
+            return randomTarget(p).build(p);
         }
     }
 }

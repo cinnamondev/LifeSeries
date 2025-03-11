@@ -3,6 +3,8 @@ package com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman.Commands;
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman.Boogeyman;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
+import com.github.cinnamondev.lifeSeries.util.TitleCountdown;
+import com.google.common.util.concurrent.Runnables;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -18,10 +20,13 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -98,13 +103,14 @@ public class BoogeymanSubCommand {
     }
 
     public static int runRollTask(LifeSeries p, Boogeyman boogey, CommandSender src, int ticks, int min, int max) {
-        TextComponent message = Component.text("The boogeyman will be chosen in " + TimeUnit.SECONDS.toMinutes(ticks / 20) + " minutes!").color(NamedTextColor.RED);
-        p.getServer().showTitle(Title.title(
-                message,
-                Component.empty()
-        ));
-        p.getServer().sendMessage(message);
-
+        if (ticks >= TimeUnit.MINUTES.toSeconds(1) * 20) {
+            TextComponent message = Component.text("The boogeyman will be chosen in " + TimeUnit.SECONDS.toMinutes(ticks / 20) + " minutes!").color(NamedTextColor.RED);
+            p.getServer().showTitle(Title.title(
+                    message,
+                    Component.empty()
+            ));
+            p.getServer().sendMessage(message);
+        }
         p.getServer().getScheduler().runTaskLater(p, () -> {
             if (min > max) { src.sendMessage(Component.text("cannot roll, boogey max < min!")); return; }
             if (max == 0) {
@@ -116,33 +122,28 @@ public class BoogeymanSubCommand {
                 Sound tickSound = Sound.sound(Key.key("block.note_block.hat"), Sound.Source.AMBIENT, 1f,1f);
 
                 p.getServer().sendMessage(Component.text("The boogeyman is being chosen..."));
-                scheduleBroadcastSingleTitleWithSound(p, 0, "3", Style.style(NamedTextColor.GREEN), tickSound);
-                scheduleBroadcastSingleTitleWithSound(p, 60, "2", Style.style(NamedTextColor.YELLOW), tickSound);
-                scheduleBroadcastSingleTitleWithSound(p, 120, "1", Style.style(NamedTextColor.RED), tickSound);
-                scheduleBroadcastSingleTitleWithSound(p, 180, "You are...", Style.style(NamedTextColor.RED), tickSound);
 
-                p.getServer().getScheduler().runTaskLater(p, () -> {
-                    p.getServer().getOnlinePlayers().forEach(onlinePlayer -> {
-                        TextComponent boogeymanAnnouncement  = Component.text("NOT the boogeyman!")
-                                .color(NamedTextColor.GREEN);
-                        if (boogey.getBoogeyList().contains(onlinePlayer.getUniqueId())) {
-                            boogeymanAnnouncement = Component.text("The boogeyman!")
-                                    .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD));
-                        }
-                        onlinePlayer.showTitle(Title.title(boogeymanAnnouncement, Component.empty()));
-                    });
-                }, 240);
+                TitleCountdown.showSequencedTitles(p, p.getServer(), List.of(
+                                Title.title(Component.text("3").color(NamedTextColor.GREEN), Component.empty())),
+                        Sound.sound(NamespacedKey.minecraft("block.metal_pressure_plate.click_on"), Sound.Source.MASTER, 0.8f, 1),
+                        60, 60, () -> p.getServer().getOnlinePlayers().forEach(onlinePlayer -> {
+                            boolean isBoogey = boogey.isBoogeyman(onlinePlayer);
+                            TitleCountdown.showSequencedTitles(p, onlinePlayer, List.of(
+                                    Title.title(Component.text("You are...").color(NamedTextColor.RED), Component.empty()),
+                                    Title.title(
+                                            isBoogey ? Component.text("THE boogeyman!").color(NamedTextColor.RED)
+                                                    : Component.text("NOT the boogeyman").color(NamedTextColor.GREEN),
+                                            Component.empty()
+                                    )),
+                                    List.of(
+                                            Sound.sound(NamespacedKey.minecraft("event.mob-effect.trial-omen"), Sound.Source.MASTER, 1, 1),
+                                            isBoogey ? Sound.sound(NamespacedKey.minecraft("entity.ender_dragon.growl"), Sound.Source.MASTER, 1, 1)
+                                                    : Sound.sound(NamespacedKey.minecraft("block.bell.resonate"), Sound.Source.MASTER, 1, 1)
+                                    ), 1, 180, Runnables.doNothing());
+                        })
+                );
             }
         }, ticks);
         return 1;
-    }
-    private static void scheduleBroadcastSingleTitleWithSound(Plugin p, int l, String titleString, Style style, Sound sound){
-        p.getServer().playSound(sound);
-        p.getServer().getScheduler().runTaskLater(p, () -> {
-            p.getServer().showTitle(Title.title(
-                    Component.text(titleString).style(style),
-                    Component.empty()
-            ));
-        },l);
     }
 }

@@ -2,6 +2,9 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractPlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractTargetedPlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
@@ -28,9 +31,6 @@ public class StayTogetherTask extends AbstractTargetedPlayerTask implements List
     private int strikes = 2;
     public StayTogetherTask(LifeSeries p, Player owningPlayer, OfflinePlayer target, Consumer<PlayerTask> onTaskCompletion, SecretTasks.TaskDifficulty difficulty) {
         super(p, owningPlayer, target, difficulty, onTaskCompletion);
-    }
-    public StayTogetherTask(LifeSeries p, Builder builder) {
-        this(p, builder.owningPlayer, builder.targetPlayer, builder.onTaskCompletion, builder.assignedDifficulty);
     }
 
     private ScheduledTask task = null;
@@ -91,6 +91,11 @@ public class StayTogetherTask extends AbstractTargetedPlayerTask implements List
                         Component.text(timeoutMinutes),
                         Component.text(strikes)
                 );
+    }
+
+    @Override
+    public String getTaskKey() {
+        return "follow-another-player";
     }
 
     private TaskStatus checkFailState() {

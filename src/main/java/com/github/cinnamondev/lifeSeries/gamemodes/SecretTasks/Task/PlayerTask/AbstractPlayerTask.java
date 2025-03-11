@@ -1,6 +1,7 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
+package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -8,6 +9,7 @@ import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSele
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -52,12 +54,22 @@ public abstract class AbstractPlayerTask implements PlayerTask {
     public Player getTaskOwner() {
         return this.owningPlayer;
     }
+    @Override
     public SecretTasks.TaskDifficulty getDifficulty() {
         return this.difficulty;
     }
+
+    @Override
+    public ConfigurationSection saveTask(ConfigurationSection taskSection) {
+        var task = taskSection.createSection(this.getTaskKey());
+        task.set("difficulty", this.getDifficulty());
+        task.set("progress", this.getTaskProgress());
+        return task;
+    }
+
     @Override
     public ItemStack createTaskBook() {
-        ItemStack book =ItemStack.of(Material.WRITTEN_BOOK,1);
+        ItemStack book = SecretLife.baseBook(p, 1);
 
         Component name = GlobalTranslator.render(getTaskName(), p.getServerLocale());
         Component description = GlobalTranslator.render(getTaskDescription(), p.getServerLocale());

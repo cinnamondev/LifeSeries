@@ -14,14 +14,4 @@ public class Lives implements Game {
     public void run() {
 
     }
-
-    @Override
-    public void onGameStart(LifeSeries p) {
-        Game.super.onGameStart(p);
-    }
-
-    @Override
-    public void onGameStop(LifeSeries p) {
-        Game.super.onGameStop(p);
-    }
 }

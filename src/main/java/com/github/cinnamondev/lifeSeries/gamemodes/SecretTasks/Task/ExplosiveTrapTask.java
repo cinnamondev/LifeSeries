@@ -2,6 +2,9 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractPlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.SelfCompletableTask;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
 import org.bukkit.damage.DamageSource;
@@ -65,6 +68,11 @@ public class ExplosiveTrapTask extends AbstractPlayerTask implements Listener, S
     @Override
     public TranslatableComponent getTaskDescription() {
         return Component.translatable("secret-life.tasks.explode-player.description");
+    }
+
+    @Override
+    public String getTaskKey() {
+        return "explode-another-player";
     }
 
 

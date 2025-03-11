@@ -3,16 +3,22 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands;
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.*;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
+import com.github.cinnamondev.lifeSeries.util.TitleCountdown;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 
+import java.util.Collection;
 import java.util.function.Consumer;
 
 public class TaskAssignmentBuilderSubCommand {
@@ -35,9 +41,9 @@ public class TaskAssignmentBuilderSubCommand {
                         taskGame.getSecretTask(player).ifPresentOrElse((task) -> {
                             ctx.getSource().getSender().sendMessage(player.displayName()
                                     .append(Component.text("'s task: "))
-                                    .append(task.getTaskName())
+                                    .append(task.componentWithLore())
                                     .appendSpace()
-                                    .append(Component.text(task.getTaskProgress().toString()))
+                                    .append(task.getTaskProgress().asComponent())
                             );
                         }, () -> ctx.getSource().getSender().sendMessage(Component.text("No task assigned to ")
                                     .append(player.displayName()))
@@ -47,34 +53,8 @@ public class TaskAssignmentBuilderSubCommand {
                 });
 
         var rollTasksCommand = Commands.literal("roll")
-                .then(Commands.argument("difficulty", StringArgumentType.word())
-                        .suggests((ctx, builder) -> {
-                            builder.suggest("team");
-                            builder.suggest("any");
-                            builder.suggest("easy");
-                            builder.suggest("medium");
-                            builder.suggest("hard");
-                            return builder.buildFuture();
-                        })
-                        .executes(ctx -> {
-                            ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
-                                    .resolve(ctx.getSource()).forEach(player -> {
-                                        String difficulty = ctx.getArgument("difficulty", String.class).toLowerCase();
-                                        var task = switch (difficulty) { // discover which tasks to give
-                                            case "easy" -> taskGame.rollTaskOfDifficulty(player, SecretTasks.TaskDifficulty.EASY);
-                                            case "medium" -> taskGame.rollTaskOfDifficulty(player,SecretTasks.TaskDifficulty.MEDIUM);
-                                            case "hard" -> taskGame.rollTaskOfDifficulty(player,SecretTasks.TaskDifficulty.HARD);
-                                            case "team" -> taskGame.rollTask(player,p.getScoreHandler().getTeam(player));
-                                            case "all" -> taskGame.rollTaskOfAnyDifficulty(player);
-                                            default -> null;
-                                        };
-                                        if (task != null) {
-                                            taskGame.addSecretTask(task);
-                                        }
-                                    });
-                            return 1;
-                        })
-                );
+                .then(Commands.literal("countdown").then(rollCommand(p, taskGame, true))) // with countdown
+                .then(rollCommand(p, taskGame, false));
         var root = Commands.literal("task")
                 .requires(src -> src.getSender().hasPermission("life.admin.game"))
                 .then(Commands.argument("players", ArgumentTypes.players())
@@ -98,5 +78,61 @@ public class TaskAssignmentBuilderSubCommand {
                 );
 
         return root;
+    }
+
+    private static RequiredArgumentBuilder<CommandSourceStack, String> rollCommand(LifeSeries p, SecretTasks taskGame, boolean countdown) {
+        return Commands.argument("difficulty", StringArgumentType.word())
+                .suggests((ctx, builder) -> {
+                    builder.suggest("team");
+                    builder.suggest("any");
+                    builder.suggest("easy");
+                    builder.suggest("medium");
+                    builder.suggest("hard");
+                    return builder.buildFuture();
+                })
+                .executes(ctx -> {
+                    var players = ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
+                            .resolve(ctx.getSource());
+                    if (countdown) {
+                        TitleCountdown.lifeCountdown(p, Audience.audience(players),
+                                Sound.sound(NamespacedKey.minecraft("block.metal_pressure_plate.click_on"), Sound.Source.MASTER, 0.8f, 1),
+                                1,30, () -> roller(
+                                        p,
+                                        taskGame,
+                                        ctx.getSource().getSender(),
+                                        players,
+                                        ctx.getArgument("difficulty", String.class).toLowerCase()
+                                ));
+                    } else { // roll without delay
+                        roller(
+                                p,
+                                taskGame,
+                                ctx.getSource().getSender(),
+                                players,
+                                ctx.getArgument("difficulty", String.class).toLowerCase()
+                        );
+                    }
+                    return 1;
+                });
+    }
+
+    private static void roller(LifeSeries p, SecretTasks taskGame, Audience source, Collection<Player> players, String difficulty) {
+        players.forEach(player -> {
+            try {
+                switch (difficulty) { // discover which tasks to give
+                    case "easy" -> taskGame.rollTaskOfDifficulty(player, SecretTasks.TaskDifficulty.EASY);
+                    case "medium" -> taskGame.rollTaskOfDifficulty(player, SecretTasks.TaskDifficulty.MEDIUM);
+                    case "hard" -> taskGame.rollTaskOfDifficulty(player, SecretTasks.TaskDifficulty.HARD);
+                    case "team" -> taskGame.rollTask(player, p.getScoreHandler().getTeam(player));
+                    case "any" -> taskGame.rollTaskOfAnyDifficulty(player);
+                };
+            } catch (Exception e) {
+                source.sendMessage(
+                        Component.text("Failed to roll task for player ").append(player.displayName())
+                                .hoverEvent(Component.text(e.getMessage()))
+                );
+                p.getLogger().warning(e.getMessage());
+            }
+        });
     }
 }

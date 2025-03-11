@@ -1,4 +1,4 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
+package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask;
 
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import net.kyori.adventure.text.Component;
@@ -6,18 +6,26 @@ import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
 
 public interface PlayerTask extends Listener {
     public enum TaskStatus {
         COMPLETE,
         IN_PROGRESS,
         ODD_STATE, // i.e. StayTogetherTask when target is offline.
-        FAILED
+        FAILED;
+
+        public Component asComponent() {
+            return switch(this) {
+                case COMPLETE -> Component.translatable("task-status.complete").color(NamedTextColor.GREEN);
+                case IN_PROGRESS -> Component.translatable("task-status.in-progress").color(NamedTextColor.YELLOW);
+                case ODD_STATE -> Component.translatable("task-status.odd-state").color(NamedTextColor.YELLOW);
+                case FAILED -> Component.translatable("task-status.failed").color(NamedTextColor.RED);
+            };
+        }
     }
     void complete();
     void fail();
@@ -40,8 +48,11 @@ public interface PlayerTask extends Listener {
     Player getTaskOwner();
     SecretTasks.TaskDifficulty getDifficulty();
     ItemStack createTaskBook();
+    ConfigurationSection saveTask(ConfigurationSection taskSection);
+    String getTaskKey();
+    default void acceptGuess() { fail(); }
     default void givePlayerTaskBook(Player player) { player.give(createTaskBook()); }
     default Component componentWithLore() {
-        return getTaskName().style(Style.style(NamedTextColor.LIGHT_PURPLE, TextDecoration.BOLD)).hoverEvent(getTaskDescription());
+        return getTaskName().style(Style.style(NamedTextColor.LIGHT_PURPLE, TextDecoration.ITALIC)).hoverEvent(getTaskDescription());
     }
 }

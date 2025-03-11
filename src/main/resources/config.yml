@@ -1,6 +1,6 @@
-mode: timed
+mode: cat-life
 
-starting-score: 86400
+starting-score: 9
 
 server-locale: en_US # default to en_US if not specified. as interactable menus (revival menu)
                      # cannot have items be translated server side, we need to specify which bundle to get them from
@@ -9,11 +9,11 @@ server-locale: en_US # default to en_US if not specified. as interactable menus 
 categories:
   green:
     colour: GREEN
-    score: 57600 # mininum number of minutes required to be in this category OR mininum number of lives.
+    score: 9 # mininum number of minutes required to be in this category OR mininum number of lives.
 
   yellow:
     colour: YELLOW
-    score: 28800
+    score: 5
     can-kill:
       - green
 
@@ -53,7 +53,7 @@ revival:
   item:
     name: "Revival Clock"
     block: CLOCK
-    model: "cosmetics:witch_hat" # comment out to omit
+    #model: "cosmetics:witch_hat" # comment out to omit
     recipe: [ DIRT, DIRT, DIRT,     # replace empty slots with EMPTY
               DIRT, DIRT, DIRT,
               DIRT, DIRT, DIRT ]
@@ -108,6 +108,8 @@ options:
     auto-disguise: true
 
   secret-life:
+    auto-roll: true # roll at session start
+    watchdog-time: 3600 # ~3 minutes
     gamemaster-enabled: true # set to false to place onus of task guess acceptance on owning player, tasks that use
                              # GM verification will be automatically accepted.
     can-guess-tasks:
@@ -121,18 +123,18 @@ options:
           - green
           - yellow
         deck:               # Tasks that are considered "easy"
-          - StayTogetherTask # todo more tasks
+          - follow-another-player # todo more tasks
       normal:
         teams:
           - yellow
           - red
         deck:
-          - StayTogetherTask
+          - follow-another-player
       hard:
         teams:
           - red
         deck:
-          - ExplosiveTrapTask
+          - explode-another-player
     failure:              # prevent a specific team from
       do-not-punish-teams:
         - red

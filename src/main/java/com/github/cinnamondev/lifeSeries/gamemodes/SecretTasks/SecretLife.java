@@ -2,20 +2,26 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.Lives;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.TaskLookup;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.Plugin;
 
 import java.util.*;
 
 public class SecretLife extends Lives implements SecretTasks {
-    HashMap<UUID, com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask> tasks = new HashMap<>();
+    HashMap<UUID, PlayerTask> tasks = new HashMap<>();
 
     public SecretLife(LifeSeries p) {
         super(p);
@@ -34,20 +40,27 @@ public class SecretLife extends Lives implements SecretTasks {
     }
 
     @Override
+    public void onGameStart() {
+        if (p.getConfig().getBoolean("options.secret-life.auto-roll", false)) {
+            p.getServer().getOnlinePlayers().forEach(player -> this.rollTask(
+                    player,
+                    p.getScoreHandler().getTeam(player),
+                    true
+            ));
+        }
+    }
+
+    @Override
     public Collection<String> getAllTasksForTeam(TeamMeta teamMeta) {
-        ArrayList<String> tasks = new ArrayList<>();
         // search through task-deck and filter teams
         ConfigurationSection section = p.getConfig().getConfigurationSection("options.secret-life.task-deck");
         if (section == null) { return Collections.emptyList(); }
 
-        section.getKeys(false).forEach(k -> { // for each difficulty
-            section.getStringList(k + ".teams").stream()
-                    .filter(str -> str.equalsIgnoreCase(teamMeta.getScoreboardTeam().getName()))
-                    .findFirst().ifPresent(_str -> { // if team is in "difficulty.team"
-                        tasks.addAll(section.getStringList(k + ".deck")); // add all tasks in deck.
-                    });
-        });
-        return List.of();
+        return section.getKeys(false).stream().filter(deckName ->
+                        section.getStringList(deckName + ".teams").stream()
+                                .anyMatch(str -> str.equalsIgnoreCase(teamMeta.getScoreboardTeam().getName()))
+                ).flatMap(deckName -> section.getStringList(deckName + ".deck").stream())
+                .toList();
     }
 
     @Override
@@ -62,19 +75,21 @@ public class SecretLife extends Lives implements SecretTasks {
         };
     }
     @Override
-    public PlayerTask rollTasks(Player owningPlayer, Collection<String> taskList) {
-        return TaskLookup.getTaskBuilderByKey(
+    public PlayerTask rollTasks(Player owningPlayer, Collection<String> taskList, boolean add) throws RuntimeException{
+        var task = TaskLookup.getTaskBuilderByKey(
                 taskList.stream().skip((int) (taskList.size() * Math.random())).findFirst()
                         .orElseThrow(() -> new IllegalStateException("No task found")) // this shouldnt be a possible
         )
                 .player(owningPlayer)
                 .onCompletion(this::onTaskCompletion)
                 .buildWithAnySettings(p, this);
+        if (add) { addSecretTask(task); }
+        return task;
     }
 
 
     @Override
-    public void addSecretTask(com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask secretTask) {
+    public void addSecretTask(PlayerTask secretTask) {
         removeSecretTask(secretTask.getTaskOwner()); // ensure everythings cleaned up.
         Bukkit.getPluginManager().registerEvents(secretTask, p);
         tasks.put(secretTask.getTaskOwner().getUniqueId(), secretTask);
@@ -82,7 +97,7 @@ public class SecretLife extends Lives implements SecretTasks {
     }
 
     @Override
-    public void onTaskSuccess(com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask secretTask) {
+    public void onTaskSuccess(PlayerTask secretTask) {
         secretTask.getTaskOwner().sendMessage(Component.text("success"));
         int reward = p.getConfig().getInt("options.secret-life.rewards.task-success", 0);
         if (reward > 0) {
@@ -94,7 +109,7 @@ public class SecretLife extends Lives implements SecretTasks {
     }
 
     @Override
-    public void onTaskFailure(com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask secretTask) {
+    public void onTaskFailure(PlayerTask secretTask) {
         secretTask.getTaskOwner().sendMessage(Component.text("fail"));
         int punishment = p.getConfig().getInt("options.punishment.task-failure", 0);
         if (punishment > 0) {
@@ -114,7 +129,7 @@ public class SecretLife extends Lives implements SecretTasks {
     }
 
     @Override
-    public Optional<com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask> getSecretTask(OfflinePlayer taskOwner) {
+    public Optional<PlayerTask> getSecretTask(OfflinePlayer taskOwner) {
         return Optional.ofNullable(tasks.get(taskOwner.getUniqueId()));
     }
 
@@ -142,5 +157,13 @@ public class SecretLife extends Lives implements SecretTasks {
         } else {
             return canRerollTask(p.getScoreHandler().getTeam(reroller));
         }
+    }
+
+    public static ItemStack baseBook(Plugin p, int n) {
+        ItemStack item = ItemStack.of(Material.WRITTEN_BOOK,n);
+        ItemMeta meta = item.getItemMeta();
+        meta.getPersistentDataContainer().set(new NamespacedKey(p, "taskBook"), PersistentDataType.BOOLEAN, true);
+        item.setItemMeta(meta);
+        return item;
     }
 }

@@ -1,12 +1,15 @@
 package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
 
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractPlayerTask;
+
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TaskLookup {
     private static final Map<String, Class<? extends AbstractPlayerTask.Builder<?>>> tasks = Map.ofEntries(
             Map.entry("explode-another-player", ExplosiveTrapTask.Builder.class),
-            Map.entry("follow-another-player", StayTogetherTask.Builder.class)
+            Map.entry("follow-another-player", StayTogetherTask.Builder.class),
+            Map.entry("meow-at-others", MeowerTask.Builder.class)
     );;
 
     public static AbstractPlayerTask.Builder<?> getTaskBuilderByKey(String key) {

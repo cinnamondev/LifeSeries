@@ -208,6 +208,7 @@ public final class LifeSeries extends JavaPlugin {
     /// it runs at 1t/s, so any action in its run path that can trigger the Bukkit API / change world state should
     /// be deferred to the bukkit scheduler
     public void startSession() {
+        game.onGameStart();
         //getServer().getScheduler().scheduleSyncRepeatingTask(this, game, 20,20);
         doAutosave = true;
         scoreHandlerUpdaterTaskID = getServer().getScheduler().scheduleSyncRepeatingTask(
@@ -242,7 +243,7 @@ public final class LifeSeries extends JavaPlugin {
     public void endOfSession() {
         stopSession();
         gameTask.cancel(false);
-        game.onGameStop(this);
+        game.onGameStop();
     }
 
     public void trySendAllToServer() {

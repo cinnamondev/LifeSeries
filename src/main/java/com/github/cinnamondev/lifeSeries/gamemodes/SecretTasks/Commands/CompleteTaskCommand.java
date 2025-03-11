@@ -2,8 +2,9 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.CommandContainer;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.SelfCompletableTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.SelfCompletableTask;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -23,7 +24,7 @@ public class CompleteTaskCommand implements CommandContainer.FilledLiteralComman
 
     @Override
     public List<String> getAliases() {
-        return List.of("complete");
+        return List.of("complete", "completeTask");
     }
 
     @Override
@@ -39,7 +40,24 @@ public class CompleteTaskCommand implements CommandContainer.FilledLiteralComman
                     Player player = (Player) ctx.getSource().getSender();
                     game.getSecretTask(player).ifPresentOrElse(_task -> {
                         if (_task instanceof SelfCompletableTask selfTask) {
-                            selfTask.conditionalCompleteTask();
+                            if (selfTask.requireVerification() &&
+                                    p.getConfig().getBoolean("options.secret-life.gamemaster-enabled", false)){
+                                // give GM players a shout
+                                p.getServer().getOnlinePlayers().stream()
+                                        .filter(onlinePlayer -> onlinePlayer != player
+                                                && onlinePlayer.hasPermission("life.gamemaster"))
+                                        .forEach(gamemaster -> {
+                                            gamemaster.sendMessage(
+                                                    Component.translatable("secret-life.gamemaster.verify-task")
+                                                            .arguments(
+                                                                    player.displayName(),
+                                                                    selfTask.componentWithLore(),
+
+                                                                    )
+                                            );
+                                        });
+                            }
+                            boolean success = selfTask.conditionalCompleteTask();
                         } else {
                             player.sendMessage(
                                     Component.translatable("secret-life.taskbook.task-not-self-completable")

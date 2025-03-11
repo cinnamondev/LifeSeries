@@ -46,16 +46,6 @@ public class DoubleLife implements Game, Listener {
     }
 
     @Override
-    public void onGameStart(LifeSeries p) {
-        Game.super.onGameStart(p);
-    }
-
-    @Override
-    public void onGameStop(LifeSeries p) {
-        Game.super.onGameStop(p);
-    }
-
-    @Override
     public boolean onKilled(LifeSeries p, Player killed, int punishment) {
         return Game.super.onKilled(p, killed, punishment/2); // /2 as it will be applied twice.
     }

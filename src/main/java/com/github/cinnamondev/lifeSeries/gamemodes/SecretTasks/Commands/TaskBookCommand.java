@@ -43,6 +43,14 @@ public class TaskBookCommand implements CommandContainer.FilledLiteralCommand {
                                 );
                             });
                     return 1;
-                }).build();
+                })
+                .then(Commands.literal("book")
+                        .executes(ctx -> {
+                            Player player = (Player) ctx.getSource().getSender();
+                            game.getSecretTask(player).ifPresent(task ->
+                                    player.sendMessage(task.componentWithLore())
+                            );
+                        }))
+                .build();
     }
 }

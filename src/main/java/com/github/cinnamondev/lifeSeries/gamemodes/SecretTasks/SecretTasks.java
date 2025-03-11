@@ -6,9 +6,8 @@ import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands.Complete
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands.GuessTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands.TaskAssignmentBuilderSubCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands.TaskBookCommand;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
-import com.google.common.collect.Streams;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
@@ -26,7 +25,15 @@ public interface SecretTasks extends CommandContainer {
     enum TaskDifficulty {
         EASY,
         MEDIUM,
-        HARD
+        HARD;
+
+        public Component asComponent() {
+            return switch (this) {
+                case EASY -> Component.translatable("task-difficulty.easy").color(NamedTextColor.GREEN);
+                case MEDIUM -> Component.translatable("task-difficulty.medium").color(NamedTextColor.YELLOW);
+                case HARD -> Component.translatable("task-difficulty.hard").color(NamedTextColor.RED);
+            };
+        }
     }
     default Collection<String> getAllTaskOf(Collection<TaskDifficulty> difficulties) {
         return difficulties.stream().distinct().map(difficulty -> getTasksOfDifficulty(difficulty))
@@ -62,19 +69,20 @@ public interface SecretTasks extends CommandContainer {
     boolean canRerollTask(TeamMeta reroller);
     boolean canRerollTask(OfflinePlayer reroller);
 
-    PlayerTask rollTasks(Player owningPlayer, Collection<String> potentialTasks);
-    default PlayerTask rollTaskOfDifficulty(Player owningPlayer, TaskDifficulty difficulty) {
-        return rollTasks(owningPlayer, getTasksOfDifficulty(difficulty));
+    PlayerTask rollTasks(Player owningPlayer, Collection<String> potentialTasks, boolean add);
+    default PlayerTask rollTaskOfDifficulty(Player owningPlayer, TaskDifficulty difficulty, boolean add) {
+        return rollTasks(owningPlayer, getTasksOfDifficulty(difficulty), add);
     }
-    default PlayerTask rollTaskOfAnyDifficulty(Player owningPlayer) { return rollTasks(owningPlayer, getAllTasks()); }
-    default PlayerTask rollTaskOfDifficulty(Player owningPlayer, Collection<TaskDifficulty> difficulty) {
+    default PlayerTask rollTaskOfAnyDifficulty(Player owningPlayer, boolean add) { return rollTasks(owningPlayer, getAllTasks(), add); }
+    default PlayerTask rollTaskOfDifficulty(Player owningPlayer, Collection<TaskDifficulty> difficulty, boolean add) {
         return rollTasks(owningPlayer,
-                difficulty.stream().map(this::getTasksOfDifficulty).flatMap(Collection::stream).toList()
+                difficulty.stream().map(this::getTasksOfDifficulty).flatMap(Collection::stream).toList(),
+                add
         );
 
     }
-    default PlayerTask rollTask(Player owningPlayer, TeamMeta playerTeam) {
-        return rollTasks(owningPlayer, getAllTasksForTeam(playerTeam));
+    default PlayerTask rollTask(Player owningPlayer, TeamMeta playerTeam, boolean add) {
+        return rollTasks(owningPlayer, getAllTasksForTeam(playerTeam), add);
     }
 
 
@@ -94,19 +102,35 @@ public interface SecretTasks extends CommandContainer {
         );
     }
 
-    default Component rejectGuessButton(Player guesser) {
+    public static Component rejectGuessButton(Player guesser) {
         return Component.translatable("general.deny-prompt")
                 .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD))
                 .clickEvent(ClickEvent.callback(_audience -> {
                     guesser.sendMessage(Component.translatable("secret-life.guessing.guess-failed"));
                 }));
     }
-    public static Component acceptGuessButton(PlayerTask secretTask, Player guesser) {
-        return Component.translatable("general.accept-prompt")
+
+    public static Component rejectValidationButton(Player taskOwner) {
+        return Component.translatable("general.deny-prompt")
+                .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD))
+                .clickEvent(ClickEvent.callback(_audience -> {
+                    taskOwner.sendMessage(Component.translatable("secret-life.validation.rejected"));
+                }));
+    }
+
+    public static Component acceptGuessButton(PlayerTask secretTask, Player guesser, boolean useCommand) {
+        var message = Component.translatable("general.accept-prompt")
                 .style(Style.style(NamedTextColor.DARK_GREEN, TextDecoration.BOLD))
-                .clickEvent(ClickEvent.suggestCommand("/lf task " + secretTask.getTaskOwner().getName() + " win"))
                 .clickEvent(ClickEvent.callback(_audience -> {
                     guesser.sendMessage(Component.translatable("secret-life.guessing.guess-success"));
                 }));
+
+        if (useCommand) {
+            return message.clickEvent(ClickEvent.suggestCommand("/lf task " + secretTask.getTaskOwner().getName() + " fail"));
+        } else { // use secretTask method. (old way, keeping this here anyway)
+            return message.clickEvent(ClickEvent.callback(_audience -> {
+                secretTask.acceptGuess();
+            }));
+        }
     }
 }

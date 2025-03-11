@@ -3,11 +3,14 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands;
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.CommandContainer;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
 import org.bukkit.Difficulty;
 import org.bukkit.entity.Player;
 
@@ -41,24 +44,31 @@ public class RerollTask implements CommandContainer.FilledLiteralCommand {
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
                     if (rerolledPlayers.contains(player.getUniqueId()) || !secretGame.canRerollTask(player)) {
-                        player.sendMessage(Component.translatable("secret-life.reroll-out-of-rolls"));
+                        player.sendMessage(Component.translatable("secret-life.reroll-out-of-rolls")
+                                .color(NamedTextColor.RED)
+                        );
                         return 1;
                     }
 
                     secretGame.getSecretTask(player).ifPresentOrElse((currentTask) -> {
+                        PlayerTask task;
                         if (currentTask.getDifficulty() == SecretTasks.TaskDifficulty.EASY) {
-                            secretGame.addSecretTask(secretGame.rollTaskOfDifficulty(player,
+                            task = secretGame.rollTaskOfDifficulty(player,
                                     List.of(SecretTasks.TaskDifficulty.MEDIUM, SecretTasks.TaskDifficulty.HARD)
-                            ));
+                            );
                         } else {
-                            secretGame.addSecretTask(secretGame.rollTaskOfDifficulty(player,
+                            task = secretGame.rollTaskOfDifficulty(player,
                                     Collections.singletonList(SecretTasks.TaskDifficulty.HARD)
-                            ));
+                            );
                         }
+                        secretGame.addSecretTask(task);
+                        task.givePlayerTaskBook(player);
+
                         rerolledPlayers.add(player.getUniqueId()); // player gets only one roll (unless in infinite roll team)
                     }, () -> {
-                        // TODO: rejection message
-                        player.sendMessage(Component.translatable("secret-life.taskbook.no-task-assigned"));
+                        player.sendMessage(Component.translatable("secret-life.taskbook.no-task-assigned")
+                                .color(NamedTextColor.RED)
+                        );
                     });
                     return 1;
                 }).build(); // TODO:
