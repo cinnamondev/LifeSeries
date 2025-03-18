@@ -8,6 +8,7 @@ import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands.TaskAssi
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands.TaskBookCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
+import com.google.common.collect.ImmutableMap;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
@@ -16,7 +17,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.util.*;
 import java.util.List;
@@ -64,27 +67,33 @@ public interface SecretTasks extends CommandContainer {
     void removeSecretTask(OfflinePlayer taskOwner);
     default void removeSecretTask(PlayerTask secretTask) { removeSecretTask(secretTask.getTaskOwner()); }
     Optional<PlayerTask> getSecretTask(OfflinePlayer taskOwner);
+    default Collection<PlayerTask> searchForTaskByKey(String key) {
+        return getAllSecretTasks().stream()
+                .filter(entry -> entry.getTaskKey().equalsIgnoreCase(key))
+                .toList();
+    }
+    Collection<PlayerTask> getAllSecretTasks();
     boolean canGuessTask(TeamMeta guesser);
     boolean canGuessTask(OfflinePlayer guesser);
     boolean canRerollTask(TeamMeta reroller);
     boolean canRerollTask(OfflinePlayer reroller);
 
-    PlayerTask rollTasks(Player owningPlayer, Collection<String> potentialTasks, boolean add);
-    default PlayerTask rollTaskOfDifficulty(Player owningPlayer, TaskDifficulty difficulty, boolean add) {
-        return rollTasks(owningPlayer, getTasksOfDifficulty(difficulty), add);
+    PlayerTask rollTasks(Player owningPlayer, Collection<String> potentialTasks, boolean respectLimits, boolean add);
+    default PlayerTask rollTaskOfDifficulty(Player owningPlayer, TaskDifficulty difficulty, boolean respectLimits, boolean add) {
+        return rollTasks(owningPlayer, getTasksOfDifficulty(difficulty), respectLimits, add);
     }
-    default PlayerTask rollTaskOfAnyDifficulty(Player owningPlayer, boolean add) { return rollTasks(owningPlayer, getAllTasks(), add); }
-    default PlayerTask rollTaskOfDifficulty(Player owningPlayer, Collection<TaskDifficulty> difficulty, boolean add) {
+    default PlayerTask rollTaskOfAnyDifficulty(Player owningPlayer, boolean respectLimits, boolean add) { return rollTasks(owningPlayer, getAllTasks(), respectLimits, add); }
+    default PlayerTask rollTaskOfDifficulty(Player owningPlayer, Collection<TaskDifficulty> difficulty, boolean respectLimits, boolean add) {
         return rollTasks(owningPlayer,
                 difficulty.stream().map(this::getTasksOfDifficulty).flatMap(Collection::stream).toList(),
+                respectLimits,
                 add
         );
 
     }
-    default PlayerTask rollTask(Player owningPlayer, TeamMeta playerTeam, boolean add) {
-        return rollTasks(owningPlayer, getAllTasksForTeam(playerTeam), add);
+    default PlayerTask rollTask(Player owningPlayer, TeamMeta playerTeam, boolean respectLimits, boolean add) {
+        return rollTasks(owningPlayer, getAllTasksForTeam(playerTeam), respectLimits, add);
     }
-
 
     @Override
     default Collection<LiteralArgumentBuilder<CommandSourceStack>> adminSubCommands(LifeSeries p) {

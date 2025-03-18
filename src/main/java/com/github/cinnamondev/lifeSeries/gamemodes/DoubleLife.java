@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
-public class DoubleLife implements Game, Listener {
+public class DoubleLife implements Game, Listener { // TODO: this needs to be redone. One day.
     private LifeSeries p;
 
     public DoubleLife(LifeSeries p) {

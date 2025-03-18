@@ -20,6 +20,7 @@ import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.apache.commons.lang3.LocaleUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -93,6 +94,7 @@ public final class LifeSeries extends JavaPlugin {
         } else {
             // game coming back a fresh session
         }
+
         getLogger().warning("starting score is" + getConfig().getInt("starting-score"));
 
         try {

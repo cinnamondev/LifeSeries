@@ -1,8 +1,14 @@
 package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
 
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractPlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.plugin.Plugin;
 
+import java.lang.module.Configuration;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TaskLookup {
@@ -31,4 +37,26 @@ public class TaskLookup {
         }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    public static Optional<ConfigurationSection> getTaskConfigurationSection(Plugin p, String taskKey) {
+        return Optional.ofNullable(
+                p.getConfig().getConfigurationSection("options.secret-life.task-configs." + taskKey)
+        );
+    }
+
+    public static Optional<ConfigurationSection> getTaskConfigurationSection(Plugin p, PlayerTask playerTask) {
+        return getTaskConfigurationSection(p, playerTask.getTaskKey());
+    }
+    public static Optional<Integer> getTaskAssignmentLimit(Plugin p, String taskKey) {
+        var oConfig = getTaskConfigurationSection(p, taskKey);
+        if (oConfig.isEmpty()) { return Optional.empty(); }
+
+        var oLimit = oConfig.get().getInt("assignment-limit", -1);
+        if (oLimit == -1) { return Optional.empty(); }
+        return Optional.of(oLimit);
+
+    }
+    public static Optional<Integer> getTaskAssignmentLimit(Plugin p, PlayerTask playerTask) {
+        return getTaskAssignmentLimit(p, playerTask.getTaskKey());
+    }
 }
+

@@ -41,7 +41,7 @@ public class TaskAssignmentBuilderSubCommand {
                         taskGame.getSecretTask(player).ifPresentOrElse((task) -> {
                             ctx.getSource().getSender().sendMessage(player.displayName()
                                     .append(Component.text("'s task: "))
-                                    .append(task.componentWithLore())
+                                    .append(task.lore())
                                     .appendSpace()
                                     .append(task.getTaskProgress().asComponent())
                             );
@@ -118,21 +118,27 @@ public class TaskAssignmentBuilderSubCommand {
 
     private static void roller(LifeSeries p, SecretTasks taskGame, Audience source, Collection<Player> players, String difficulty) {
         players.forEach(player -> {
+            PlayerTask task = null;
             try {
-                switch (difficulty) { // discover which tasks to give
-                    case "easy" -> taskGame.rollTaskOfDifficulty(player, SecretTasks.TaskDifficulty.EASY);
-                    case "medium" -> taskGame.rollTaskOfDifficulty(player, SecretTasks.TaskDifficulty.MEDIUM);
-                    case "hard" -> taskGame.rollTaskOfDifficulty(player, SecretTasks.TaskDifficulty.HARD);
-                    case "team" -> taskGame.rollTask(player, p.getScoreHandler().getTeam(player));
-                    case "any" -> taskGame.rollTaskOfAnyDifficulty(player);
+                task = switch (difficulty) { // discover which tasks to give
+                    case "easy" -> taskGame.rollTaskOfDifficulty(player, SecretTasks.TaskDifficulty.EASY, true, true);
+                    case "medium" -> taskGame.rollTaskOfDifficulty(player, SecretTasks.TaskDifficulty.MEDIUM, true, true);
+                    case "hard" -> taskGame.rollTaskOfDifficulty(player, SecretTasks.TaskDifficulty.HARD, true, true);
+                    case "team" -> taskGame.rollTask(player, p.getScoreHandler().getTeam(player), true, true);
+                    case "any" -> taskGame.rollTaskOfAnyDifficulty(player, true, true);
+                    default -> throw new IllegalStateException("Unexpected value: " + difficulty);
                 };
             } catch (Exception e) {
                 source.sendMessage(
                         Component.text("Failed to roll task for player ").append(player.displayName())
                                 .hoverEvent(Component.text(e.getMessage()))
                 );
-                p.getLogger().warning(e.getMessage());
+                //e.printStackTrace();
+                p.getLogger().throwing("TaskAssignmentBuilderSubCommand", "roller", e);
+                return;
             }
+            assert task != null;
+            task.givePlayerTaskBook(player);
         });
     }
 }

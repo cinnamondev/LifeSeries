@@ -54,14 +54,13 @@ public class RerollTask implements CommandContainer.FilledLiteralCommand {
                         PlayerTask task;
                         if (currentTask.getDifficulty() == SecretTasks.TaskDifficulty.EASY) {
                             task = secretGame.rollTaskOfDifficulty(player,
-                                    List.of(SecretTasks.TaskDifficulty.MEDIUM, SecretTasks.TaskDifficulty.HARD)
+                                    List.of(SecretTasks.TaskDifficulty.MEDIUM, SecretTasks.TaskDifficulty.HARD), true, true
                             );
                         } else {
                             task = secretGame.rollTaskOfDifficulty(player,
-                                    Collections.singletonList(SecretTasks.TaskDifficulty.HARD)
+                                    Collections.singletonList(SecretTasks.TaskDifficulty.HARD), true, true
                             );
                         }
-                        secretGame.addSecretTask(task);
                         task.givePlayerTaskBook(player);
 
                         rerolledPlayers.add(player.getUniqueId()); // player gets only one roll (unless in infinite roll team)

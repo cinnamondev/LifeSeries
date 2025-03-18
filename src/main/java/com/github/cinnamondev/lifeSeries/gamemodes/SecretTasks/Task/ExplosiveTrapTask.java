@@ -62,15 +62,6 @@ public class ExplosiveTrapTask extends AbstractPlayerTask implements Listener, S
     }
 
     @Override
-    public TranslatableComponent getTaskName() {
-        return Component.translatable("secret-life.tasks.explode-player.name");
-    }
-    @Override
-    public TranslatableComponent getTaskDescription() {
-        return Component.translatable("secret-life.tasks.explode-player.description");
-    }
-
-    @Override
     public String getTaskKey() {
         return "explode-another-player";
     }

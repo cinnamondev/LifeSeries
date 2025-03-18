@@ -5,7 +5,10 @@ import com.github.cinnamondev.lifeSeries.gamemodes.Lives;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.TaskLookup;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
+import com.google.common.collect.ImmutableMap;
+import com.google.errorprone.annotations.Immutable;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -19,6 +22,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SecretLife extends Lives implements SecretTasks {
     HashMap<UUID, PlayerTask> tasks = new HashMap<>();
@@ -29,12 +33,17 @@ public class SecretLife extends Lives implements SecretTasks {
 
     @Override
     public void run() {
+        p.getScoreHandler().updateAllTrackedScoresAndTeams((_uuid, score) -> score, (player, newTeam) -> {
+            if (p.getScoreHandler().isPlayerSpectator(player)) {
+                p.getServer().getScheduler().runTask(p, () -> player.setHealth(0));
+            } else if (canGuessTask(newTeam)) {
+                player.sendMessage(Component.translatable("secret-life.can-guess-tasks").color(NamedTextColor.YELLOW));
+            }
+        });
         p.getServer().getOnlinePlayers().forEach(player -> {
             TeamMeta team = p.getScoreHandler().getTeam(player);
             if (canGuessTask(player)) {
-                player.sendActionBar(
-                        Component.text("You can guess tasks")
-                );
+                player.sendActionBar(Component.text("You can guess tasks"));
             }
         });
     }
@@ -45,9 +54,15 @@ public class SecretLife extends Lives implements SecretTasks {
             p.getServer().getOnlinePlayers().forEach(player -> this.rollTask(
                     player,
                     p.getScoreHandler().getTeam(player),
+                    true,
                     true
-            ));
+            ).givePlayerTaskBook(player));
         }
+    }
+
+    @Override
+    public void onGameStop() {
+        tasks.forEach((uuid, task) -> task.endOfSession());
     }
 
     @Override
@@ -75,9 +90,21 @@ public class SecretLife extends Lives implements SecretTasks {
         };
     }
     @Override
-    public PlayerTask rollTasks(Player owningPlayer, Collection<String> taskList, boolean add) throws RuntimeException{
+    public PlayerTask rollTasks(Player owningPlayer, Collection<String> taskList, boolean respectLimits, boolean add) throws RuntimeException{
+        Collection<String> filteredTaskList;
+        if (respectLimits) {
+            filteredTaskList = taskList.stream()
+                    .filter(taskName -> TaskLookup.getTaskAssignmentLimit(p, taskName)
+                            .filter(limit -> searchForTaskByKey(taskName).size() < limit)
+                            .isPresent()
+                    ).toList();
+        } else {
+            filteredTaskList = taskList;
+        }
+
         var task = TaskLookup.getTaskBuilderByKey(
-                taskList.stream().skip((int) (taskList.size() * Math.random())).findFirst()
+                filteredTaskList.stream()
+                        .skip((int) (filteredTaskList.size() * Math.random())).findFirst()
                         .orElseThrow(() -> new IllegalStateException("No task found")) // this shouldnt be a possible
         )
                 .player(owningPlayer)
@@ -93,12 +120,12 @@ public class SecretLife extends Lives implements SecretTasks {
         removeSecretTask(secretTask.getTaskOwner()); // ensure everythings cleaned up.
         Bukkit.getPluginManager().registerEvents(secretTask, p);
         tasks.put(secretTask.getTaskOwner().getUniqueId(), secretTask);
-        secretTask.givePlayerTaskBook(secretTask.getTaskOwner());
+        //secretTask.givePlayerTaskBook(secretTask.getTaskOwner());
     }
 
     @Override
     public void onTaskSuccess(PlayerTask secretTask) {
-        secretTask.getTaskOwner().sendMessage(Component.text("success"));
+        secretTask.getTaskOwner().sendMessage(Component.translatable("secret-life.task-completed.message"));
         int reward = p.getConfig().getInt("options.secret-life.rewards.task-success", 0);
         if (reward > 0) {
             p.getScoreHandler().updatePlayerScoreAndTeam(secretTask.getTaskOwner(), (_uuid, score) ->
@@ -131,6 +158,11 @@ public class SecretLife extends Lives implements SecretTasks {
     @Override
     public Optional<PlayerTask> getSecretTask(OfflinePlayer taskOwner) {
         return Optional.ofNullable(tasks.get(taskOwner.getUniqueId()));
+    }
+
+    @Override
+    public Collection<PlayerTask> getAllSecretTasks() {
+        return this.tasks.values();
     }
 
     @Override

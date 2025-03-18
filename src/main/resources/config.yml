@@ -9,11 +9,11 @@ server-locale: en_US # default to en_US if not specified. as interactable menus 
 categories:
   green:
     colour: GREEN
-    score: 9 # mininum number of minutes required to be in this category OR mininum number of lives.
+    score: 6 # mininum number of minutes required to be in this category OR mininum number of lives.
 
   yellow:
     colour: YELLOW
-    score: 5
+    score: 3
     can-kill:
       - green
 
@@ -89,6 +89,7 @@ options:
     chance: 5 # 0-100
 
   boogeyman:
+    auto-roll: true # roll at session start
     min: 1
     max: 3
     failure:
@@ -138,6 +139,17 @@ options:
     failure:              # prevent a specific team from
       do-not-punish-teams:
         - red
+    task-configs:
+      explode-another-player:
+        assignment-limit: 1
+      chest-head:
+        loot:
+          - name: revival-item # refer to as special
+            quantity: 1
+          - name: DIAMOND
+            quantity: 9
+          - name: TNT
+            quantity: 16
 
   rewards:
     disable-on-disallowed-team: true

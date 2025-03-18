@@ -20,9 +20,6 @@ public abstract class AbstractTargetedPlayerTask extends AbstractPlayerTask impl
         super(p, owningPlayer, onTaskCompletion, difficulty);
         this.targetedPlayer = targetedPlayer;
     }
-    public AbstractTargetedPlayerTask(LifeSeries p, Builder builder) {
-        this(p, builder.owningPlayer, builder.targetPlayer, builder.assignedDifficulty, builder.onTaskCompletion);
-    }
 
     @Override
     public OfflinePlayer getTargetedPlayer() {
@@ -36,22 +33,21 @@ public abstract class AbstractTargetedPlayerTask extends AbstractPlayerTask impl
         return task;
     }
 
-    public abstract static class Builder<T extends Builder<T>> extends AbstractPlayerTask.Builder<T> {
+    public abstract static class Builder<T extends AbstractTargetedPlayerTask.Builder<T>> extends AbstractPlayerTask.Builder<T> {
         protected OfflinePlayer targetPlayer;
         public T target(OfflinePlayer targetPlayer) { this.targetPlayer = targetPlayer; return (T) this; }
         protected T randomTarget(Plugin p) {
-            var players = p.getServer().getOnlinePlayers();
-            var oPlayer = players.stream()
+            var candidatePlayers = p.getServer().getOnlinePlayers().stream()
                     .filter(player -> !player.hasPermission("lf.game.bypass-roll"))
                     .filter(player -> !player.equals(this.owningPlayer))
-                    .skip((int) (players.size() * Math.random()))
-                    .findFirst();
+                    .toList();
 
-            if (oPlayer.isPresent()) {
-                return this.target(oPlayer.get());
-            } else {
-                throw new RuntimeException("no valid target candidate found when rolling task for player " + this.owningPlayer.getName());
+            if (candidatePlayers.isEmpty()) {
+                throw new RuntimeException(" target candidate found when rolling task for player " + this.owningPlayer.getName());
             }
+            this.targetPlayer = candidatePlayers.get((int) (candidatePlayers.size() * Math.random()));
+            //p.getLogger().info("found candidate " + this.targetPlayer.getName());
+            return (T) this;
         }
         @Override
         public LiteralArgumentBuilder<CommandSourceStack> builderCommand(LifeSeries p, LiteralArgumentBuilder<CommandSourceStack> root, Consumer<PlayerTask> onTaskAdded) {
@@ -60,7 +56,7 @@ public abstract class AbstractTargetedPlayerTask extends AbstractPlayerTask impl
                             .executes(ctx -> {
                                 Player targetArgument = ctx.getArgument("targetPlayer", PlayerSelectorArgumentResolver.class)
                                         .resolve(ctx.getSource()).getFirst();
-                                ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
+                                ctx.getArgument("player", PlayerSelectorArgumentResolver.class)
                                         .resolve(ctx.getSource()).forEach((player) -> {
                                             onTaskAdded.accept(
                                                     this

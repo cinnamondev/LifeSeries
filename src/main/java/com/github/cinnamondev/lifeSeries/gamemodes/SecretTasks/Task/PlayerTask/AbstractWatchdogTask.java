@@ -7,30 +7,44 @@ import org.bukkit.entity.Player;
 import java.util.function.Consumer;
 
 public abstract class AbstractWatchdogTask extends AbstractPlayerTask implements WatchdogPlayerTask {
-    public AbstractWatchdogTask(LifeSeries p, Player owningPlayer, int watchdogInterval, Consumer<PlayerTask> onTaskCompletion, SecretTasks.TaskDifficulty difficulty) {
+    public AbstractWatchdogTask(LifeSeries p, Player owningPlayer, int watchdogInterval, int watchdogThreshold, Consumer<PlayerTask> onTaskCompletion, SecretTasks.TaskDifficulty difficulty) {
         super(p, owningPlayer, onTaskCompletion, difficulty);
-        this.watchdogInterval = watchdogInterval;
-        p.getServer().getScheduler().scheduleSyncRepeatingTask(p, this::watchdog, watchdogInterval, watchdogInterval);
+        this.threshold = watchdogThreshold;
+        this.interval = watchdogInterval;
+        this.taskId = p.getServer().getScheduler().scheduleSyncRepeatingTask(p, this::watchdog, watchdogInterval, watchdogInterval);
     }
-    protected final int watchdogInterval;
-    private boolean fed = true;
+    private final int threshold;
+    protected final int interval;
+    private final int taskId;
+    int intervalsSinceLastFeed = 0;
 
     private void watchdog() {
-        if (!fed && !getTaskProgress().equals(TaskStatus.COMPLETE)) { // watch dog is not fed
+        if (intervalsSinceLastFeed >= threshold && !getTaskProgress().equals(TaskStatus.COMPLETE)) { // watch dog is not fed
             bark();
+            p.getServer().getScheduler().cancelTask(taskId);
         } else {
-            fed = false;
+            this.intervalsSinceLastFeed += interval;
         }
     }
 
     @Override
-    public void feed() {
-        fed = true;
+    public final void complete() {
+        if (p.getServer().getScheduler().isQueued(taskId) || p.getServer().getScheduler().isCurrentlyRunning(taskId)) {
+            p.getServer().getScheduler().cancelTask(taskId);
+        }
+        super.complete();
     }
 
     @Override
-    public boolean isFed() {
-        return fed;
+    public final void fail() {
+        if (p.getServer().getScheduler().isQueued(taskId) || p.getServer().getScheduler().isCurrentlyRunning(taskId)) {
+            p.getServer().getScheduler().cancelTask(taskId);
+        }
+        super.fail();
+    }
+    @Override
+    public final void feed() {
+        this.intervalsSinceLastFeed = 0;
     }
 
     @Override
@@ -38,13 +52,15 @@ public abstract class AbstractWatchdogTask extends AbstractPlayerTask implements
         fail();
     }
 
-    public abstract static class Builder<T extends Builder<T>> extends AbstractPlayerTask.Builder<T> {
-        protected int watchdogInterval;
+    public abstract static class Builder<T extends AbstractWatchdogTask.Builder<T>> extends AbstractPlayerTask.Builder<T> {
+        protected int watchdogInterval = 200; // default, 10 seconds
+        protected int watchdogThreshold;
         public T updateInterval(int interval) { this.watchdogInterval = interval; return (T) this;}
+        public T threshold(int ticks) { this.watchdogThreshold = ticks; return (T) this;}
 
         @Override
         public AbstractPlayerTask buildWithAnySettings(LifeSeries p, SecretTasks game) {
-            return this.updateInterval(p.getConfig().getInt("options.secret-life.watchdog-time", 3600))
+            return threshold(p.getConfig().getInt("options.secret-life.watchdog-time", 3600))
                     .build(p);
         }
     }

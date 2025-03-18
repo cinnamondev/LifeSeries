@@ -66,7 +66,7 @@ public class GuessTask implements CommandContainer.FilledLiteralCommand {
                                                                     guesser.displayName(),
                                                                     target.displayName(),
                                                                     Component.text(ctx.getArgument("task", String.class)),
-                                                                    secretTask.componentWithLore(),
+                                                                    secretTask.lore(),
                                                                     SecretTasks.rejectGuessButton(guesser),
                                                                     SecretTasks.acceptGuessButton(secretTask, guesser, false),
                                                                     UtilityComponents.teleportToPlayer(target)
@@ -79,7 +79,7 @@ public class GuessTask implements CommandContainer.FilledLiteralCommand {
                                                             guesser.displayName(),
                                                             target.displayName(),
                                                             Component.text(ctx.getArgument("task", String.class)),
-                                                            secretTask.componentWithLore(),
+                                                            secretTask.lore(),
                                                             SecretTasks.rejectGuessButton(guesser),
                                                             SecretTasks.acceptGuessButton(secretTask, guesser, false),
                                                             Component.empty() // task owner shouldnt be given teleporty stuff.

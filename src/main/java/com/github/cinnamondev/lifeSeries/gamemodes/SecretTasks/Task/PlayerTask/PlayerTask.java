@@ -43,8 +43,15 @@ public interface PlayerTask extends Listener {
     }
     TaskStatus getTaskProgress();
     boolean isTaskGuessable();
-    TranslatableComponent getTaskName();
-    TranslatableComponent getTaskDescription();
+    default Component name() {
+        return Component.translatable("secret-life.tasks." + getTaskKey() + ".name");
+    }
+    default Component description() {
+        return Component.translatable("secret-life.tasks." + getTaskKey() + ".description");
+    }
+    default Component lore() {
+        return name().style(Style.style(NamedTextColor.LIGHT_PURPLE, TextDecoration.ITALIC)).hoverEvent(description());
+    }
     Player getTaskOwner();
     SecretTasks.TaskDifficulty getDifficulty();
     ItemStack createTaskBook();
@@ -52,7 +59,5 @@ public interface PlayerTask extends Listener {
     String getTaskKey();
     default void acceptGuess() { fail(); }
     default void givePlayerTaskBook(Player player) { player.give(createTaskBook()); }
-    default Component componentWithLore() {
-        return getTaskName().style(Style.style(NamedTextColor.LIGHT_PURPLE, TextDecoration.ITALIC)).hoverEvent(getTaskDescription());
-    }
+
 }

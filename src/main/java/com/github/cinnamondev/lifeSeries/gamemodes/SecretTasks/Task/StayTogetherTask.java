@@ -4,6 +4,7 @@ import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractPlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractTargetedPlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractTargetedWatchdogTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
@@ -24,13 +25,13 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class StayTogetherTask extends AbstractTargetedPlayerTask implements Listener {
+public class StayTogetherTask extends AbstractTargetedWatchdogTask implements Listener {
 
     private final double maxDistance = 10;
     private final int timeoutMinutes = 10;
     private int strikes = 2;
-    public StayTogetherTask(LifeSeries p, Player owningPlayer, OfflinePlayer target, Consumer<PlayerTask> onTaskCompletion, SecretTasks.TaskDifficulty difficulty) {
-        super(p, owningPlayer, target, difficulty, onTaskCompletion);
+    public StayTogetherTask(LifeSeries p, Player owningPlayer, int watchdogInterval, int watchdogThreshold, OfflinePlayer target, Consumer<PlayerTask> onTaskCompletion, SecretTasks.TaskDifficulty difficulty) {
+        super(p, owningPlayer, watchdogInterval, watchdogThreshold, target, difficulty, onTaskCompletion);
     }
 
     private ScheduledTask task = null;
@@ -46,6 +47,10 @@ public class StayTogetherTask extends AbstractTargetedPlayerTask implements List
         Location targetLoc = onlineTarget.getLocation();
         World targetWorld = onlineTarget.getWorld();
         // if player is out of range of other player
+        if (!playerWorld.equals(targetWorld)) { return; }
+        if (targetLoc.distanceSquared(playerLoc) > maxDistance) {
+
+        }
         if (targetLoc.distance(playerLoc) > maxDistance || !playerWorld.equals(targetWorld)) {
             if (task == null || // task has yet to run OR is not in a 'to be executed' state.
                     task.getExecutionState().equals(ScheduledTask.ExecutionState.FINISHED) ||
@@ -55,7 +60,7 @@ public class StayTogetherTask extends AbstractTargetedPlayerTask implements List
                             strikes -=1;
                             if (strikes == 0) { fail(); } else {
                                 owningPlayer.sendMessage(
-                                        Component.translatable("secret-life.tasks.stay-together.reminder", targetedPlayer.getName())
+                                        Component.translatable("secret-life.tasks.follow-another-player.reminder", targetedPlayer.getName())
                                                 .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD))
                                 );
                             }
@@ -78,13 +83,8 @@ public class StayTogetherTask extends AbstractTargetedPlayerTask implements List
     }
 
     @Override
-    public TranslatableComponent getTaskName() {
-        return Component.translatable("secret-life.tasks.stay-together.name");
-    }
-
-    @Override
-    public TranslatableComponent getTaskDescription() {
-        return Component.translatable("secret-life.tasks.stay-together.description")
+    public TranslatableComponent description() {
+        return Component.translatable("secret-life.tasks.follow-another-player.description")
                 .arguments(
                         Component.text(maxDistance),
                         Component.text(Objects.requireNonNull(targetedPlayer.getName())),
@@ -110,10 +110,10 @@ public class StayTogetherTask extends AbstractTargetedPlayerTask implements List
         return TaskStatus.IN_PROGRESS;
     }
 
-    public static class Builder extends AbstractTargetedPlayerTask.Builder<Builder> {
+    public static class Builder extends AbstractTargetedWatchdogTask.Builder<Builder> {
         @Override
         public AbstractPlayerTask build(LifeSeries p) {
-            return new StayTogetherTask(p, owningPlayer, targetPlayer, onTaskCompletion, assignedDifficulty);
+            return new StayTogetherTask(p, owningPlayer, watchdogInterval, watchdogThreshold, targetPlayer, onTaskCompletion, assignedDifficulty);
         }
     }
 

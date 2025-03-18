@@ -2,61 +2,50 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
+import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import net.kyori.adventure.text.TranslatableComponent;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.util.function.Consumer;
 
-public abstract class AbstractTargetedWatchdogTask extends AbstractTargetedPlayerTask implements WatchdogPlayerTask {
-
-    public AbstractTargetedWatchdogTask(LifeSeries p, Player owningPlayer, int interval, OfflinePlayer targetedPlayer, SecretTasks.TaskDifficulty difficulty, Consumer<PlayerTask> onTaskCompletion) {
-        super(p, owningPlayer, targetedPlayer, difficulty, onTaskCompletion);
-        this.watchdogInterval = interval;
-        p.getServer().getScheduler().scheduleSyncRepeatingTask(p, this::watchdog, watchdogInterval, watchdogInterval);
+public abstract class AbstractTargetedWatchdogTask extends AbstractWatchdogTask implements TargetedPlayerTask {
+    public AbstractTargetedWatchdogTask(LifeSeries p, Player owningPlayer, int watchdogInterval, int watchdogThreshold, OfflinePlayer targetedPlayer, SecretTasks.TaskDifficulty difficulty, Consumer<PlayerTask> onTaskCompletion) {
+        super(p, owningPlayer, watchdogInterval, watchdogThreshold, onTaskCompletion, difficulty);
+        this.targetedPlayer = targetedPlayer;
     }
+    protected OfflinePlayer targetedPlayer;
 
-    public AbstractTargetedWatchdogTask(LifeSeries p, Builder builder) {
-        this(p, builder.owningPlayer, builder.watchdogInterval, builder.targetPlayer, builder.assignedDifficulty, builder.onTaskCompletion);
-    }
-
-    protected final int watchdogInterval;
-    private boolean fed = true;
-
-    private void watchdog() {
-        if (!fed && !getTaskProgress().equals(TaskStatus.COMPLETE)) { // watch dog is not fed
-            bark();
-        } else {
-            fed = false;
-        }
+    // the tragedy of no multiple inheritance... curse you java
+    @Override
+    public OfflinePlayer getTargetedPlayer() {
+        return this.targetedPlayer;
     }
 
     @Override
-    public void feed() {
-        fed = true;
+    public ConfigurationSection saveTask(ConfigurationSection taskSection) {
+        var task = super.saveTask(taskSection);
+        taskSection.set("target", this.targetedPlayer.getUniqueId());
+        return task;
     }
 
-    @Override
-    public boolean isFed() {
-        return fed;
-    }
-
-    @Override
-    public void bark() {
-        fail();
-    }
-
-    public abstract static class Builder<T extends Builder<T>> extends AbstractTargetedPlayerTask.Builder<T> {
-        protected int watchdogInterval;
+    public abstract static class Builder<T extends AbstractTargetedWatchdogTask.Builder<T>> extends AbstractTargetedPlayerTask.Builder<T> {
+        protected int watchdogInterval = 200; // default, 10 seconds
+        protected int watchdogThreshold;
         public T updateInterval(int interval) { this.watchdogInterval = interval; return (T) this;}
+        public T threshold(int ticks) { this.watchdogThreshold = ticks; return (T) this;}
 
         @Override
         public AbstractPlayerTask buildWithAnySettings(LifeSeries p, SecretTasks game) {
-            return this.updateInterval(p.getConfig().getInt("options.secret-life.watchdog-time", 3600))
+            return threshold(p.getConfig().getInt("options.secret-life.watchdog-time", 3600))
                     .randomTarget(p)
                     .build(p);
-
         }
     }
-
 }

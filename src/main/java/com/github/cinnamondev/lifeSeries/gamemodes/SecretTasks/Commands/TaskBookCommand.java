@@ -37,20 +37,11 @@ public class TaskBookCommand implements CommandContainer.FilledLiteralCommand {
                     Player player = (Player) ctx.getSource().getSender();
                     game.getSecretTask(player).ifPresentOrElse(
                             (task) -> task.givePlayerTaskBook(player),
-                            () -> {
-                                player.sendMessage(
-                                        Component.translatable("secret-life.taskbook.no-task-assigned")
-                                );
-                            });
+                            () -> player.sendMessage(
+                                    Component.translatable("secret-life.taskbook.no-task-assigned")
+                            ));
                     return 1;
                 })
-                .then(Commands.literal("book")
-                        .executes(ctx -> {
-                            Player player = (Player) ctx.getSource().getSender();
-                            game.getSecretTask(player).ifPresent(task ->
-                                    player.sendMessage(task.componentWithLore())
-                            );
-                        }))
                 .build();
     }
 }

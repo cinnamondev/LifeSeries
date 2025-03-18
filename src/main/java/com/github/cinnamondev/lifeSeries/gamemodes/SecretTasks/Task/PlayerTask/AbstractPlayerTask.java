@@ -8,7 +8,6 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.GlobalTranslator;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -71,8 +70,8 @@ public abstract class AbstractPlayerTask implements PlayerTask {
     public ItemStack createTaskBook() {
         ItemStack book = SecretLife.baseBook(p, 1);
 
-        Component name = GlobalTranslator.render(getTaskName(), p.getServerLocale());
-        Component description = GlobalTranslator.render(getTaskDescription(), p.getServerLocale());
+        Component name = GlobalTranslator.render(name(), p.getServerLocale());
+        Component description = GlobalTranslator.render(description(), p.getServerLocale());
 
         book.setItemMeta(((BookMeta) book.getItemMeta()).toBuilder()
                 .author(Component.text("God"))

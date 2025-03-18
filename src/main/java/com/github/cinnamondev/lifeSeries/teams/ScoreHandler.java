@@ -142,13 +142,8 @@ public class ScoreHandler {
     /// already tracked, they will be assigned the default score before `updater` is called. if the player is online,
     /// and they run out of time (player has changed team to spectatorTeam), the player will be killed.
     public void updatePlayerScoreAndTeam(UUID uuid,  BiFunction<UUID, Integer, Integer> updater) {
-        updatePlayerScoreAndTeam(uuid, updater, (_uuid, team) -> {
-            if (isPlayerSpectator(uuid)) {
-                p.getServer().getScheduler().runTask(p, () -> { // run updater in main task.
-                    Player player = p.getServer().getPlayer(uuid);
-                    if (player != null) { player.setHealth(0); }
-                });
-            }
+        updatePlayerScoreAndTeam(uuid, updater, (player, team) -> {
+            if (isPlayerSpectator(uuid)) { p.getServer().getScheduler().runTask(p, () -> player.setHealth(0)); }
         });
     }
 

@@ -2,13 +2,14 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.CommandContainer;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.SelfCompletableTask;
+import com.github.cinnamondev.lifeSeries.util.UtilityComponents;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Utility;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -46,16 +47,14 @@ public class CompleteTaskCommand implements CommandContainer.FilledLiteralComman
                                 p.getServer().getOnlinePlayers().stream()
                                         .filter(onlinePlayer -> onlinePlayer != player
                                                 && onlinePlayer.hasPermission("life.gamemaster"))
-                                        .forEach(gamemaster -> {
-                                            gamemaster.sendMessage(
-                                                    Component.translatable("secret-life.gamemaster.verify-task")
-                                                            .arguments(
-                                                                    player.displayName(),
-                                                                    selfTask.componentWithLore(),
-
-                                                                    )
-                                            );
-                                        });
+                                        .forEach(gm -> gm.sendMessage(Component.translatable("secret-life.gamemaster.verify-task")
+                                                .arguments(
+                                                        player.displayName(),
+                                                        selfTask.lore(),
+                                                        SecretTasks.rejectGuessButton(player),
+                                                        SecretTasks.acceptGuessButton(selfTask, player, true),
+                                                        UtilityComponents.teleportToPlayer(player)
+                                                )));
                             }
                             boolean success = selfTask.conditionalCompleteTask();
                         } else {
