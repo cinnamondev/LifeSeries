@@ -33,10 +33,10 @@ public abstract class AbstractTargetedPlayerTask extends AbstractPlayerTask impl
         return task;
     }
 
-    public abstract static class Builder<T extends AbstractTargetedPlayerTask.Builder<T>> extends AbstractPlayerTask.Builder<T> {
+    public abstract static class Builder<T extends AbstractPlayerTask.Builder<T>> extends AbstractPlayerTask.Builder<T> {
         protected OfflinePlayer targetPlayer;
-        public T target(OfflinePlayer targetPlayer) { this.targetPlayer = targetPlayer; return (T) this; }
-        protected T randomTarget(Plugin p) {
+        public AbstractPlayerTask.Builder<T> target(OfflinePlayer targetPlayer) { this.targetPlayer = targetPlayer; return this; }
+        public AbstractPlayerTask.Builder<T> randomTarget(Plugin p) {
             var candidatePlayers = p.getServer().getOnlinePlayers().stream()
                     .filter(player -> !player.hasPermission("lf.game.bypass-roll"))
                     .filter(player -> !player.equals(this.owningPlayer))
@@ -47,7 +47,7 @@ public abstract class AbstractTargetedPlayerTask extends AbstractPlayerTask impl
             }
             this.targetPlayer = candidatePlayers.get((int) (candidatePlayers.size() * Math.random()));
             //p.getLogger().info("found candidate " + this.targetPlayer.getName());
-            return (T) this;
+            return this;
         }
         @Override
         public LiteralArgumentBuilder<CommandSourceStack> builderCommand(LifeSeries p, LiteralArgumentBuilder<CommandSourceStack> root, Consumer<PlayerTask> onTaskAdded) {
@@ -57,22 +57,14 @@ public abstract class AbstractTargetedPlayerTask extends AbstractPlayerTask impl
                                 Player targetArgument = ctx.getArgument("targetPlayer", PlayerSelectorArgumentResolver.class)
                                         .resolve(ctx.getSource()).getFirst();
                                 ctx.getArgument("player", PlayerSelectorArgumentResolver.class)
-                                        .resolve(ctx.getSource()).forEach((player) -> {
-                                            onTaskAdded.accept(
-                                                    this
-                                                            .player(player)
-                                                            .target(targetArgument)
-                                                            .build(p)
-                                            );
-                                        });
+                                        .resolve(ctx.getSource()).forEach((player) -> onTaskAdded.accept(
+                                                this.target(targetArgument)
+                                                        .player(player)
+                                                        .build(p)
+                                        ));
                                 return 1;
                             })
                     );
-        }
-
-        @Override
-        public AbstractPlayerTask buildWithAnySettings(LifeSeries p, SecretTasks game) {
-            return randomTarget(p).build(p);
         }
     }
 }

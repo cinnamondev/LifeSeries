@@ -3,29 +3,20 @@ package com.github.cinnamondev.lifeSeries.teams;
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.util.ColourConverter;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.apache.logging.log4j.util.TriConsumer;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.damage.DamageSource;
-import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import java.io.File;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ScoreHandler {
-    private LifeSeries p;
+    protected LifeSeries p;
     private Scoreboard scoreboard;
     private FileConfiguration save;
     private ConfigurationSection playerData;
@@ -39,11 +30,12 @@ public class ScoreHandler {
         this.playerData = save.getConfigurationSection("players");
         if (playerData == null) { this.playerData = save.createSection("players"); }
 
-        scoreboard.getTeams().forEach(Team::unregister);
         this.rankedTeams = loadTeamsFromConfig(
                 Objects.requireNonNull(p.getConfig().getConfigurationSection("categories"))
         );
-        Team team = scoreboard.registerNewTeam("Dead");
+        Team team = scoreboard.getTeam("Dead");
+        if (team != null) { team.unregister(); }
+        team = scoreboard.registerNewTeam("Dead");
         team.color(NamedTextColor.GRAY);
         team.setAllowFriendlyFire(true);
         team.setCanSeeFriendlyInvisibles(true);
@@ -53,6 +45,8 @@ public class ScoreHandler {
 
     private SortedSet<TeamMeta> loadTeamsFromConfig(ConfigurationSection categories) {
         return categories.getKeys(false).stream().map(name -> {
+            scoreboard.getTeams().stream().filter(team -> team.getName().equals(name))
+                    .forEach(Team::unregister); // unregister any hangers
            ConfigurationSection config = categories.getConfigurationSection(name);
 
             NamedTextColor colour = ColourConverter.tryNamedColourFromString(config.getString("colour"))
@@ -106,7 +100,7 @@ public class ScoreHandler {
         return rankedTeams.stream().filter(teamMeta -> teamMeta.getScoreboardTeam().getName().equals(teamName)).findFirst();
     }
     public TeamMeta getTeam(int score) {
-        return rankedTeams.stream().filter(_team -> score > _team.getMininumScore()).findFirst().orElse(spectatorTeam);
+        return rankedTeams.stream().filter(_team -> score >= _team.getMininumScore()).findFirst().orElse(spectatorTeam);
     }
     public TeamMeta getTeam(UUID uuid) { return getTeam(getScore(uuid)); }
     public TeamMeta getTeam(OfflinePlayer player) { return getTeam(getScore(player.getUniqueId())); }

@@ -2,10 +2,9 @@ package com.github.cinnamondev.lifeSeries.revival;
 
 import com.github.cinnamondev.lifeSeries.CustomRecipe;
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import net.kyori.adventure.key.Key;
+import com.google.inject.Inject;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -22,12 +21,16 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class RevivalItem extends CustomRecipe implements Listener {
-    private final LifeSeries p;
     private final HashMap<UUID, RevivalMenu> menus = new HashMap<>();
-
-    public RevivalItem(LifeSeries p, NamespacedKey revivalItemKey) {
-        super(p, revivalItemKey, p.getConfig().getConfigurationSection("revival.item"));
+    protected final LifeSeries p;
+    @Inject
+    public RevivalItem(LifeSeries p) {
+        super(p, new NamespacedKey(p, "revival-item"), p.getConfig().getConfigurationSection("revival.item"));
         this.p = p;
+    }
+
+    public NamespacedKey getKey() {
+        return key;
     }
 
     @Override
@@ -62,13 +65,13 @@ public class RevivalItem extends CustomRecipe implements Listener {
         if (e.getItem().getItemMeta().getPersistentDataContainer().getOrDefault(key, PersistentDataType.BOOLEAN, false)) {
             // it is the revival item
             e.getPlayer().openInventory(
-                    getPlayersMenu(e.getPlayer().getUniqueId()).getInventory()
+                    getPlayersMenu(e.getPlayer()).getInventory()
             );
         }
     }
 
-    public RevivalMenu getPlayersMenu(UUID uuid) {
-        return menus.computeIfAbsent(uuid, (uuid1) -> new RevivalMenu(p, key, getItem(), uuid1));
+    public RevivalMenu getPlayersMenu(Player player) {
+        return menus.computeIfAbsent(player.getUniqueId(), (_uuid) -> new RevivalMenu(p, getItem(), player.locale()));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

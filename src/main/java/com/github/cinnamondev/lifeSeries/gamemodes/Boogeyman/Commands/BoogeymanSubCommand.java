@@ -17,15 +17,11 @@ import net.kyori.adventure.text.Component;
 
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -117,7 +113,7 @@ public class BoogeymanSubCommand {
                 src.sendMessage(Component.text(" cannot roll for 0 boogies! (perhaps disable boogey instead"));
                 return;
             }
-            boolean res = boogey.rollBoogeyman(p, min, max);
+            boolean res = boogey.rollBoogeyman(min, max);
             if (!res) { src.sendMessage(Component.text("not enough candidates")); } else {
                 Sound tickSound = Sound.sound(Key.key("block.note_block.hat"), Sound.Source.AMBIENT, 1f,1f);
 

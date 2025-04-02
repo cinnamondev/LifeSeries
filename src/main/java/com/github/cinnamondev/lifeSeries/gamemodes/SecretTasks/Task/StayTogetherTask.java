@@ -2,10 +2,7 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractPlayerTask;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractTargetedPlayerTask;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractTargetedWatchdogTask;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.*;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
@@ -113,7 +110,7 @@ public class StayTogetherTask extends AbstractTargetedWatchdogTask implements Li
     public static class Builder extends AbstractTargetedWatchdogTask.Builder<Builder> {
         @Override
         public AbstractPlayerTask build(LifeSeries p) {
-            return new StayTogetherTask(p, owningPlayer, watchdogInterval, watchdogThreshold, targetPlayer, onTaskCompletion, assignedDifficulty);
+            return new StayTogetherTask(p, owningPlayer, 200, getWatchdogThreshold(p), targetPlayer, onTaskCompletion, assignedDifficulty);
         }
     }
 

@@ -2,7 +2,6 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask;
 
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -10,6 +9,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.Optional;
 
 public interface PlayerTask extends Listener {
     public enum TaskStatus {
@@ -52,6 +53,7 @@ public interface PlayerTask extends Listener {
     default Component lore() {
         return name().style(Style.style(NamedTextColor.LIGHT_PURPLE, TextDecoration.ITALIC)).hoverEvent(description());
     }
+    Optional<ConfigurationSection> getConfigurationSection();
     Player getTaskOwner();
     SecretTasks.TaskDifficulty getDifficulty();
     ItemStack createTaskBook();

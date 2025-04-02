@@ -1,6 +1,6 @@
 package com.github.cinnamondev.lifeSeries.commands.AdminSubCommands;
 
-import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.teams.ScoreHandler;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -15,14 +15,14 @@ import org.bukkit.entity.Player;
 
 public class ScoreSubCommand{
 
-    public static LiteralArgumentBuilder<CommandSourceStack> command(LifeSeries p) {
+    public static LiteralArgumentBuilder<CommandSourceStack> command(ScoreHandler scoreHandler) {
         return Commands.literal("score")
                 .then(Commands.argument("player", ArgumentTypes.players())
                         .then(Commands.literal("modify").then(Commands.argument("score", IntegerArgumentType.integer())
                                 .executes(ctx -> {
                                     ctx.getArgument("player", PlayerSelectorArgumentResolver.class)
                                             .resolve(ctx.getSource()).forEach(player -> modifyPlayerScore(
-                                                    p,
+                                                    scoreHandler,
                                                     ctx.getSource().getSender(),
                                                     player,
                                                     ctx.getArgument("score", Integer.class)
@@ -34,7 +34,7 @@ public class ScoreSubCommand{
                                 .executes(ctx -> {
                                     ctx.getArgument("player", PlayerSelectorArgumentResolver.class)
                                             .resolve(ctx.getSource()).forEach(player -> setPlayerScore(
-                                                    p,
+                                                    scoreHandler,
                                                     ctx.getSource().getSender(),
                                                     player,
                                                     ctx.getArgument("score", Integer.class)
@@ -45,8 +45,8 @@ public class ScoreSubCommand{
                         .then(Commands.literal("get").executes(ctx -> {
                             ctx.getArgument("player", PlayerSelectorArgumentResolver.class)
                                     .resolve(ctx.getSource()).forEach(player -> {
-                                        TeamMeta playerTeam = p.getScoreHandler().getTeam(player);
-                                        int playerScore = p.getScoreHandler().getScore(player);
+                                        TeamMeta playerTeam = scoreHandler.getTeam(player);
+                                        int playerScore = scoreHandler.getScore(player);
                                         ctx.getSource().getSender().sendMessage(
                                                 Component.translatable("score-command.get-score",
                                                         player.displayName(),
@@ -61,7 +61,7 @@ public class ScoreSubCommand{
                         .then(Commands.literal("modify").then(Commands.argument("score", IntegerArgumentType.integer())
                                 .executes(ctx -> {
                                     modifyUntrackedScore(
-                                            p,
+                                            scoreHandler,
                                             ctx.getSource().getSender(),
                                             ctx.getArgument("score", Integer.class)
                                     );
@@ -71,7 +71,7 @@ public class ScoreSubCommand{
                         .then(Commands.literal("set").then(Commands.argument("score", IntegerArgumentType.integer())
                                 .executes(ctx -> {
                                     setUntrackedScore(
-                                            p,
+                                            scoreHandler,
                                             ctx.getSource().getSender(),
                                             ctx.getArgument("score", Integer.class)
                                     );
@@ -79,8 +79,8 @@ public class ScoreSubCommand{
                                 })
                         ))
                         .then(Commands.literal("get").executes(ctx -> {
-                            int untrackedScore = p.getScoreHandler().getUntrackedScore();
-                            TeamMeta untrackedTeam = p.getScoreHandler().getTeam(untrackedScore);
+                            int untrackedScore = scoreHandler.getUntrackedScore();
+                            TeamMeta untrackedTeam = scoreHandler.getTeam(untrackedScore);
                             ctx.getSource().getSender().sendMessage(
                                     Component.translatable("score-command.get-score",
                                             Component.translatable("score-command.updated-score")
@@ -93,40 +93,40 @@ public class ScoreSubCommand{
                 );
     }
 
-    private static void modifyUntrackedScore(LifeSeries p, CommandSender sender, int deltaSeconds) {
-        setUntrackedScore(p, sender, p.getScoreHandler().getUntrackedScore() + deltaSeconds);
+    private static void modifyUntrackedScore(ScoreHandler sh, CommandSender sender, int deltaSeconds) {
+        setUntrackedScore(sh, sender, sh.getUntrackedScore() + deltaSeconds);
     }
 
-    private static void setUntrackedScore(LifeSeries p, CommandSender sender, int score) {
-        int oldScore = p.getScoreHandler().getUntrackedScore();
-        p.getScoreHandler().setUntrackedScore(score);
-        int newScore = p.getScoreHandler().getUntrackedScore();
-        TextColor newScoreColor = p.getScoreHandler().getTeam(newScore).getColor();
+    private static void setUntrackedScore(ScoreHandler sh, CommandSender sender, int score) {
+        int oldScore = sh.getUntrackedScore();
+        sh.setUntrackedScore(score);
+        int newScore = sh.getUntrackedScore();
+        TextColor newScoreColor = sh.getTeam(newScore).getColor();
 
         sender.sendMessage(Component.translatable("score-command.updated-score",
                 Component.translatable("update-score-commands.untracked-name").color(newScoreColor),
                 Component.text(newScore).color(newScoreColor),
-                Component.text(oldScore).color(p.getScoreHandler().getTeam(oldScore).getColor())
+                Component.text(oldScore).color(sh.getTeam(oldScore).getColor())
         ));
     }
 
-    private static void modifyPlayerScore(LifeSeries p, CommandSender sender, Player player, int deltaSeconds) {
+    private static void modifyPlayerScore(ScoreHandler sh, CommandSender sender, Player player, int deltaSeconds) {
         setPlayerScore(
-                p,
+                sh,
                 sender,
                 player,
-                p.getScoreHandler().getScore(player) + deltaSeconds
+                sh.getScore(player) + deltaSeconds
         );
     }
 
-    private static void setPlayerScore(LifeSeries p, CommandSender sender, Player player, int newScore) {
-        int oldScore = p.getScoreHandler().getScore(player);
-        Component oldScoreText = Component.text(oldScore).color(p.getScoreHandler().getTeam(oldScore).getColor());
+    private static void setPlayerScore(ScoreHandler sh, CommandSender sender, Player player, int newScore) {
+        int oldScore = sh.getScore(player);
+        Component oldScoreText = Component.text(oldScore).color(sh.getTeam(oldScore).getColor());
 
-        p.getScoreHandler().updatePlayerScoreAndTeam(player, (uuid, score) -> newScore);
+        sh.updatePlayerScoreAndTeam(player, (uuid, score) -> newScore);
 
-        int score = p.getScoreHandler().getScore(player);
-        Component newScoreText = Component.text(score).color(p.getScoreHandler().getTeam(score).getColor());
+        int score = sh.getScore(player);
+        Component newScoreText = Component.text(score).color(sh.getTeam(score).getColor());
 
         sender.sendMessage(Component.translatable("score-command.updated-score",
                 player.displayName(),

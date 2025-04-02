@@ -31,10 +31,7 @@ public class SessionControlSubCommand {
                             sessionEndAction(p,0);
                             return 1;
                         })
-                        .then(Commands.argument("delay", ArgumentTypes.time()).executes(ctx -> {
-
-                            return 1;
-                        }))
+                        .then(Commands.argument("delay", ArgumentTypes.time()).executes(ctx -> 1))
                 )
                 .then(Commands.literal("pause").executes(ctx -> {
                     p.pauseSession();
@@ -48,20 +45,16 @@ public class SessionControlSubCommand {
 
     private static int sessionEndAction(LifeSeries p, int delay) {
         if (delay >= 10*20) {
-            p.getServer().getScheduler().runTaskLater(p, () -> {
-                p.getServer().sendMessage(
-                        Component.translatable("session-command.ten-second-warning")
-                                .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD))
-                );
-            }, delay - 200);
+            p.getServer().getScheduler().runTaskLater(p, () -> p.getServer().sendMessage(
+                    Component.translatable("session-command.ten-second-warning")
+                            .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD))
+            ), delay - 200);
         }
         if (delay >= TimeUnit.MINUTES.toSeconds(5) * 20) {
-            p.getServer().getScheduler().runTaskLater(p, () -> {
-                p.getServer().sendMessage(
-                        Component.translatable("session-command.five-minute-warning")
-                                .style(Style.style(NamedTextColor.YELLOW, TextDecoration.BOLD))
-                );
-            }, delay - (TimeUnit.MINUTES.toSeconds(5) * 20));
+            p.getServer().getScheduler().runTaskLater(p, () -> p.getServer().sendMessage(
+                    Component.translatable("session-command.five-minute-warning")
+                            .style(Style.style(NamedTextColor.YELLOW, TextDecoration.BOLD))
+            ), delay - (TimeUnit.MINUTES.toSeconds(5) * 20));
         }
         if (delay >= TimeUnit.MINUTES.toSeconds(15) * 20) {
             p.getServer().getScheduler().runTaskLater(p, () ->

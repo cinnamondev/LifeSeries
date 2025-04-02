@@ -1,20 +1,10 @@
 package com.github.cinnamondev.lifeSeries.revival;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.Style;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.Plugin;
 
-import java.util.UUID;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class ToggleButton implements Button<Boolean> {
     private final Inventory inventory;

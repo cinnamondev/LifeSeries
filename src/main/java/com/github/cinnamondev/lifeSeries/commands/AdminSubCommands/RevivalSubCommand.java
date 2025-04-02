@@ -18,7 +18,7 @@ public class RevivalSubCommand {
                         return 0;
                     }
                     player.openInventory(
-                            revivalItem.getPlayersMenu(player.getUniqueId()).getInventory()
+                            revivalItem.getPlayersMenu(player).getInventory()
                     );
                     return 1;
                 });

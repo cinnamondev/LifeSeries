@@ -1,18 +1,21 @@
 package com.github.cinnamondev.lifeSeries.listener;
 
-import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.util.TrackableSpawnEggs;
+import com.google.inject.Inject;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.plugin.Plugin;
+
 import java.util.Random;
 
 public class DroppableSpawnEggs implements Listener {
-    private final LifeSeries p;
-    private final Random rand = new Random();
-    public DroppableSpawnEggs(LifeSeries p) {
+    protected final Plugin p;
+    protected final Random rand = new Random();
+
+    @Inject public DroppableSpawnEggs(Plugin p) {
         this.p = p;
     }
 

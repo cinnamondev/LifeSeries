@@ -52,16 +52,9 @@ public abstract class AbstractWatchdogTask extends AbstractPlayerTask implements
         fail();
     }
 
-    public abstract static class Builder<T extends AbstractWatchdogTask.Builder<T>> extends AbstractPlayerTask.Builder<T> {
-        protected int watchdogInterval = 200; // default, 10 seconds
-        protected int watchdogThreshold;
-        public T updateInterval(int interval) { this.watchdogInterval = interval; return (T) this;}
-        public T threshold(int ticks) { this.watchdogThreshold = ticks; return (T) this;}
-
-        @Override
-        public AbstractPlayerTask buildWithAnySettings(LifeSeries p, SecretTasks game) {
-            return threshold(p.getConfig().getInt("options.secret-life.watchdog-time", 3600))
-                    .build(p);
+    public abstract static class Builder<T extends AbstractPlayerTask.Builder<T>> extends AbstractPlayerTask.Builder<T> {
+        protected int getWatchdogThreshold(LifeSeries p) {
+            return p.getConfig().getInt("options.secret-life.watchdog-time", 3600);
         }
     }
 }

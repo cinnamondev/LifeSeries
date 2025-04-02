@@ -68,14 +68,12 @@ public class DisguiseMeAsACat implements CommandContainer.FilledLiteralCommand {
                                     if (optDye.isPresent()) {
                                         if (playersArgPresent) {
                                             ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
-                                                    .resolve(ctx.getSource()).forEach(player -> {
-                                                        game.addPlayerDisguise(player,
-                                                                CatLife.catDisguise(
-                                                                player,
-                                                                ctx.getArgument("type", Cat.Type.class),
-                                                                optDye.get()
-                                                        ));
-                                                    });
+                                                    .resolve(ctx.getSource()).forEach(player -> game.addPlayerDisguise(player,
+                                                            CatLife.catDisguise(
+                                                            player,
+                                                            ctx.getArgument("type", Cat.Type.class),
+                                                            optDye.get()
+                                                    )));
                                         } else if (ctx.getSource().getSender() instanceof Player player) {
                                             game.addPlayerDisguise(player, CatLife.catDisguise(
                                                     player,

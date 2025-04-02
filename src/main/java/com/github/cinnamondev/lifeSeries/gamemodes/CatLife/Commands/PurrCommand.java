@@ -9,11 +9,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
 
 // because of course there is
 public class PurrCommand implements CommandContainer.FilledLiteralCommand {

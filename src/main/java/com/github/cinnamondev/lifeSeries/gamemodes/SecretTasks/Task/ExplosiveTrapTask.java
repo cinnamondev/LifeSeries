@@ -5,8 +5,6 @@ import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractPlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.SelfCompletableTask;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TranslatableComponent;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Player;
@@ -71,11 +69,6 @@ public class ExplosiveTrapTask extends AbstractPlayerTask implements Listener, S
         @Override
         public AbstractPlayerTask build(LifeSeries p) {
             return new ExplosiveTrapTask(p, owningPlayer, onTaskCompletion, assignedDifficulty);
-        }
-
-        @Override
-        public AbstractPlayerTask buildWithAnySettings(LifeSeries p, SecretTasks game) {
-            return build(p);
         }
     }
 }

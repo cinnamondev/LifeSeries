@@ -6,16 +6,14 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
 public class DoubleLife implements Game, Listener { // TODO: this needs to be redone. One day.
-    private LifeSeries p;
+    protected LifeSeries p;
 
     public DoubleLife(LifeSeries p) {
         this.p = p;
@@ -42,6 +40,16 @@ public class DoubleLife implements Game, Listener { // TODO: this needs to be re
 
     @Override
     public void run() {
+
+    }
+
+    @Override
+    public void restoreStateFromSave() {
+
+    }
+
+    @Override
+    public void clearSaveData() {
 
     }
 

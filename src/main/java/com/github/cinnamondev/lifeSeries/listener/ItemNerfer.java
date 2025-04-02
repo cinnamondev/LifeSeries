@@ -1,19 +1,12 @@
 package com.github.cinnamondev.lifeSeries.listener;
 
-import io.papermc.paper.event.player.PlayerPickItemEvent;
-import io.papermc.paper.registry.RegistryAccess;
-import io.papermc.paper.registry.RegistryKey;
+import com.google.inject.Inject;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
-import org.bukkit.block.Crafter;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -27,18 +20,18 @@ import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.world.LootGenerateEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
 public class ItemNerfer implements Listener {
-    private final Plugin p;
+    protected final Plugin p;
     private final List<Material> bannedItems; // future: use itemtype
+
+    @Inject
     public ItemNerfer(Plugin p) {
         this.p = p;
         List<String> bannedNames = p.getConfig().getStringList("banned-items");
@@ -124,9 +117,7 @@ public class ItemNerfer implements Listener {
         p.getServer().getOnlinePlayers().forEach(player -> {
             if (player.hasPermission("life.bypass.banned-items")) { return; }
             bannedItems.stream().map(material -> player.getInventory().all(material)).forEach(materialMap -> materialMap
-                    .forEach((slot, item) -> {
-                        player.getInventory().setItem(slot, ItemStack.empty());
-                    })
+                    .forEach((slot, item) -> player.getInventory().setItem(slot, ItemStack.empty()))
             );
 
             for (EquipmentSlot slot : EquipmentSlot.values()) { // remove any banned item from equipment slots

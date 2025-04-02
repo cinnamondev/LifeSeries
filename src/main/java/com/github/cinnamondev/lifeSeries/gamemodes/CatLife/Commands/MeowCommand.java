@@ -53,6 +53,7 @@ public class MeowCommand implements CommandContainer.FilledLiteralCommand {
                             Sound.sound(Key.key("minecraft:entity.cat.ambient"), Sound.Source.VOICE, 1,1),
                             player
                     );
+                    meowListeners.forEach(listener -> listener.accept(player));
                     return 1;
                 })
                 .build();

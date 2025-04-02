@@ -5,7 +5,6 @@ import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractPlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.SelfCompletableTask;
-import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
@@ -31,3 +30,4 @@ public class BoogeymanCurseTask extends AbstractPlayerTask implements SelfComple
         return "boogeyman-curse";
     }
 }
+// TODO

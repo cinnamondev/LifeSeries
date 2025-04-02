@@ -1,19 +1,14 @@
 package com.github.cinnamondev.lifeSeries.teams;
 
-import com.github.cinnamondev.lifeSeries.util.ColourConverter;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.GameMode;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 public class TeamMeta {
     private final List<String> canKill;

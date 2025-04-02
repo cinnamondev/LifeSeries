@@ -12,7 +12,6 @@ import net.kyori.adventure.title.Title;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.EquipmentSlot;
@@ -21,38 +20,33 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 public class RevivalMenu implements InventoryHolder, Listener {
     private final LifeSeries p;
+    private final Locale locale;
     private final Inventory inventory;
     private final ItemStack item;
-    private final NamespacedKey revivalItemKey;
-    private final UUID owningPlayer;
     private final Button<?>[] buttons = new Button[27*2];
 
     private boolean teleportToPlayer = true;
     private int page = 0;
 
-    public RevivalMenu(LifeSeries p, NamespacedKey revivalItemKey, ItemStack item, UUID player) {
+    public RevivalMenu(LifeSeries p, ItemStack item, Locale locale) {
         this.p = p;
-        this.revivalItemKey = revivalItemKey;
+        this.locale = locale;
         this.item = item;
-        this.inventory = p.getServer().createInventory(this, 27*2, Component.text("Revival Menu", NamedTextColor.AQUA));
-        this.owningPlayer = player;
 
+        this.inventory = p.getServer().createInventory(this, 27*2, Component.text("Revival Menu", NamedTextColor.AQUA));
         buttons[4] = buttonToggleRespawnLocation(4);
-        buttons[0] = buttonNextPage(0,
-                GlobalTranslator.translator()
-                        .translate(Component.translatable("revival-item.buttons.prev-page"), p.getServerLocale()),
+        buttons[0] = buttonNextPage(0, // the names need to be translated server side
+                GlobalTranslator.render(Component.translatable("revival-item.buttons.prev-page"), locale),
                 -1
         );
         buttons[8] = buttonNextPage(8,
-                GlobalTranslator.translator()
-                        .translate(Component.translatable("revival-item.buttons.next-page"), p.getServerLocale()),
+                GlobalTranslator.render(Component.translatable("revival-item.buttons.next-page"), locale),
                 1
         );
         //fillEmptySlots(new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE,1));
@@ -107,16 +101,16 @@ public class RevivalMenu implements InventoryHolder, Listener {
         ItemStack itemOn = ItemStack.of(Material.TOTEM_OF_UNDYING,1);
         ItemMeta meta = itemOn.getItemMeta();
 
-        meta.displayName(GlobalTranslator.render(
-                Component.translatable("revival-item.buttons.location-player"),  p.getServerLocale()
-        ));
+        meta.displayName(
+                GlobalTranslator.render(Component.translatable("revival-item.buttons.location-player"), locale)
+        );
         itemOn.setItemMeta(meta);
 
         ItemStack itemOff = ItemStack.of(Material.ENCHANTING_TABLE,1);
         meta = itemOff.getItemMeta();
-        meta.displayName(GlobalTranslator.render(
-                Component.translatable("revival-item.buttons.location-spawn"),  p.getServerLocale()
-        ));
+        meta.displayName(
+                GlobalTranslator.render(Component.translatable("revival-item.buttons.location-spawn"), locale)
+        );
         itemOff.setItemMeta(meta);
 
         ToggleButton button = new ToggleButton(itemOn, itemOff,true, inventory, slot, (player, state) ->
@@ -194,7 +188,7 @@ public class RevivalMenu implements InventoryHolder, Listener {
                     ItemStack currentOffHand = onlinePlayer.getEquipment().getItemInOffHand();
                     onlinePlayer.sendEquipmentChange(onlinePlayer, EquipmentSlot.OFF_HAND, head);
                     p.getServer().getScheduler().runTaskLater(p, () -> {
-                        onlinePlayer.playEffect(EntityEffect.TOTEM_RESURRECT);
+                        onlinePlayer.playEffect(EntityEffect.PROTECTED_FROM_DEATH);
                         onlinePlayer.sendEquipmentChange(onlinePlayer, EquipmentSlot.OFF_HAND, currentOffHand);
                     },2);
 

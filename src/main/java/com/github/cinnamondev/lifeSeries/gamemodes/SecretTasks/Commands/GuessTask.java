@@ -14,7 +14,6 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 public class GuessTask implements CommandContainer.FilledLiteralCommand {
     private final LifeSeries p;
@@ -87,9 +86,7 @@ public class GuessTask implements CommandContainer.FilledLiteralCommand {
                                     );
                                 }
 
-                            }, () -> {
-                                guesser.sendMessage(Component.translatable("secret-life.guessing.no-or-complete-task"));
-                            });
+                            }, () -> guesser.sendMessage(Component.translatable("secret-life.guessing.no-or-complete-task")));
                             return 1;
                         })
         )).build();

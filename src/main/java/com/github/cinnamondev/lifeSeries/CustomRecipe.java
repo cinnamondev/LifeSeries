@@ -1,6 +1,5 @@
 package com.github.cinnamondev.lifeSeries;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
@@ -14,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class CustomRecipe {
-    private final Plugin p;
+    protected final Plugin p;
     protected final NamespacedKey key;
     protected final ConfigurationSection recipeConfig;
     private Component recipeMessage = Component.empty();

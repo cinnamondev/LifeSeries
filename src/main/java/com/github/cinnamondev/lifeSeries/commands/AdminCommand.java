@@ -17,7 +17,7 @@ public final class AdminCommand {
         var command = Commands.literal("life")
                 .requires(src -> src.getSender().hasPermission("life.admin"))
                 .then(SessionControlSubCommand.command(p))
-                .then(ScoreSubCommand.command(p))
+                .then(ScoreSubCommand.command(p.getScoreHandler()))
                 .then(OfflinePunishSubCommand.command(p))
                 .then(Commands.literal("help")
                         .executes(ctx -> helpCommand(ctx.getSource().getSender())))

@@ -19,7 +19,7 @@ categories:
 
   red:
     colour: 'RED' # as displayed in tab & above head
-    score: 0 # the lowest category should set 0 here to ignore this category entirely.
+    score: 1 # the lowest category should set 0 here to ignore this category entirely.
     can-kill: # does not prevent PvP, just determines which categories players can be rewarded time from.
       - red
       - yellow
@@ -143,6 +143,11 @@ options:
       explode-another-player:
         assignment-limit: 1
       chest-head:
+        head-url: "http://textures.minecraft.net/texture/275bcff2e74deed37a319a1f404e70d06a5f360cacee99c71346f38560cbd72a"
+        ball-launcher:
+          enabled: true
+          prevent-sharing: true
+          #model: "cosmetics:witch_hat" # omit if you just want breeze balls.
         loot:
           - name: revival-item # refer to as special
             quantity: 1
@@ -184,6 +189,3 @@ options:
     # kick players at end of session
     # bypass permission: life.bypass.kick
     kick-at-end: true
-    # for servers running behind a proxy that supports bungeecord messaging. if this is a valid option,
-    # and `kick-at-end` is also true, each player is sent to the specified server.
-    send-to-server: survival-2025 # set to null or remove if not desired.

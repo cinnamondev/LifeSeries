@@ -1,7 +1,7 @@
 package com.github.cinnamondev.lifeSeries.listener;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
+import com.google.inject.Inject;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
@@ -16,21 +16,18 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.w3c.dom.Text;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class PlayerListener implements Listener {
     private final LifeSeries p;
+
+    @Inject
     public PlayerListener(LifeSeries p) {
         this.p = p;
     }
 
     @EventHandler(priority = EventPriority.HIGH)
-    public void PlayerDeath(PlayerDeathEvent e) {
+    public void onPlayerKilled(PlayerDeathEvent e) {
         Player killed = e.getPlayer();
         Player killer = killed.getKiller();
 
@@ -84,12 +81,11 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH)
-    public void PlayerRespawn(PlayerRespawnEvent e) {
+    public void onPlayerRespawn(PlayerRespawnEvent e) {
         Player player = e.getPlayer();
 
         if (p.getScoreHandler().isPlayerSpectator(player) && player.getGameMode() != GameMode.CREATIVE) {
             player.setGameMode(GameMode.SPECTATOR);
         }
     }
-
 }

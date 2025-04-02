@@ -5,8 +5,6 @@ import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.P
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 
-import java.lang.module.Configuration;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,7 +25,7 @@ public class TaskLookup {
         }
     }
 
-    public static Map<String, AbstractPlayerTask.Builder<?>> getAllTaskBuilders() {
+    public static Map<String, ? extends AbstractPlayerTask.Builder<?>> getAllTaskBuilders() {
         return tasks.entrySet().stream().map((entry) -> {
             try {
                 return Map.entry(entry.getKey(), entry.getValue().getDeclaredConstructor().newInstance());

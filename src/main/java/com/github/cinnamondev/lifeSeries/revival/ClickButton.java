@@ -1,11 +1,9 @@
 package com.github.cinnamondev.lifeSeries.revival;
 
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import javax.sound.midi.VoiceStatus;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 

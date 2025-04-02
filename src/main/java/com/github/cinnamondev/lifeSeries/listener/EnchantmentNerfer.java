@@ -1,37 +1,30 @@
 package com.github.cinnamondev.lifeSeries.listener;
 
-import com.github.cinnamondev.lifeSeries.LifeSeries;
-import io.papermc.paper.registry.RegistryAccess;
-import io.papermc.paper.registry.RegistryKey;
-import net.kyori.adventure.key.Key;
+import com.google.inject.Inject;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.enchantments.EnchantmentOffer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class EnchantmentNerfer implements Listener {
-    private final Plugin p;
+    protected final Plugin p;
     private final List<NamespacedKey> blacklistedEnchants = new ArrayList<>();
 
+    @Inject
     public EnchantmentNerfer(Plugin p) {
         this.p = p;
         var bannedEnchants = p.getConfig().getStringList("banned-enchantments.blocklist");

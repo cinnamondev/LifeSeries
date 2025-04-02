@@ -25,12 +25,11 @@ public class Timed implements Game {
     public void run() {
         p.getScoreHandler().updateTrackableScoresAndTeams((uuid, score) -> score - 1);
         p.getScoreHandler().addUntrackedScore(-1);
-
-        p.getServer().getOnlinePlayers().forEach(this::displayPlayerTime);
+        p.getServer().getOnlinePlayers().forEach(player -> Timed.displayPlayerTime(p, player));
 
     }
 
-    private void displayPlayerTime(Player player) {
+    public static void displayPlayerTime(LifeSeries p, Player player) {
         player.sendActionBar(UtilityComponents.playerTime(
                 p.getScoreHandler().getScore(player),
                 TimeUnit.SECONDS,
@@ -42,6 +41,16 @@ public class Timed implements Game {
     @Override
     public Collection<LiteralArgumentBuilder<CommandSourceStack>> adminSubCommands(LifeSeries p) {
         return Collections.singletonList(TimeSubCommand.command(p));
+    }
+
+    @Override
+    public void restoreStateFromSave() {
+
+    }
+
+    @Override
+    public void clearSaveData() {
+
     }
 
     @Override

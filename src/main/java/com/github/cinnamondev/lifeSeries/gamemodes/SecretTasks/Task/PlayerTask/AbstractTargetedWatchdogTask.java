@@ -2,16 +2,9 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
-import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
-import net.kyori.adventure.text.TranslatableComponent;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 import java.util.function.Consumer;
 
@@ -35,17 +28,10 @@ public abstract class AbstractTargetedWatchdogTask extends AbstractWatchdogTask 
         return task;
     }
 
-    public abstract static class Builder<T extends AbstractTargetedWatchdogTask.Builder<T>> extends AbstractTargetedPlayerTask.Builder<T> {
-        protected int watchdogInterval = 200; // default, 10 seconds
-        protected int watchdogThreshold;
-        public T updateInterval(int interval) { this.watchdogInterval = interval; return (T) this;}
-        public T threshold(int ticks) { this.watchdogThreshold = ticks; return (T) this;}
-
-        @Override
-        public AbstractPlayerTask buildWithAnySettings(LifeSeries p, SecretTasks game) {
-            return threshold(p.getConfig().getInt("options.secret-life.watchdog-time", 3600))
-                    .randomTarget(p)
-                    .build(p);
+    // a helper more than anything, watchdog stuff should just come from config because im lazy and this is stupid.
+    public abstract static class Builder<T extends AbstractPlayerTask.Builder<T>> extends AbstractTargetedPlayerTask.Builder<T> {
+        protected int getWatchdogThreshold(LifeSeries p) {
+            return p.getConfig().getInt("options.secret-life.watchdog-time", 3600);
         }
     }
 }

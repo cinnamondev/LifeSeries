@@ -2,11 +2,10 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.Lives;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractTargetedPlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.TaskLookup;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
-import com.google.common.collect.ImmutableMap;
-import com.google.errorprone.annotations.Immutable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -22,7 +21,6 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SecretLife extends Lives implements SecretTasks {
     HashMap<UUID, PlayerTask> tasks = new HashMap<>();
@@ -102,14 +100,18 @@ public class SecretLife extends Lives implements SecretTasks {
             filteredTaskList = taskList;
         }
 
-        var task = TaskLookup.getTaskBuilderByKey(
+        var taskBuilder = TaskLookup.getTaskBuilderByKey(
                 filteredTaskList.stream()
                         .skip((int) (filteredTaskList.size() * Math.random())).findFirst()
-                        .orElseThrow(() -> new IllegalStateException("No task found")) // this shouldnt be a possible
-        )
-                .player(owningPlayer)
+                        .orElseThrow(() -> new IllegalStateException("No task found")));
+
+        if (taskBuilder instanceof AbstractTargetedPlayerTask.Builder<?> targetTaskBuilder) {
+            taskBuilder = targetTaskBuilder.randomTarget(p);
+        }
+        var task = taskBuilder
                 .onCompletion(this::onTaskCompletion)
-                .buildWithAnySettings(p, this);
+                .player(owningPlayer)
+                .build(p);
         if (add) { addSecretTask(task); }
         return task;
     }
@@ -137,7 +139,7 @@ public class SecretLife extends Lives implements SecretTasks {
 
     @Override
     public void onTaskFailure(PlayerTask secretTask) {
-        secretTask.getTaskOwner().sendMessage(Component.text("fail"));
+        secretTask.getTaskOwner().sendMessage(Component.translatable("secret-life.failed-task"));
         int punishment = p.getConfig().getInt("options.punishment.task-failure", 0);
         if (punishment > 0) {
             p.getScoreHandler().updatePlayerScoreAndTeam(secretTask.getTaskOwner(), (_uuid, score) ->

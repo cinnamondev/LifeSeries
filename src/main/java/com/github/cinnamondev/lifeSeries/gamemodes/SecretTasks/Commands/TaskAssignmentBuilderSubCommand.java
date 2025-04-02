@@ -38,14 +38,12 @@ public class TaskAssignmentBuilderSubCommand {
                 .executes(ctx -> {
                     for (Player player : ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
                             .resolve(ctx.getSource())) {
-                        taskGame.getSecretTask(player).ifPresentOrElse((task) -> {
-                            ctx.getSource().getSender().sendMessage(player.displayName()
-                                    .append(Component.text("'s task: "))
-                                    .append(task.lore())
-                                    .appendSpace()
-                                    .append(task.getTaskProgress().asComponent())
-                            );
-                        }, () -> ctx.getSource().getSender().sendMessage(Component.text("No task assigned to ")
+                        taskGame.getSecretTask(player).ifPresentOrElse((task) -> ctx.getSource().getSender().sendMessage(player.displayName()
+                                .append(Component.text("'s task: "))
+                                .append(task.lore())
+                                .appendSpace()
+                                .append(task.getTaskProgress().asComponent())
+                        ), () -> ctx.getSource().getSender().sendMessage(Component.text("No task assigned to ")
                                     .append(player.displayName()))
                         );
                     }

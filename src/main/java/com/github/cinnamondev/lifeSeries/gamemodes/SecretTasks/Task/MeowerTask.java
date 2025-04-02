@@ -7,7 +7,6 @@ import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.A
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractWatchdogTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TranslatableComponent;
 import org.bukkit.entity.Player;
 
 import java.util.function.Consumer;
@@ -59,7 +58,7 @@ public class MeowerTask extends AbstractWatchdogTask {
         @Override
         public AbstractPlayerTask build(LifeSeries p) {
             if (p.getGame() instanceof CatLife game) {
-                return new MeowerTask(p, game, owningPlayer, this.watchdogInterval, this.watchdogThreshold, onTaskCompletion, assignedDifficulty);
+                return new MeowerTask(p, game, owningPlayer, 200, getWatchdogThreshold(p), onTaskCompletion, assignedDifficulty);
             } else {
                 throw new RuntimeException("MeowerTask requires gamemode of CatLife");
             }

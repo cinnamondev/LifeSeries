@@ -8,7 +8,6 @@ import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands.TaskAssi
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands.TaskBookCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
-import com.google.common.collect.ImmutableMap;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
@@ -17,12 +16,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 import java.util.*;
-import java.util.List;
 
 public interface SecretTasks extends CommandContainer {
     enum TaskDifficulty {
@@ -114,32 +110,24 @@ public interface SecretTasks extends CommandContainer {
     public static Component rejectGuessButton(Player guesser) {
         return Component.translatable("general.deny-prompt")
                 .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD))
-                .clickEvent(ClickEvent.callback(_audience -> {
-                    guesser.sendMessage(Component.translatable("secret-life.guessing.guess-failed"));
-                }));
+                .clickEvent(ClickEvent.callback(_audience -> guesser.sendMessage(Component.translatable("secret-life.guessing.guess-failed"))));
     }
 
     public static Component rejectValidationButton(Player taskOwner) {
         return Component.translatable("general.deny-prompt")
                 .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD))
-                .clickEvent(ClickEvent.callback(_audience -> {
-                    taskOwner.sendMessage(Component.translatable("secret-life.validation.rejected"));
-                }));
+                .clickEvent(ClickEvent.callback(_audience -> taskOwner.sendMessage(Component.translatable("secret-life.validation.rejected"))));
     }
 
     public static Component acceptGuessButton(PlayerTask secretTask, Player guesser, boolean useCommand) {
         var message = Component.translatable("general.accept-prompt")
                 .style(Style.style(NamedTextColor.DARK_GREEN, TextDecoration.BOLD))
-                .clickEvent(ClickEvent.callback(_audience -> {
-                    guesser.sendMessage(Component.translatable("secret-life.guessing.guess-success"));
-                }));
+                .clickEvent(ClickEvent.callback(_audience -> guesser.sendMessage(Component.translatable("secret-life.guessing.guess-success"))));
 
         if (useCommand) {
             return message.clickEvent(ClickEvent.suggestCommand("/lf task " + secretTask.getTaskOwner().getName() + " fail"));
         } else { // use secretTask method. (old way, keeping this here anyway)
-            return message.clickEvent(ClickEvent.callback(_audience -> {
-                secretTask.acceptGuess();
-            }));
+            return message.clickEvent(ClickEvent.callback(_audience -> secretTask.acceptGuess()));
         }
     }
 }

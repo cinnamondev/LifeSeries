@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.Consumer;
 
@@ -70,8 +71,8 @@ public abstract class AbstractPlayerTask implements PlayerTask {
     public ItemStack createTaskBook() {
         ItemStack book = SecretLife.baseBook(p, 1);
 
-        Component name = GlobalTranslator.render(name(), p.getServerLocale());
-        Component description = GlobalTranslator.render(description(), p.getServerLocale());
+        Component name = GlobalTranslator.render(name(), owningPlayer.locale());
+        Component description = GlobalTranslator.render(description(), owningPlayer.locale());
 
         book.setItemMeta(((BookMeta) book.getItemMeta()).toBuilder()
                 .author(Component.text("God"))
@@ -81,6 +82,12 @@ public abstract class AbstractPlayerTask implements PlayerTask {
         );
         return book;
     }
+
+    @Override
+    public Optional<ConfigurationSection> getConfigurationSection() {
+        return Optional.ofNullable(p.getConfig().getConfigurationSection("options.secret-life.task-configs" + getTaskKey()));
+    }
+
     public abstract static class Builder<T extends Builder<T>> {
         protected final Random random = new Random();
         protected SecretTasks.TaskDifficulty assignedDifficulty = null;
@@ -92,9 +99,7 @@ public abstract class AbstractPlayerTask implements PlayerTask {
         public LiteralArgumentBuilder<CommandSourceStack> builderCommand(LifeSeries p, LiteralArgumentBuilder<CommandSourceStack> root, Consumer<PlayerTask> onTaskAdded) {
             return root.executes(ctx -> {
                 ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
-                        .resolve(ctx.getSource()).forEach((player) -> {
-                            onTaskAdded.accept(this.player(player).build(p));
-                        });
+                        .resolve(ctx.getSource()).forEach((player) -> onTaskAdded.accept(this.player(player).build(p)));
                 return 1;
             });
         }
@@ -113,9 +118,5 @@ public abstract class AbstractPlayerTask implements PlayerTask {
         }
 
         public abstract AbstractPlayerTask build(LifeSeries p);
-        ///  allow a task to be built without any specific arguments other than the target player and 'onCompletion'
-        ///  intended to be used by task rollers who don't care whats going on. game is passed to the builder so
-        ///  game-specific circumstances could be accounted for.
-        public abstract AbstractPlayerTask buildWithAnySettings(LifeSeries p, SecretTasks game);
     }
 }

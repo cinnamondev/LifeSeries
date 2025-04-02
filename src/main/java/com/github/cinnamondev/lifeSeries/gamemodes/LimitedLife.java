@@ -1,7 +1,8 @@
 package com.github.cinnamondev.lifeSeries.gamemodes;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman.Boogeyman;
+import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman.AbstractBoogeyman;
+import com.github.cinnamondev.lifeSeries.gamemodes.Timed.TimeSubCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed.Timed;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -9,19 +10,16 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-public class LimitedLife extends Timed implements Boogeyman {
+public class LimitedLife extends AbstractBoogeyman implements Game {
     private final ArrayList<UUID> boogeymen = new ArrayList<>();
     public LimitedLife(LifeSeries p) {
         super(p);
     }
 
-    @Override
-    public ArrayList<UUID> getBoogeyList() {
-        return this.boogeymen;
-    }
 
     @Override
     public boolean onKilled(LifeSeries p, Player killed, Player killer) {
@@ -39,7 +37,14 @@ public class LimitedLife extends Timed implements Boogeyman {
 
     @Override
     public Collection<LiteralArgumentBuilder<CommandSourceStack>> adminSubCommands(LifeSeries p) {
-        return Stream.of(super.adminSubCommands(p), Boogeyman.super.adminSubCommands(p))
+        return Stream.of(Collections.singletonList(TimeSubCommand.command(p)), super.adminSubCommands(p))
                 .flatMap(Collection::stream).toList();
+    }
+
+    @Override
+    public void run() {
+        p.getScoreHandler().updateTrackableScoresAndTeams((uuid, score) -> score - 1);
+        p.getScoreHandler().addUntrackedScore(-1);
+        p.getServer().getOnlinePlayers().forEach(player -> Timed.displayPlayerTime(p, player));
     }
 }

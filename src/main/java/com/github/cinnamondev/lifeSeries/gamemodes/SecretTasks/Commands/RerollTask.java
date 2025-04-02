@@ -4,14 +4,11 @@ import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.CommandContainer;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
-import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import org.bukkit.Difficulty;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -64,11 +61,9 @@ public class RerollTask implements CommandContainer.FilledLiteralCommand {
                         task.givePlayerTaskBook(player);
 
                         rerolledPlayers.add(player.getUniqueId()); // player gets only one roll (unless in infinite roll team)
-                    }, () -> {
-                        player.sendMessage(Component.translatable("secret-life.taskbook.no-task-assigned")
-                                .color(NamedTextColor.RED)
-                        );
-                    });
+                    }, () -> player.sendMessage(Component.translatable("secret-life.taskbook.no-task-assigned")
+                            .color(NamedTextColor.RED)
+                    ));
                     return 1;
                 }).build(); // TODO:
     }

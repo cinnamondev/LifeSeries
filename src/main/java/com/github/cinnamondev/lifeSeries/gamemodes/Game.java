@@ -1,31 +1,16 @@
 package com.github.cinnamondev.lifeSeries.gamemodes;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.github.cinnamondev.lifeSeries.commands.AdminSubCommands.ScoreSubCommand;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
-import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.title.Title;
-import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.bukkit.entity.Player;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface Game extends Runnable, CommandContainer {
     default void onGameStart() {}
     default void onGameStop() {}
+    void restoreStateFromSave();
+    void clearSaveData();
     default boolean onKilled(LifeSeries p, Player killed, int punishment) {
         AtomicBoolean isFinalDeath = new AtomicBoolean(false);
         p.getScoreHandler().updatePlayerScoreAndTeam(killed, (uuid,score) -> score - punishment, (player, newTeam) -> {
@@ -62,4 +47,5 @@ public interface Game extends Runnable, CommandContainer {
         }
         return false;
     }
+
 }
