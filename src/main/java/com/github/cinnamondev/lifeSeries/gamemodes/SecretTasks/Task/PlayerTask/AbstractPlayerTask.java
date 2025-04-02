@@ -22,8 +22,8 @@ public abstract class AbstractPlayerTask implements PlayerTask {
     protected final Player owningPlayer;
     protected TaskStatus status = TaskStatus.IN_PROGRESS;
     private final Consumer<PlayerTask> taskConsumer;
-    private final SecretTasks.TaskDifficulty difficulty;
-    public AbstractPlayerTask(LifeSeries p, Player owningPlayer, Consumer<PlayerTask> onTaskCompletion, SecretTasks.TaskDifficulty difficulty) {
+    private final TaskDifficulty difficulty;
+    public AbstractPlayerTask(LifeSeries p, Player owningPlayer, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
         this.p = p;
         this.owningPlayer = owningPlayer;
         this.taskConsumer = onTaskCompletion;
@@ -55,7 +55,7 @@ public abstract class AbstractPlayerTask implements PlayerTask {
         return this.owningPlayer;
     }
     @Override
-    public SecretTasks.TaskDifficulty getDifficulty() {
+    public TaskDifficulty getDifficulty() {
         return this.difficulty;
     }
 
@@ -90,7 +90,7 @@ public abstract class AbstractPlayerTask implements PlayerTask {
 
     public abstract static class Builder<T extends Builder<T>> {
         protected final Random random = new Random();
-        protected SecretTasks.TaskDifficulty assignedDifficulty = null;
+        protected TaskDifficulty assignedDifficulty = null;
         protected Player owningPlayer;
         protected Consumer<PlayerTask> onTaskCompletion;
         // Implementation notes:
@@ -112,7 +112,7 @@ public abstract class AbstractPlayerTask implements PlayerTask {
             this.onTaskCompletion = taskConsumer;
             return (T) this;
         }
-        public T difficulty(SecretTasks.TaskDifficulty difficulty) {
+        public T difficulty(TaskDifficulty difficulty) {
             this.assignedDifficulty = difficulty;
             return (T) this;
         }

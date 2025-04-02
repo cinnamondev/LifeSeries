@@ -7,6 +7,7 @@ import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands.GuessTas
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands.TaskAssignmentBuilderSubCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Commands.TaskBookCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.TaskDifficulty;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -21,19 +22,6 @@ import org.bukkit.entity.Player;
 import java.util.*;
 
 public interface SecretTasks extends CommandContainer {
-    enum TaskDifficulty {
-        EASY,
-        MEDIUM,
-        HARD;
-
-        public Component asComponent() {
-            return switch (this) {
-                case EASY -> Component.translatable("task-difficulty.easy").color(NamedTextColor.GREEN);
-                case MEDIUM -> Component.translatable("task-difficulty.medium").color(NamedTextColor.YELLOW);
-                case HARD -> Component.translatable("task-difficulty.hard").color(NamedTextColor.RED);
-            };
-        }
-    }
     default Collection<String> getAllTaskOf(Collection<TaskDifficulty> difficulties) {
         return difficulties.stream().distinct().map(difficulty -> getTasksOfDifficulty(difficulty))
                 .flatMap(Collection::stream)

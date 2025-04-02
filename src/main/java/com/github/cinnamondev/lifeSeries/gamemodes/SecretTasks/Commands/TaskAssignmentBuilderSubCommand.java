@@ -4,6 +4,7 @@ import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.*;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.TaskDifficulty;
 import com.github.cinnamondev.lifeSeries.util.TitleCountdown;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -119,9 +120,9 @@ public class TaskAssignmentBuilderSubCommand {
             PlayerTask task = null;
             try {
                 task = switch (difficulty) { // discover which tasks to give
-                    case "easy" -> taskGame.rollTaskOfDifficulty(player, SecretTasks.TaskDifficulty.EASY, true, true);
-                    case "medium" -> taskGame.rollTaskOfDifficulty(player, SecretTasks.TaskDifficulty.MEDIUM, true, true);
-                    case "hard" -> taskGame.rollTaskOfDifficulty(player, SecretTasks.TaskDifficulty.HARD, true, true);
+                    case "easy" -> taskGame.rollTaskOfDifficulty(player, TaskDifficulty.EASY, true, true);
+                    case "medium" -> taskGame.rollTaskOfDifficulty(player, TaskDifficulty.MEDIUM, true, true);
+                    case "hard" -> taskGame.rollTaskOfDifficulty(player, TaskDifficulty.HARD, true, true);
                     case "team" -> taskGame.rollTask(player, p.getScoreHandler().getTeam(player), true, true);
                     case "any" -> taskGame.rollTaskOfAnyDifficulty(player, true, true);
                     default -> throw new IllegalStateException("Unexpected value: " + difficulty);

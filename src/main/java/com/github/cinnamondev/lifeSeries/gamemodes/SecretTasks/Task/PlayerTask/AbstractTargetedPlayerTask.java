@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 
 public abstract class AbstractTargetedPlayerTask extends AbstractPlayerTask implements TargetedPlayerTask {
     protected OfflinePlayer targetedPlayer;
-    public AbstractTargetedPlayerTask(LifeSeries p, Player owningPlayer, OfflinePlayer targetedPlayer, SecretTasks.TaskDifficulty difficulty, Consumer<PlayerTask> onTaskCompletion) {
+    public AbstractTargetedPlayerTask(LifeSeries p, Player owningPlayer, OfflinePlayer targetedPlayer, TaskDifficulty difficulty, Consumer<PlayerTask> onTaskCompletion) {
         super(p, owningPlayer, onTaskCompletion, difficulty);
         this.targetedPlayer = targetedPlayer;
     }

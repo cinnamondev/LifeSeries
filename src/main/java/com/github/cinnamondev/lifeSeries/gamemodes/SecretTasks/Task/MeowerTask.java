@@ -6,6 +6,7 @@ import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractPlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractWatchdogTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.TaskDifficulty;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
@@ -15,7 +16,7 @@ public class MeowerTask extends AbstractWatchdogTask {
     protected final CatLife game;
     protected int strikes = 0;
 
-    public MeowerTask(LifeSeries p, CatLife game, Player owningPlayer, int watchdogInterval, int watchdogThreshold, Consumer<PlayerTask> onTaskCompletion, SecretTasks.TaskDifficulty difficulty) {
+    public MeowerTask(LifeSeries p, CatLife game, Player owningPlayer, int watchdogInterval, int watchdogThreshold, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
         super(p, owningPlayer, watchdogInterval, watchdogThreshold, onTaskCompletion, difficulty);
         this.game = game;
         game.getMeowCommand().addMeowListener(this::onPlayerMeow);

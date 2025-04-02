@@ -4,6 +4,7 @@ import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.Lives;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractTargetedPlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.TaskDifficulty;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.TaskLookup;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import net.kyori.adventure.text.Component;
@@ -77,13 +78,13 @@ public class SecretLife extends Lives implements SecretTasks {
     }
 
     @Override
-    public Collection<String> getTasksOfDifficulty(SecretTasks.TaskDifficulty difficulty) {
+    public Collection<String> getTasksOfDifficulty(TaskDifficulty difficulty) {
         ConfigurationSection section = p.getConfig().getConfigurationSection("options.secret-life.task-deck");
         if (section == null) return Collections.emptyList();
         return switch (difficulty) {
-            case SecretTasks.TaskDifficulty.EASY -> section.getStringList("easy.deck");
-            case SecretTasks.TaskDifficulty.MEDIUM -> section.getStringList("normal.deck");
-            case SecretTasks.TaskDifficulty.HARD -> section.getStringList("hard.deck");
+            case TaskDifficulty.EASY -> section.getStringList("easy.deck");
+            case TaskDifficulty.MEDIUM -> section.getStringList("normal.deck");
+            case TaskDifficulty.HARD -> section.getStringList("hard.deck");
             default -> Collections.emptyList();
         };
     }

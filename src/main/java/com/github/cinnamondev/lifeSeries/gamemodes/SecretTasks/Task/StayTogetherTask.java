@@ -27,7 +27,7 @@ public class StayTogetherTask extends AbstractTargetedWatchdogTask implements Li
     private final double maxDistance = 10;
     private final int timeoutMinutes = 10;
     private int strikes = 2;
-    public StayTogetherTask(LifeSeries p, Player owningPlayer, int watchdogInterval, int watchdogThreshold, OfflinePlayer target, Consumer<PlayerTask> onTaskCompletion, SecretTasks.TaskDifficulty difficulty) {
+    public StayTogetherTask(LifeSeries p, Player owningPlayer, int watchdogInterval, int watchdogThreshold, OfflinePlayer target, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
         super(p, owningPlayer, watchdogInterval, watchdogThreshold, target, difficulty, onTaskCompletion);
     }
 

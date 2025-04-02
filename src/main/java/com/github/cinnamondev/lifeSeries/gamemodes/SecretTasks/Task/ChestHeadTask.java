@@ -5,6 +5,7 @@ import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractPlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.TaskDifficulty;
 import com.github.cinnamondev.lifeSeries.util.PlayerHead;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
@@ -36,7 +37,7 @@ public class ChestHeadTask extends AbstractPlayerTask implements Listener {
     private ArmorStand armorStand;
     private final Inventory inventory;
     private final NamespacedKey ballLauncherKey;
-    public ChestHeadTask(LifeSeries p, Player owningPlayer, Consumer<PlayerTask> onTaskCompletion, SecretTasks.TaskDifficulty difficulty) {
+    public ChestHeadTask(LifeSeries p, Player owningPlayer, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
         super(p, owningPlayer, onTaskCompletion, difficulty);
         this.ballLauncherKey = new NamespacedKey(p, "ball-launcher");
         // create a list of lootable items. this is a bit of a stream abuse, sorry.

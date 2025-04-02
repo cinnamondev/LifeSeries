@@ -4,6 +4,7 @@ import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.CommandContainer;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.TaskDifficulty;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -49,13 +50,13 @@ public class RerollTask implements CommandContainer.FilledLiteralCommand {
 
                     secretGame.getSecretTask(player).ifPresentOrElse((currentTask) -> {
                         PlayerTask task;
-                        if (currentTask.getDifficulty() == SecretTasks.TaskDifficulty.EASY) {
+                        if (currentTask.getDifficulty() == TaskDifficulty.EASY) {
                             task = secretGame.rollTaskOfDifficulty(player,
-                                    List.of(SecretTasks.TaskDifficulty.MEDIUM, SecretTasks.TaskDifficulty.HARD), true, true
+                                    List.of(TaskDifficulty.MEDIUM, TaskDifficulty.HARD), true, true
                             );
                         } else {
                             task = secretGame.rollTaskOfDifficulty(player,
-                                    Collections.singletonList(SecretTasks.TaskDifficulty.HARD), true, true
+                                    Collections.singletonList(TaskDifficulty.HARD), true, true
                             );
                         }
                         task.givePlayerTaskBook(player);

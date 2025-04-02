@@ -55,7 +55,7 @@ public interface PlayerTask extends Listener {
     }
     Optional<ConfigurationSection> getConfigurationSection();
     Player getTaskOwner();
-    SecretTasks.TaskDifficulty getDifficulty();
+    TaskDifficulty getDifficulty();
     ItemStack createTaskBook();
     ConfigurationSection saveTask(ConfigurationSection taskSection);
     String getTaskKey();

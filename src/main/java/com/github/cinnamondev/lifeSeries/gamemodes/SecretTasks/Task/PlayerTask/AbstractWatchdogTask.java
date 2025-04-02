@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import java.util.function.Consumer;
 
 public abstract class AbstractWatchdogTask extends AbstractPlayerTask implements WatchdogPlayerTask {
-    public AbstractWatchdogTask(LifeSeries p, Player owningPlayer, int watchdogInterval, int watchdogThreshold, Consumer<PlayerTask> onTaskCompletion, SecretTasks.TaskDifficulty difficulty) {
+    public AbstractWatchdogTask(LifeSeries p, Player owningPlayer, int watchdogInterval, int watchdogThreshold, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
         super(p, owningPlayer, onTaskCompletion, difficulty);
         this.threshold = watchdogThreshold;
         this.interval = watchdogInterval;
