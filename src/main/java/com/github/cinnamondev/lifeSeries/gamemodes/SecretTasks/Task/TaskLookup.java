@@ -13,7 +13,9 @@ public class TaskLookup {
     private static final Map<String, Class<? extends PlayerTask.Builder<?>>> tasks = Map.ofEntries(
             Map.entry("explode-another-player", ExplosiveTrapTask.Builder.class),
             Map.entry("follow-another-player", StayTogetherTask.Builder.class),
-            Map.entry("meow-at-others", MeowerTask.Builder.class)
+            Map.entry("meow-at-others", MeowerTask.Builder.class),
+            Map.entry("chest-head", ChestHeadTask.Builder.class),
+            Map.entry("pass-it-on", PassItOnTask.Builder.class)
     );;
 
     public static PlayerTask.Builder<?> getTaskBuilderByKey(String key) {

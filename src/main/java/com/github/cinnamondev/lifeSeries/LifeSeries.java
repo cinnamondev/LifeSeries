@@ -130,6 +130,7 @@ public final class LifeSeries extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        game.onServerDisable();
         // Plugin shutdown logic
         if (getConfig().getBoolean("options.pause-on-server-stop", false)) {
             pauseSession();

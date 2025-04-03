@@ -116,8 +116,10 @@ options:
     can-guess-tasks:
       - red
       - yellow
-    can-infinite-roll:      # TODO: to be finished- players in this category can infinitely roll tasks (others can roll once)
-      - red
+    can-reroll:
+      times: 1
+      teams:
+        - red
     task-deck:
       easy:                 # Currently there is no concept outside of `easy, medium, hard`. do not try to add additional categories.
         teams:              # Teams that are eligible to recieve these tasks
@@ -142,7 +144,10 @@ options:
     task-configs:
       explode-another-player:
         assignment-limit: 1
+      pass-it-on:
+        save-old-task: true
       chest-head:
+        grace: 30
         head-url: "http://textures.minecraft.net/texture/275bcff2e74deed37a319a1f404e70d06a5f360cacee99c71346f38560cbd72a"
         ball-launcher:
           enabled: true
