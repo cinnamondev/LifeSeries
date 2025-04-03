@@ -45,12 +45,6 @@ public class ExplosiveTrapTask extends AbstractPlayerTask implements Listener, S
     }
 
     @Override
-    public boolean endOfSession() {
-        if (status.equals(TaskStatus.IN_PROGRESS) || status.equals(TaskStatus.ODD_STATE)) { fail(); return false; }
-        return true;
-    }
-
-    @Override
     public TaskStatus getTaskProgress() {
         return status;
     }
@@ -65,8 +59,11 @@ public class ExplosiveTrapTask extends AbstractPlayerTask implements Listener, S
         return "explode-another-player";
     }
 
-
-    public static class Builder extends AbstractPlayerTask.Builder<Builder> {
+    @Override
+    public ExplosiveTrapTask.Builder builderProvider() {
+        return new ExplosiveTrapTask.Builder();
+    }
+    public static class Builder extends PlayerTask.Builder<Builder> {
         @Override
         public AbstractPlayerTask build(LifeSeries p) {
             return new ExplosiveTrapTask(p, owningPlayer, onTaskCompletion, assignedDifficulty);

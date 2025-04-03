@@ -5,9 +5,12 @@ import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.Lives;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractTargetedPlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.TargetedPlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.TaskDifficulty;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.TaskLookup;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
+import com.google.common.collect.ImmutableMap;
+import io.papermc.paper.plugin.lifecycle.event.LifecycleEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -26,15 +29,19 @@ import java.util.*;
 
 public abstract class AbstractSecretTasks implements SecretTasks, Game {
     protected final LifeSeries p;
-    HashMap<UUID, PlayerTask> tasks = new HashMap<>();
-
-    public AbstractSecretTasks(LifeSeries p) {
+    protected HashMap<UUID, PlayerTask> tasks = new HashMap<>();
+    private boolean gameStarted = false; // used as an indicator for auto roll listener.
+    protected AbstractSecretTasks(LifeSeries p) {
         this.p = p;
     }
 
     @Override
+    public void onServerDisable() {
+        tasks.values().forEach(PlayerTask::cleanup);
+    }
+
+    @Override
     public void run() {
-        p.getScoreHandler().updateAllTrackedScoresAndTeams((_uuid, score) -> score);
         p.getServer().getOnlinePlayers().forEach(player -> {
             TeamMeta team = p.getScoreHandler().getTeam(player);
             if (canGuessTask(player)) {
@@ -42,22 +49,35 @@ public abstract class AbstractSecretTasks implements SecretTasks, Game {
             }
         });
     }
+    // TODO: save task progress to save file.
+    @Override
+    public void restoreStateFromSave() {
+
+    }
+
+    @Override
+    public void clearSaveData() {
+
+    }
 
     @Override
     public void onGameStart() {
+        gameStarted = true;
         if (p.getConfig().getBoolean("options.secret-life.auto-roll", false)) {
-            p.getServer().getOnlinePlayers().forEach(player -> this.rollTask(
+            p.getScoreHandler().getAllAliveOnlinePlayers().forEach(player -> this.rollTask(
                     player,
                     p.getScoreHandler().getTeam(player),
                     true,
                     true
-            ).givePlayerTaskBook(player));
+            ));
         }
     }
 
     @Override
     public void onGameStop() {
+        gameStarted = false;
         tasks.forEach((uuid, task) -> task.endOfSession());
+        tasks.clear();
     }
 
     @Override
@@ -89,10 +109,9 @@ public abstract class AbstractSecretTasks implements SecretTasks, Game {
         Collection<String> filteredTaskList;
         if (respectLimits) {
             filteredTaskList = taskList.stream()
-                    .filter(taskName -> TaskLookup.getTaskAssignmentLimit(p, taskName)
-                            .filter(limit -> searchForTaskByKey(taskName).size() < limit)
-                            .isPresent()
-                    ).toList();
+                    .filter(taskName ->
+                            searchForTaskByKey(taskName).size() < TaskLookup.getTaskAssignmentLimit(p, taskName))
+                    .toList();
         } else {
             filteredTaskList = taskList;
         }
@@ -102,7 +121,7 @@ public abstract class AbstractSecretTasks implements SecretTasks, Game {
                         .skip((int) (filteredTaskList.size() * Math.random())).findFirst()
                         .orElseThrow(() -> new IllegalStateException("No task found")));
 
-        if (taskBuilder instanceof AbstractTargetedPlayerTask.Builder<?> targetTaskBuilder) {
+        if (taskBuilder instanceof TargetedPlayerTask.Builder<?> targetTaskBuilder) {
             taskBuilder = targetTaskBuilder.randomTarget(p);
         }
         var task = taskBuilder
@@ -119,7 +138,7 @@ public abstract class AbstractSecretTasks implements SecretTasks, Game {
         removeSecretTask(secretTask.getTaskOwner()); // ensure everythings cleaned up.
         Bukkit.getPluginManager().registerEvents(secretTask, p);
         tasks.put(secretTask.getTaskOwner().getUniqueId(), secretTask);
-        //secretTask.givePlayerTaskBook(secretTask.getTaskOwner());
+        secretTask.givePlayerTaskBook(secretTask.getTaskOwner());
     }
 
     @Override
@@ -179,7 +198,7 @@ public abstract class AbstractSecretTasks implements SecretTasks, Game {
         }
     }
     public boolean canRerollTask(TeamMeta reroller) {
-        return p.getConfig().getStringList("options.secret-life.can-infinite-roll").stream()
+        return p.getConfig().getStringList("options.secret-life.can-reroll.teams").stream()
                 .anyMatch(str -> str.equalsIgnoreCase(reroller.getScoreboardTeam().getName()));
     }
     public boolean canRerollTask(OfflinePlayer reroller) {

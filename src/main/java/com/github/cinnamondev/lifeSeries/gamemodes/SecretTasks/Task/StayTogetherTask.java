@@ -12,6 +12,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -22,56 +23,45 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class StayTogetherTask extends AbstractTargetedWatchdogTask implements Listener {
+public class StayTogetherTask extends AbstractTargetedWatchdogTask implements Listener, SessionLongTask, RequiresOnlineTarget {
 
     private final double maxDistance = 10;
     private final int timeoutMinutes = 10;
-    private int strikes = 2;
-    public StayTogetherTask(LifeSeries p, Player owningPlayer, int watchdogInterval, int watchdogThreshold, OfflinePlayer target, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
-        super(p, owningPlayer, watchdogInterval, watchdogThreshold, target, difficulty, onTaskCompletion);
+    private int strikes = 0;
+    public StayTogetherTask(LifeSeries p, Player owningPlayer, int watchdogInterval, OfflinePlayer target, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
+        super(p, owningPlayer, watchdogInterval, target, difficulty, onTaskCompletion);
     }
 
-    private ScheduledTask task = null;
+    @Override
+    public void bark() {
+        strikes += 1;
+        if (strikes > 5) {
+            fail();
+        } else {
+            owningPlayer.sendMessage(
+                    Component.translatable("secret-life.tasks.follow-another-player.reminder", targetedPlayer.getName())
+                            .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD))
+            );
+        }
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onTaskPlayerMove(PlayerMoveEvent e) {
         if (!e.getPlayer().equals(owningPlayer) || targetedPlayer == null) { return; }
 
-        Player onlineTarget = p.getServer().getPlayer(targetedPlayer.getUniqueId());
-        if (onlineTarget == null) { return; }
+        Player onlineTarget = targetedPlayer.getPlayer();
+        if (onlineTarget == null) { feed(); return; }
 
-        Location playerLoc = owningPlayer.getLocation();
+        Location playerLocation = owningPlayer.getLocation();
         World playerWorld = owningPlayer.getWorld();
-        Location targetLoc = onlineTarget.getLocation();
+        Location targetLocation = onlineTarget.getLocation();
         World targetWorld = onlineTarget.getWorld();
+
         // if player is out of range of other player
         if (!playerWorld.equals(targetWorld)) { return; }
-        if (targetLoc.distanceSquared(playerLoc) > maxDistance) {
-
+        if (playerLocation.distanceSquared(targetLocation) <= maxDistance) {
+            feed();
         }
-        if (targetLoc.distance(playerLoc) > maxDistance || !playerWorld.equals(targetWorld)) {
-            if (task == null || // task has yet to run OR is not in a 'to be executed' state.
-                    task.getExecutionState().equals(ScheduledTask.ExecutionState.FINISHED) ||
-                    task.getExecutionState().equals(ScheduledTask.ExecutionState.CANCELLED)) {
-                task = owningPlayer.getScheduler().runDelayed(p, (_t) -> { // check in `timeoutMinutes` time if failed.
-                        if (strikes != 0 && checkFailState() == TaskStatus.FAILED) {
-                            strikes -=1;
-                            if (strikes == 0) { fail(); } else {
-                                owningPlayer.sendMessage(
-                                        Component.translatable("secret-life.tasks.follow-another-player.reminder", targetedPlayer.getName())
-                                                .style(Style.style(NamedTextColor.RED, TextDecoration.BOLD))
-                                );
-                            }
-                        }
-                    }, null, TimeUnit.MINUTES.toSeconds(timeoutMinutes) * 20
-                );
-            }
-        }
-    }
-
-    @Override
-    public boolean endOfSession() {
-        if (!getTaskProgress().equals(PlayerTask.TaskStatus.FAILED)) { complete(); return true; }
-        return false;
     }
 
     @Override
@@ -91,26 +81,24 @@ public class StayTogetherTask extends AbstractTargetedWatchdogTask implements Li
     }
 
     @Override
+    public Component taskProgressExplanation() {
+        return super.taskProgressExplanation()
+                .appendNewline()
+                .append(RequiresOnlineTarget.super.taskProgressExplanation());
+    }
+    @Override
     public String getTaskKey() {
         return "follow-another-player";
     }
 
-    private TaskStatus checkFailState() {
-        Player onlineTarget = p.getServer().getPlayer(targetedPlayer.getUniqueId());
-        if (onlineTarget == null) { return TaskStatus.ODD_STATE; } // we cant do anything rn!!! kinda messy.
-        if (!owningPlayer.isOnline()) { return TaskStatus.FAILED; } // player cant be tracked like this! so they fail :)
-
-        if (owningPlayer.getLocation().distance(onlineTarget.getLocation()) > maxDistance ||
-                !owningPlayer.getWorld().equals(onlineTarget.getWorld())) {
-            return TaskStatus.FAILED;
-        }
-        return TaskStatus.IN_PROGRESS;
+    @Override
+    public StayTogetherTask.Builder builderProvider() {
+        return new StayTogetherTask.Builder();
     }
-
-    public static class Builder extends AbstractTargetedWatchdogTask.Builder<Builder> {
+    public static class Builder extends TargetedPlayerTask.Builder<Builder> {
         @Override
         public AbstractPlayerTask build(LifeSeries p) {
-            return new StayTogetherTask(p, owningPlayer, 200, getWatchdogThreshold(p), targetPlayer, onTaskCompletion, assignedDifficulty);
+            return new StayTogetherTask(p, owningPlayer, 200, targetPlayer, onTaskCompletion, assignedDifficulty);
         }
     }
 

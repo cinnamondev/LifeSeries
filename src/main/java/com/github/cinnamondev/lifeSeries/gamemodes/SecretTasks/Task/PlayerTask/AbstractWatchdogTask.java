@@ -2,24 +2,31 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
+import com.github.cinnamondev.lifeSeries.util.UtilityComponents;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public abstract class AbstractWatchdogTask extends AbstractPlayerTask implements WatchdogPlayerTask {
-    public AbstractWatchdogTask(LifeSeries p, Player owningPlayer, int watchdogInterval, int watchdogThreshold, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
+    public AbstractWatchdogTask(LifeSeries p, Player owningPlayer, int watchdogInterval, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
         super(p, owningPlayer, onTaskCompletion, difficulty);
-        this.threshold = watchdogThreshold;
         this.interval = watchdogInterval;
         this.taskId = p.getServer().getScheduler().scheduleSyncRepeatingTask(p, this::watchdog, watchdogInterval, watchdogInterval);
     }
-    private final int threshold;
     protected final int interval;
     private final int taskId;
     int intervalsSinceLastFeed = 0;
 
+    @Override
+    public int getWatchdogThreshold() {
+        return p.getConfig().getInt("options.secret-life.watchdog-time", 3600);
+    }
+
     private void watchdog() {
-        if (intervalsSinceLastFeed >= threshold && !getTaskProgress().equals(TaskStatus.COMPLETE)) { // watch dog is not fed
+        if (intervalsSinceLastFeed >= getWatchdogThreshold() && !isTaskFinished()) { // watch dog is not fed, check istaskfinished just in case.
             bark();
             p.getServer().getScheduler().cancelTask(taskId);
         } else {
@@ -27,6 +34,11 @@ public abstract class AbstractWatchdogTask extends AbstractPlayerTask implements
         }
     }
 
+    private void cancelWatchdog() {
+        if (p.getServer().getScheduler().isQueued(taskId) || p.getServer().getScheduler().isCurrentlyRunning(taskId)) {
+            p.getServer().getScheduler().cancelTask(taskId);
+        }
+    }
     @Override
     public final void complete() {
         if (p.getServer().getScheduler().isQueued(taskId) || p.getServer().getScheduler().isCurrentlyRunning(taskId)) {
@@ -48,13 +60,13 @@ public abstract class AbstractWatchdogTask extends AbstractPlayerTask implements
     }
 
     @Override
-    public void bark() {
-        fail();
+    public Component taskProgressExplanation() {
+        return Component.text("Time since condition was satisfied: ")
+                .append(UtilityComponents.playerTime(intervalsSinceLastFeed, TimeUnit.SECONDS, NamedTextColor.WHITE));
     }
 
-    public abstract static class Builder<T extends AbstractPlayerTask.Builder<T>> extends AbstractPlayerTask.Builder<T> {
-        protected int getWatchdogThreshold(LifeSeries p) {
-            return p.getConfig().getInt("options.secret-life.watchdog-time", 3600);
-        }
+    @Override
+    public void bark() {
+        fail();
     }
 }

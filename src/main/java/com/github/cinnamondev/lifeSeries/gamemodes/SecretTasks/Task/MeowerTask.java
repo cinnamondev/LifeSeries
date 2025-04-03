@@ -3,27 +3,29 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.CatLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractPlayerTask;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractWatchdogTask;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.TaskDifficulty;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
 import java.util.function.Consumer;
 
-public class MeowerTask extends AbstractWatchdogTask {
+public class MeowerTask extends AbstractWatchdogTask implements SessionLongTask {
     protected final CatLife game;
     protected int strikes = 0;
 
-    public MeowerTask(LifeSeries p, CatLife game, Player owningPlayer, int watchdogInterval, int watchdogThreshold, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
-        super(p, owningPlayer, watchdogInterval, watchdogThreshold, onTaskCompletion, difficulty);
+    public MeowerTask(LifeSeries p, CatLife game, Player owningPlayer, int watchdogInterval, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
+        super(p, owningPlayer, watchdogInterval, onTaskCompletion, difficulty);
         this.game = game;
         game.getMeowCommand().addMeowListener(this::onPlayerMeow);
     }
 
     private void onPlayerMeow(Player p) {
         if (!owningPlayer.getLocation().getNearbyPlayers(16).isEmpty()) { feed(); }
+    }
+
+    @Override
+    public void cleanup() {
+        game.getMeowCommand().removeMeowListener(this::onPlayerMeow);
     }
 
     @Override
@@ -37,15 +39,6 @@ public class MeowerTask extends AbstractWatchdogTask {
     }
 
     @Override
-    public boolean endOfSession() {
-        if (!getTaskProgress().equals(TaskStatus.FAILED)) {
-            complete();
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     public boolean isTaskGuessable() {
         return true;
     }
@@ -55,11 +48,15 @@ public class MeowerTask extends AbstractWatchdogTask {
         return "meow-at-others";
     }
 
-    public static class Builder extends AbstractWatchdogTask.Builder<Builder> {
+    @Override
+    public MeowerTask.Builder builderProvider() {
+        return new MeowerTask.Builder();
+    }
+    public static class Builder extends PlayerTask.Builder<Builder> {
         @Override
         public AbstractPlayerTask build(LifeSeries p) {
             if (p.getGame() instanceof CatLife game) {
-                return new MeowerTask(p, game, owningPlayer, 200, getWatchdogThreshold(p), onTaskCompletion, assignedDifficulty);
+                return new MeowerTask(p, game, owningPlayer, 200, onTaskCompletion, assignedDifficulty);
             } else {
                 throw new RuntimeException("MeowerTask requires gamemode of CatLife");
             }

@@ -45,8 +45,11 @@ public class TestConditionalTask extends AbstractPlayerTask implements SelfCompl
     public String getTaskKey() {
         return "conditional-test-task";
     }
-
-    public static class Builder<T extends AbstractPlayerTask.Builder<T>> extends AbstractPlayerTask.Builder<T> {
+    @Override
+    public Builder builderProvider() {
+        return new TestConditionalTask.Builder();
+    }
+    public static class Builder extends PlayerTask.Builder<Builder> {
         public AbstractPlayerTask build(LifeSeries p) {
             return new TestConditionalTask(p, this.owningPlayer, this.onTaskCompletion, this.assignedDifficulty);
         }

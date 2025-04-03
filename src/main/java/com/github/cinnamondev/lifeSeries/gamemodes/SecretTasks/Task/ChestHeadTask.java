@@ -5,6 +5,7 @@ import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractPlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.SessionLongTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.TaskDifficulty;
 import com.github.cinnamondev.lifeSeries.util.PlayerHead;
 import net.kyori.adventure.text.Component;
@@ -26,17 +27,20 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.EulerAngle;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public class ChestHeadTask extends AbstractPlayerTask implements Listener {
-    private ArmorStand armorStand;
+public class ChestHeadTask extends AbstractPlayerTask implements Listener, SessionLongTask {
+    private ArmorStand armorStand; // TODO: this task should have a 'grace period'
     private final Inventory inventory;
     private final NamespacedKey ballLauncherKey;
+    private AtomicBoolean gracePeriodOver = new AtomicBoolean(false);
     public ChestHeadTask(LifeSeries p, Player owningPlayer, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
         super(p, owningPlayer, onTaskCompletion, difficulty);
         this.ballLauncherKey = new NamespacedKey(p, "ball-launcher");
@@ -64,21 +68,42 @@ public class ChestHeadTask extends AbstractPlayerTask implements Listener {
         this.inventory = p.getServer().createInventory(owningPlayer, 27,
                 Component.translatable("secret-life.tasks.chest-head.briefcase-title"));
         this.inventory.setItem(13, lootables.get((int) (lootables.size() * Math.random())));
-        spawnCartOnPlayer();
-        owningPlayer.give(ballLauncher(1));
+
+        getConfigurationSection()
+                .map(c -> c.getInt("grace", -1))
+                .filter(c -> c != -1)
+                .ifPresentOrElse(graceTime -> {
+                    owningPlayer.sendMessage(
+                            Component.translatable("secret-life.tasks.grace-period", graceTime.toString())
+                    );
+                    p.getServer().getScheduler().runTaskLater(p, () -> {
+                        gracePeriodOver.set(true);
+                        spawnCartOnPlayer();
+                        owningPlayer.give(ballLauncher(1));
+                    }, graceTime * 20);
+        }, () -> {
+            spawnCartOnPlayer();
+            owningPlayer.give(ballLauncher(1));
+        });
+
+    }
+
+    @Override
+    public void cleanup() {
+        if (armorStand != null) { armorStand.remove(); }
     }
 
     @Override
     public void fail() {
         super.fail();
-        if (armorStand != null) { armorStand.remove(); }
-
+        cleanup();
     }
+
 
     @Override
     public void complete() {
         super.complete();
-        if (armorStand != null) { armorStand.remove(); }
+        cleanup();
     }
 
     private void spawnCartOnPlayer() {
@@ -104,21 +129,22 @@ public class ChestHeadTask extends AbstractPlayerTask implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerMove(PlayerMoveEvent e) {
-        if (!e.getPlayer().equals(owningPlayer) || !getTaskProgress().equals(TaskStatus.IN_PROGRESS)) { return; }
+        if (!e.getPlayer().equals(owningPlayer) || !gracePeriodOver.get()) { return; }
         // entity needs to follow the player
-        armorStand.teleport(owningPlayer.getLocation().add(0, 1, 0));
+        double scale = Objects.requireNonNull(owningPlayer.getAttribute(Attribute.SCALE)).getValue();
+        armorStand.teleport(owningPlayer.getLocation().add(0, 0.1f * scale, 0));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerLeave(PlayerQuitEvent e) {
-        if (!e.getPlayer().equals(owningPlayer) || !getTaskProgress().equals(TaskStatus.IN_PROGRESS)) { return; }
+        if (!e.getPlayer().equals(owningPlayer) || !gracePeriodOver.get()) { return; }
         // get rid of entity
-        armorStand.remove();
+        cleanup();
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent e) {
-        if (!e.getPlayer().equals(owningPlayer) || !getTaskProgress().equals(TaskStatus.IN_PROGRESS)) { return; }
+        if (!e.getPlayer().equals(owningPlayer) || !gracePeriodOver.get()) { return; }
         // respawn entity
         spawnCartOnPlayer();
     }
@@ -126,9 +152,7 @@ public class ChestHeadTask extends AbstractPlayerTask implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void armorStandHeadClick(PlayerArmorStandManipulateEvent e) {
         if (e.getRightClicked().equals(armorStand)) { e.setCancelled(true); }
-        if (e.getSlot() != EquipmentSlot.HEAD
-                || e.getPlayer().equals(owningPlayer)
-                || !getTaskProgress().equals(TaskStatus.IN_PROGRESS)) { return; }
+        if (e.getSlot() != EquipmentSlot.HEAD || e.getPlayer().equals(owningPlayer)) { return; }
 
         e.getPlayer().openInventory(inventory);
     }
@@ -149,7 +173,10 @@ public class ChestHeadTask extends AbstractPlayerTask implements Listener {
         ItemMeta meta = launcher.getItemMeta();
         meta.displayName(Component.text("Ball launcher"));
         meta.getPersistentDataContainer().set(ballLauncherKey, PersistentDataType.BOOLEAN, true);
-
+        NamespacedKey model = getConfigurationSection()
+                .map(c -> NamespacedKey.fromString(c.getString("model", "minecraft:wind_charge")))
+                .orElse(NamespacedKey.fromString("minecraft:wind_charge"));
+        meta.setItemModel(model);
         launcher.setItemMeta(meta);
         return launcher;
     }
@@ -188,12 +215,13 @@ public class ChestHeadTask extends AbstractPlayerTask implements Listener {
     }
 
     @Override
-    public String getTaskKey() {
-        return "chest-head";
-    }
-    // TODO!
+    public String getTaskKey() { return "chest-head"; }
 
-    public static class Builder extends AbstractPlayerTask.Builder<ChestHeadTask.Builder> {
+    @Override
+    public ChestHeadTask.Builder builderProvider() {
+        return new Builder();
+    }
+    public static class Builder extends PlayerTask.Builder<ChestHeadTask.Builder> {
         @Override
         public AbstractPlayerTask build(LifeSeries p) {
             return new ChestHeadTask(p, owningPlayer, onTaskCompletion, assignedDifficulty);

@@ -10,13 +10,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TaskLookup {
-    private static final Map<String, Class<? extends AbstractPlayerTask.Builder<?>>> tasks = Map.ofEntries(
+    private static final Map<String, Class<? extends PlayerTask.Builder<?>>> tasks = Map.ofEntries(
             Map.entry("explode-another-player", ExplosiveTrapTask.Builder.class),
             Map.entry("follow-another-player", StayTogetherTask.Builder.class),
             Map.entry("meow-at-others", MeowerTask.Builder.class)
     );;
 
-    public static AbstractPlayerTask.Builder<?> getTaskBuilderByKey(String key) {
+    public static PlayerTask.Builder<?> getTaskBuilderByKey(String key) {
         try {
             return tasks.get(key.toLowerCase()).getDeclaredConstructor().newInstance();
         } catch (Exception e) {
@@ -25,7 +25,7 @@ public class TaskLookup {
         }
     }
 
-    public static Map<String, ? extends AbstractPlayerTask.Builder<?>> getAllTaskBuilders() {
+    public static Map<String, ? extends PlayerTask.Builder<?>> getAllTaskBuilders() {
         return tasks.entrySet().stream().map((entry) -> {
             try {
                 return Map.entry(entry.getKey(), entry.getValue().getDeclaredConstructor().newInstance());
@@ -41,19 +41,14 @@ public class TaskLookup {
         );
     }
 
-    public static Optional<ConfigurationSection> getTaskConfigurationSection(Plugin p, PlayerTask playerTask) {
-        return getTaskConfigurationSection(p, playerTask.getTaskKey());
-    }
-    public static Optional<Integer> getTaskAssignmentLimit(Plugin p, String taskKey) {
-        var oConfig = getTaskConfigurationSection(p, taskKey);
-        if (oConfig.isEmpty()) { return Optional.empty(); }
-
-        var oLimit = oConfig.get().getInt("assignment-limit", -1);
-        if (oLimit == -1) { return Optional.empty(); }
-        return Optional.of(oLimit);
+    public static int getTaskAssignmentLimit(Plugin p, String taskKey) {
+        final int DEFAULT_LIMIT = Integer.MAX_VALUE;
+        return getTaskConfigurationSection(p, taskKey)
+                .map(config -> config.getInt("assignment-limit", DEFAULT_LIMIT))
+                .orElse(DEFAULT_LIMIT);
 
     }
-    public static Optional<Integer> getTaskAssignmentLimit(Plugin p, PlayerTask playerTask) {
+    public static int getTaskAssignmentLimit(Plugin p, PlayerTask playerTask) {
         return getTaskAssignmentLimit(p, playerTask.getTaskKey());
     }
 }

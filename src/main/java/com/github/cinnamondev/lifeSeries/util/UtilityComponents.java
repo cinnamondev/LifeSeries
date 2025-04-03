@@ -1,6 +1,7 @@
 package com.github.cinnamondev.lifeSeries.util;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
@@ -54,7 +55,7 @@ public class UtilityComponents {
         Component dyeList = Arrays.stream(DyeColor.values()).map(DyeColor::toString)
                 .map(Component::text)
                 .reduce(Component.text(""), (acc, text) ->
-                        (net.kyori.adventure.text.TextComponent) acc.append(text).appendNewline()
+                        (TextComponent) acc.append(text).appendNewline()
                 );
 
         return Component.text("This command requires a dye color. These are the following options:")
@@ -66,5 +67,9 @@ public class UtilityComponents {
         return Component.translatable("general.teleport-to-player")
                 .style(Style.style(NamedTextColor.GRAY, TextDecoration.BOLD))
                 .clickEvent(ClickEvent.runCommand("/minecraft:tp " + teleportTo.getName()));
+    }
+
+    public static Component glitchyText(int n) {
+        return Component.text(".".repeat(n)).decorate(TextDecoration.OBFUSCATED);
     }
 }

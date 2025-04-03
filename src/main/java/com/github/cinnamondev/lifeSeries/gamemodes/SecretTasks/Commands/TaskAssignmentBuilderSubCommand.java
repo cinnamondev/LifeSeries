@@ -23,16 +23,16 @@ import java.util.Collection;
 import java.util.function.Consumer;
 
 public class TaskAssignmentBuilderSubCommand {
-    public static LiteralArgumentBuilder<CommandSourceStack> command(LifeSeries p, SecretTasks taskGame, Consumer<PlayerTask> onTaskCompletion) {
+    public static LiteralArgumentBuilder<CommandSourceStack> command(LifeSeries p, SecretTasks taskGame) {
         var assignmentSubCommands = TaskLookup.getAllTaskBuilders().entrySet().stream()
                 .map((entry) -> entry
                         .getValue()
-                        .builderCommand(p, Commands.literal(entry.getKey()), onTaskCompletion)
+                        .builderCommand(p, Commands.literal(entry.getKey()), taskGame::addSecretTask, taskGame::onTaskCompletion)
                 ).toList();
 
         var assignmentCommand = Commands.literal("assign");
         for (LiteralArgumentBuilder<CommandSourceStack> subcommand : assignmentSubCommands) {
-            assignmentCommand = assignmentCommand.then(subcommand);
+            assignmentCommand = assignmentCommand.then(TaskDifficulty.commandArg("difficulty").then(subcommand));
         }
 
         var getTaskCommand = Commands.literal("get")
@@ -43,7 +43,7 @@ public class TaskAssignmentBuilderSubCommand {
                                 .append(Component.text("'s task: "))
                                 .append(task.lore())
                                 .appendSpace()
-                                .append(task.getTaskProgress().asComponent())
+                                .append(task.getTaskProgress().asComponent().hoverEvent(task.taskProgressExplanation()))
                         ), () -> ctx.getSource().getSender().sendMessage(Component.text("No task assigned to ")
                                     .append(player.displayName()))
                         );
@@ -117,7 +117,7 @@ public class TaskAssignmentBuilderSubCommand {
 
     private static void roller(LifeSeries p, SecretTasks taskGame, Audience source, Collection<Player> players, String difficulty) {
         players.forEach(player -> {
-            PlayerTask task = null;
+            PlayerTask task;
             try {
                 task = switch (difficulty) { // discover which tasks to give
                     case "easy" -> taskGame.rollTaskOfDifficulty(player, TaskDifficulty.EASY, true, true);
@@ -136,8 +136,6 @@ public class TaskAssignmentBuilderSubCommand {
                 p.getLogger().throwing("TaskAssignmentBuilderSubCommand", "roller", e);
                 return;
             }
-            assert task != null;
-            task.givePlayerTaskBook(player);
         });
     }
 }

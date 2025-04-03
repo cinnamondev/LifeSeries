@@ -23,16 +23,16 @@ public class RerollTask implements CommandContainer.FilledLiteralCommand {
         this.secretGame = secretGame;
     }
 
-    private final ArrayList<UUID> rerolledPlayers = new ArrayList<>();
+    private final HashMap<UUID, Integer> rerolledPlayers = new HashMap<>();
 
     @Override
     public List<String> getAliases() {
-        return List.of("rolltask");
+        return Collections.emptyList();
     }
 
     @Override
     public String getDescription() {
-        return "Reroll your task";
+        return "Reroll your task!";
     }
 
     @Override
@@ -41,7 +41,9 @@ public class RerollTask implements CommandContainer.FilledLiteralCommand {
                 .requires(src -> src.getSender() instanceof Player)
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    if (rerolledPlayers.contains(player.getUniqueId()) || !secretGame.canRerollTask(player)) {
+                    int rolls = rerolledPlayers.getOrDefault(player.getUniqueId(), 0);
+                    int maxRolls = p.getConfig().getInt("options.secret-life.can-reroll.max-rolls");
+                    if ((rolls >= maxRolls) || !secretGame.canRerollTask(player)) {
                         player.sendMessage(Component.translatable("secret-life.reroll-out-of-rolls")
                                 .color(NamedTextColor.RED)
                         );
@@ -49,19 +51,23 @@ public class RerollTask implements CommandContainer.FilledLiteralCommand {
                     }
 
                     secretGame.getSecretTask(player).ifPresentOrElse((currentTask) -> {
-                        PlayerTask task;
+                        if (!currentTask.isTaskRerollable()) { // player cannot roll as their current task forbids it.
+                            player.sendMessage(Component.translatable("secret-life.reroll-out-of-rolls")
+                                    .color(NamedTextColor.RED));
+                            return;
+                        }
+
+
                         if (currentTask.getDifficulty() == TaskDifficulty.EASY) {
-                            task = secretGame.rollTaskOfDifficulty(player,
+                            secretGame.rollTaskOfDifficulty(player,
                                     List.of(TaskDifficulty.MEDIUM, TaskDifficulty.HARD), true, true
                             );
                         } else {
-                            task = secretGame.rollTaskOfDifficulty(player,
+                            secretGame.rollTaskOfDifficulty(player,
                                     Collections.singletonList(TaskDifficulty.HARD), true, true
                             );
                         }
-                        task.givePlayerTaskBook(player);
-
-                        rerolledPlayers.add(player.getUniqueId()); // player gets only one roll (unless in infinite roll team)
+                        rerolledPlayers.compute(player.getUniqueId(), (u, r) -> r == null ? 1 : r+1);
                     }, () -> player.sendMessage(Component.translatable("secret-life.taskbook.no-task-assigned")
                             .color(NamedTextColor.RED)
                     ));

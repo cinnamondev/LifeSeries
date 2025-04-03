@@ -11,6 +11,7 @@ public interface Game extends Runnable, CommandContainer {
     default void onGameStop() {}
     void restoreStateFromSave();
     void clearSaveData();
+    default void onServerDisable() {}
     default boolean onKilled(LifeSeries p, Player killed, int punishment) {
         AtomicBoolean isFinalDeath = new AtomicBoolean(false);
         p.getScoreHandler().updatePlayerScoreAndTeam(killed, (uuid,score) -> score - punishment, (player, newTeam) -> {

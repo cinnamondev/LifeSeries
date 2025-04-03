@@ -2,45 +2,47 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretLife;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
+import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public abstract class AbstractPlayerTask implements PlayerTask {
     protected final LifeSeries p;
     protected final Player owningPlayer;
     protected TaskStatus status = TaskStatus.IN_PROGRESS;
-    private final Consumer<PlayerTask> taskConsumer;
-    private final TaskDifficulty difficulty;
+    protected final Consumer<PlayerTask> taskConsumer;
+    protected final TaskDifficulty difficulty;
     public AbstractPlayerTask(LifeSeries p, Player owningPlayer, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
         this.p = p;
         this.owningPlayer = owningPlayer;
         this.taskConsumer = onTaskCompletion;
         this.difficulty = difficulty;
     }
-    public AbstractPlayerTask(LifeSeries p, Builder builder) {
-        this(p, builder.owningPlayer, builder.onTaskCompletion, builder.assignedDifficulty);
-    }
 
     @Override
     public void complete() {
+        cleanup();
         this.status = TaskStatus.COMPLETE;
         if (taskConsumer != null) { taskConsumer.accept(this); }
     }
 
     @Override
     public void fail() {
+        cleanup();
         this.status = TaskStatus.FAILED;
         if (taskConsumer != null) { taskConsumer.accept(this); }
     }
@@ -72,12 +74,18 @@ public abstract class AbstractPlayerTask implements PlayerTask {
         ItemStack book = SecretLife.baseBook(p, 1);
 
         Component name = GlobalTranslator.render(name(), owningPlayer.locale());
-        Component description = GlobalTranslator.render(description(), owningPlayer.locale());
+        ArrayList<Component> pages = descriptionServerTranslate(owningPlayer.locale())
+                .lines()
+                .map(Component::text)
+                .map(TextComponent::asComponent)
+                .collect(Collectors.toCollection(ArrayList::new));
 
+        pages.set(0, name.appendNewline().append(pages.getFirst()));
+        //Component description = GlobalTranslator.render(description(), owningPlayer.locale());
         book.setItemMeta(((BookMeta) book.getItemMeta()).toBuilder()
                 .author(Component.text("God"))
                 .title(Component.text("Your task."))
-                .addPage(name.appendNewline().appendNewline().append(description))
+                .pages(pages)
                 .build()
         );
         return book;
@@ -88,35 +96,4 @@ public abstract class AbstractPlayerTask implements PlayerTask {
         return Optional.ofNullable(p.getConfig().getConfigurationSection("options.secret-life.task-configs" + getTaskKey()));
     }
 
-    public abstract static class Builder<T extends Builder<T>> {
-        protected final Random random = new Random();
-        protected TaskDifficulty assignedDifficulty = null;
-        protected Player owningPlayer;
-        protected Consumer<PlayerTask> onTaskCompletion;
-        // Implementation notes:
-        // argument `players` will be provided by a higher level in the tree. The only required additional parameters
-        // (if any) are specific to your task. A literal for your task name does not need to be included.
-        public LiteralArgumentBuilder<CommandSourceStack> builderCommand(LifeSeries p, LiteralArgumentBuilder<CommandSourceStack> root, Consumer<PlayerTask> onTaskAdded) {
-            return root.executes(ctx -> {
-                ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
-                        .resolve(ctx.getSource()).forEach((player) -> onTaskAdded.accept(this.player(player).build(p)));
-                return 1;
-            });
-        }
-        public LiteralArgumentBuilder<CommandSourceStack> builderCommand(LifeSeries p, LiteralArgumentBuilder<CommandSourceStack> root, Consumer<PlayerTask> onTaskAdded, Consumer<PlayerTask> onTaskCompletion) {
-            this.onCompletion(onTaskAdded);
-            return builderCommand(p, root, onTaskAdded);
-        }
-        public T player(Player owningPlayer) { this.owningPlayer = owningPlayer; return (T) this; }
-        public T onCompletion(Consumer<PlayerTask> taskConsumer) {
-            this.onTaskCompletion = taskConsumer;
-            return (T) this;
-        }
-        public T difficulty(TaskDifficulty difficulty) {
-            this.assignedDifficulty = difficulty;
-            return (T) this;
-        }
-
-        public abstract AbstractPlayerTask build(LifeSeries p);
-    }
 }

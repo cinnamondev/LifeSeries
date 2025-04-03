@@ -18,6 +18,7 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 
 import java.util.*;
 
@@ -44,7 +45,9 @@ public interface SecretTasks extends CommandContainer {
         } else {
             onTaskFailure(secretTask);
         }
-        removeSecretTask(secretTask);
+        HandlerList.unregisterAll(secretTask);
+        // i think there was some point to this at one point but its just a wtroublemaker!
+        // removeSecretTask(secretTask);
     }
     void onTaskSuccess(PlayerTask secretTask);
     void onTaskFailure(PlayerTask secretTask);
@@ -82,7 +85,7 @@ public interface SecretTasks extends CommandContainer {
     @Override
     default Collection<LiteralArgumentBuilder<CommandSourceStack>> adminSubCommands(LifeSeries p) {
         return Collections.singletonList(
-                TaskAssignmentBuilderSubCommand.command(p, this, this::addSecretTask)
+                TaskAssignmentBuilderSubCommand.command(p, this)
         );
     }
 

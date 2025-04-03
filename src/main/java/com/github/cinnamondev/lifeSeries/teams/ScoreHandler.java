@@ -1,6 +1,7 @@
 package com.github.cinnamondev.lifeSeries.teams;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import com.github.cinnamondev.lifeSeries.util.ColourConverter;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.OfflinePlayer;
@@ -181,6 +182,13 @@ public class ScoreHandler {
     public void updateTrackableScoresAndTeams(BiFunction<UUID, Integer, Integer> updater) {
         p.getServer().getOnlinePlayers().forEach(this::getScore);
         updateAllTrackedScoresAndTeams(updater);
+    }
+
+    public Collection<Player> getAllAliveOnlinePlayers() {
+        return p.getServer().getOnlinePlayers().stream()
+                .filter(player -> !isPlayerSpectator(player))
+                .map(player -> (Player) player) // cast away from ? extends Player
+                .toList();
     }
 
     public Collection<UUID> listTrackedUUIDs() {
