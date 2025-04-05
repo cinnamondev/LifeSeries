@@ -3,10 +3,7 @@ package com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task;
 import com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent;
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretTasks;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.AbstractPlayerTask;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.SessionLongTask;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.TaskDifficulty;
+import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.*;
 import com.github.cinnamondev.lifeSeries.util.PlayerHead;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
@@ -36,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public class ChestHeadTask extends AbstractPlayerTask implements Listener, SessionLongTask {
+public class ChestHeadTask extends AbstractPlayerTask implements Listener, SessionLongTask, HasRadius {
     private ArmorStand armorStand; // TODO: this task should have a 'grace period'
     private final Inventory inventory;
     private final NamespacedKey ballLauncherKey;
@@ -53,7 +50,7 @@ public class ChestHeadTask extends AbstractPlayerTask implements Listener, Sessi
                     if (name == null) { return Stream.empty(); }
 
                     if (name.equalsIgnoreCase("revival-item")) {
-                        return Stream.of(p.getRevivalItem().getItem().asQuantity(quantity));
+                        return Stream.of(p.getRevivalItem().item().asQuantity(quantity));
                     } else {
                         Material material = Material.getMaterial(name.toUpperCase());
                         if (material == null) {
@@ -161,9 +158,16 @@ public class ChestHeadTask extends AbstractPlayerTask implements Listener, Sessi
     public void lootTakenEvent(InventoryClickEvent e) {
         if (!e.getInventory().equals(inventory)) { return; }
         if (e.getSlot() == 13) {
-            fail();
+            if (withinRadius(e.getWhoClicked().getLocation(), owningPlayer.getLocation())) {
+                // player is close enough
+                fail();
+            } else {
+                // if theyre too far away just close the inventory when they try to take it.
+                e.setCancelled(true);
+            }
             // must be next tick or it screws up delivering the loot to the player
             p.getServer().getScheduler().runTaskLater(p, () -> e.getInventory().close(), 1);
+
         } else { e.setCancelled(true); }
     }
 
@@ -218,9 +222,15 @@ public class ChestHeadTask extends AbstractPlayerTask implements Listener, Sessi
     public String getTaskKey() { return "chest-head"; }
 
     @Override
+    public int fallbackRadius() {
+        return 8;
+    }
+
+    @Override
     public ChestHeadTask.Builder builderProvider() {
         return new Builder();
     }
+
     public static class Builder extends PlayerTask.Builder<ChestHeadTask.Builder> {
         @Override
         public AbstractPlayerTask build(LifeSeries p) {

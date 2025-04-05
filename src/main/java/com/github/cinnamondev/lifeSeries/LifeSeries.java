@@ -1,6 +1,9 @@
 package com.github.cinnamondev.lifeSeries;
 
+import com.github.cinnamondev.lifeSeries.customRecipe.ConfigRecipe;
 import com.github.cinnamondev.lifeSeries.commands.AdminCommand;
+import com.github.cinnamondev.lifeSeries.customRecipe.ShapedConfigRecipe;
+import com.github.cinnamondev.lifeSeries.customRecipe.ShapelessConfigRecipe;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.LimitedLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.Lives;
@@ -21,6 +24,7 @@ import net.kyori.adventure.translation.TranslationRegistry;
 import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
@@ -116,7 +120,7 @@ public final class LifeSeries extends JavaPlugin {
         registeredRecipes.addAll(discoverAndAddCustomRecipes());
         // add revival item if its enabled
         if (getConfig().getBoolean("revival.enabled", false)) {
-            Bukkit.addRecipe(revivalItem.getRecipe());
+            Bukkit.addRecipe(revivalItem.recipe());
             registeredRecipes.add(new NamespacedKey(this, "revival-item"));
         }
 
@@ -126,7 +130,7 @@ public final class LifeSeries extends JavaPlugin {
         getServer().getScheduler().scheduleSyncRepeatingTask(this, this::autosaveTicker, 300,300);
     }
 
-    public @Nullable RevivalItem getRevivalItem() { return this.revivalItem; }
+    public RevivalItem getRevivalItem() { return this.revivalItem; }
 
     @Override
     public void onDisable() {
@@ -161,19 +165,22 @@ public final class LifeSeries extends JavaPlugin {
     }
 
     private List<NamespacedKey> discoverAndAddCustomRecipes() {
-        var section =this.getConfig().getConfigurationSection("custom-recipes");
-        if (section == null) { return Collections.emptyList(); }
+        var recipeSection =this.getConfig().getConfigurationSection("custom-recipes");
+        if (recipeSection == null) { return Collections.emptyList(); }
 
-        return section.getKeys(false).stream()
+        return recipeSection.getKeys(false).stream()
                 .map(keyString -> new NamespacedKey(this, keyString))
                 .peek(key -> {
-                    CustomRecipe recipe = new CustomRecipe(
-                            this,
-                            key,
-                            section.getConfigurationSection(key.getKey())
-                    );
-                    getServer().getConsoleSender().sendMessage(recipe.getRecipeMessage());
-                    Bukkit.addRecipe(recipe.getRecipe());
+                    ConfigurationSection recipeConfig = recipeSection.getConfigurationSection(key.getKey());
+                    if (recipeConfig == null) { return; }
+                    ConfigRecipe<?> recipe;
+                    if (recipeConfig.getBoolean("shapeless", false)) {
+                        recipe = new ShapelessConfigRecipe(this, key, recipeConfig);
+                    } else {
+                        recipe = new ShapedConfigRecipe(this, key, recipeConfig);
+                    }
+                    getServer().getConsoleSender().sendMessage(recipe.explainRecipe());
+                    Bukkit.addRecipe(recipe.recipe());
                 })
                 .toList();
 

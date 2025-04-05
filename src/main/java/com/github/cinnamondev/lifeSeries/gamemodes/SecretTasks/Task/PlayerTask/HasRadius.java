@@ -9,8 +9,7 @@ public interface HasRadius extends PlayerTask {
     }
     default boolean withinRadius(Location loc1, Location loc2) {
         if (loc1.getWorld() != loc2.getWorld()) { return false; }
-        if (loc1.distanceSquared(loc2) <= getRadius()) { return true; }
-        return false;
+        return loc1.distanceSquared(loc2) <= getRadius();
     }
 
 }
