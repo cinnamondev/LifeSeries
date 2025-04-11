@@ -142,10 +142,22 @@ options:
       do-not-punish-teams:
         - red
     task-configs:
+      defaults:
+        generic-radius-threshold: 32
       explode-another-player:
         assignment-limit: 1
       pass-it-on:
         save-old-task: true
+      waffle-monster:
+        item:
+          recipe: [ WHEAT, WHEAT, EMPTY,
+                    WHEAT, WHEAT, EMPTY,
+                    EMPTY, EMPTY, EMPTY ]
+          block: CAKE
+          model: lifeseries:waffle
+        sounds:
+          spawn: lifeseries:waffle-spawn
+          death: lifeseries:waffle-death
       chest-head:
         grace: 30
         head-url: "http://textures.minecraft.net/texture/275bcff2e74deed37a319a1f404e70d06a5f360cacee99c71346f38560cbd72a"

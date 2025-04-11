@@ -1,7 +1,6 @@
 package com.github.cinnamondev.lifeSeries.teams;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.Task.PlayerTask.PlayerTask;
 import com.github.cinnamondev.lifeSeries.util.ColourConverter;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.OfflinePlayer;
@@ -18,8 +17,8 @@ import java.util.stream.Collectors;
 
 public class ScoreHandler {
     protected LifeSeries p;
-    private Scoreboard scoreboard;
-    private FileConfiguration save;
+    private final Scoreboard scoreboard;
+    private final FileConfiguration save;
     private ConfigurationSection playerData;
     private final SortedSet<TeamMeta> rankedTeams;
     private final TeamMeta spectatorTeam;

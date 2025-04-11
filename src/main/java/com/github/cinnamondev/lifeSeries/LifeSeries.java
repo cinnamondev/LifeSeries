@@ -8,7 +8,7 @@ import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.LimitedLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.Lives;
 import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.CatLife;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretLife;
+import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.SecretLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed.Timed;
 import com.github.cinnamondev.lifeSeries.listener.EnchantmentNerfer;
 import com.github.cinnamondev.lifeSeries.listener.ItemNerfer;
@@ -29,7 +29,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,6 +62,8 @@ public final class LifeSeries extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig(); // if doesnt exist
         reloadConfig();
+
+        getLogger().info(new NamespacedKey(this, "example").toString());
 
         saveFile = new File(getDataFolder(), "save.yml");
         if (!saveFile.exists()) {

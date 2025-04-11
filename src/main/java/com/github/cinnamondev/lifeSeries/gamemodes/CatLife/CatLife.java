@@ -1,7 +1,7 @@
 package com.github.cinnamondev.lifeSeries.gamemodes.CatLife;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.github.cinnamondev.lifeSeries.gamemodes.SecretTasks.SecretLife;
+import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.SecretLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.Commands.CatDisguiseSubCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.Commands.CatSitCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.Commands.MeowCommand;
@@ -139,7 +139,7 @@ public class CatLife extends SecretLife implements Listener {
         //if (scale == null) { return null; }
         //scale.setBaseValue(0.5);
 
-        MobDisguise disguise = new MobDisguise(DisguiseType.CAT, true);
+        MobDisguise disguise = new MobDisguise(DisguiseType.CAT);
         disguise.setSelfDisguiseVisible(false);
         disguise.setEntity(player);
         disguise.setReplaceSounds(true);
@@ -149,6 +149,7 @@ public class CatLife extends SecretLife implements Listener {
         watcher.setTamed(true);
         watcher.setCollarColor(dyeColor);
         watcher.setType(catType);
+        watcher.setCustomNameVisible(false);
 
         disguise.startDisguise();
         return watcher;

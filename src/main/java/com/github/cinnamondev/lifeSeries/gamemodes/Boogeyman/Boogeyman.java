@@ -11,7 +11,7 @@ import org.bukkit.OfflinePlayer;
 import java.util.*;
 
 public interface Boogeyman extends CommandContainer {
-    public ArrayList<UUID> getBoogeyList();
+    ArrayList<UUID> getBoogeyList();
     default void setBoogeys(Collection<UUID> boogeys) {
         getBoogeyList().clear();
         getBoogeyList().addAll(boogeys);

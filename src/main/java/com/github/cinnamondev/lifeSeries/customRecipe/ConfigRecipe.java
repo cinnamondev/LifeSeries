@@ -7,6 +7,8 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.*;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
 import java.util.*;
@@ -19,7 +21,7 @@ public abstract class ConfigRecipe<T extends Recipe> implements CustomRecipe<T> 
     protected final ConfigurationSection recipeConfig;
     protected final NamespacedKey recipeKey;
     protected final T recipe;
-    private Function<ItemStack, ItemStack> itemModifier = (item) -> item;
+    private Function<ItemStack, ItemStack> itemModifier = null ;
     public ConfigRecipe(Plugin p, NamespacedKey recipeKey, ConfigurationSection recipeConfig) {
         this.p = p;
         this.recipeConfig = recipeConfig;
@@ -54,7 +56,18 @@ public abstract class ConfigRecipe<T extends Recipe> implements CustomRecipe<T> 
             p.getLogger().warning("couldnt get block " + materialName );
             return null;
         }
-        return itemModifier.apply(ItemStack.of(material, recipeConfig.getInt("quantity", 1)));
+        ItemStack item = ItemStack.of(material, recipeConfig.getInt("quantity", 1));
+        item.setItemMeta(itemMeta(item.getItemMeta()));
+        if (itemModifier != null) { return itemModifier.apply(item); } else { return item; }
+    }
+
+    public ItemMeta itemMeta(ItemMeta inputMeta) {
+        inputMeta.getPersistentDataContainer().set(recipeKey, PersistentDataType.BOOLEAN, true);
+        String name = recipeConfig.getString("name", null);
+        String model = recipeConfig.getString("model", null);
+        if ( name != null) { inputMeta.displayName(Component.text(name)); }
+        if ( model != null ) { inputMeta.setItemModel(NamespacedKey.fromString(model, p)); }
+        return inputMeta;
     }
 
     @Override
