@@ -1,6 +1,7 @@
 package com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Commands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
+import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.PlayerTask.GroupTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.TaskGame;
 import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.*;
 import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.PlayerTask.PlayerTask;
@@ -115,9 +116,14 @@ public class TaskAssignmentBuilderSubCommand {
     }
 
     private static void roller(LifeSeries p, TaskGame taskGame, Audience source, Collection<Player> players, String difficulty) {
-        players.forEach(player -> {
+        for (Player player : players) {
             PlayerTask task;
-            try {
+            try { // TODO: group tasks might look a bit cleaner with a rewrite of the task roller, perhaps instead the task roller
+                // decides which candidates its selected for a task that accepts 'N' players,
+                // then we keep calling the roller until we've whittled it down to an empty list.
+                // OR, perhaps a task is randomly drawn then a pool of candidate players is chosen accordingly. this would
+                // work nicely with the task difficulty system.
+
                 task = switch (difficulty) { // discover which tasks to give
                     case "easy" -> taskGame.rollTaskOfDifficulty(player, TaskDifficulty.EASY, true, true);
                     case "medium" -> taskGame.rollTaskOfDifficulty(player, TaskDifficulty.MEDIUM, true, true);
@@ -126,6 +132,14 @@ public class TaskAssignmentBuilderSubCommand {
                     case "any" -> taskGame.rollTaskOfAnyDifficulty(player, true, true);
                     default -> throw new IllegalStateException("Unexpected value: " + difficulty);
                 };
+
+                // FOR Now, however, we will just do the lazy method and say a grouptask has involved players
+                // (grouptask selection will require we reidentify players of a candidate team... fustrating!)
+                if (task instanceof GroupTask groupTask) {
+                    var groupTaskPlayers = groupTask.getInvolvedPlayers();
+                    roller(p, taskGame, source, players.stream().filter(groupTaskPlayers::contains).toList(), difficulty);
+                    break;
+                }
             } catch (Exception e) {
                 source.sendMessage(
                         Component.text("Failed to roll task for player ").append(player.displayName())
@@ -134,6 +148,6 @@ public class TaskAssignmentBuilderSubCommand {
                 //e.printStackTrace();
                 p.getLogger().throwing("TaskAssignmentBuilderSubCommand", "roller", e);
             }
-        });
+        }
     }
 }

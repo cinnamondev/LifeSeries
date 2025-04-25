@@ -15,11 +15,6 @@ import java.util.function.Consumer;
 
 public interface TargetedPlayerTask extends PlayerTask {
     OfflinePlayer getTargetedPlayer();
-    @Override
-    default ConfigurationSection saveTask(ConfigurationSection taskSection) {
-        taskSection.set("target", getTargetedPlayer().getUniqueId());
-        return taskSection; // hm
-    }
 
     @Override
     Builder<?> builderProvider();

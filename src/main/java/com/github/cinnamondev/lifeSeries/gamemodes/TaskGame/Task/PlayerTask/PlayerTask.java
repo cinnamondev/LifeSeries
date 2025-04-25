@@ -75,7 +75,7 @@ public interface PlayerTask extends Listener {
     Player getTaskOwner();
     TaskDifficulty getDifficulty();
     ItemStack createTaskBook();
-    ConfigurationSection saveTask(ConfigurationSection taskSection);
+    ConfigurationSection saveTask();
     String getTaskKey();
     default void acceptGuess() { fail(); }
     default void givePlayerTaskBook(Player player) { player.give(createTaskBook()); }

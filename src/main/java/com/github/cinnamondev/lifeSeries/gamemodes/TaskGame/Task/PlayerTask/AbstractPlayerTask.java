@@ -57,11 +57,14 @@ public abstract class AbstractPlayerTask implements PlayerTask {
     }
 
     @Override
-    public ConfigurationSection saveTask(ConfigurationSection taskSection) {
-        var task = taskSection.createSection(this.getTaskKey());
-        task.set("difficulty", this.getDifficulty());
-        task.set("progress", this.getTaskProgress());
-        return task;
+    public ConfigurationSection saveTask() {
+        var playerSection = p.getSave().getConfigurationSection("players");
+        if (playerSection == null) { playerSection = p.getSave().createSection("players"); }
+
+        var taskSection = playerSection.createSection(this.getTaskKey());
+        taskSection.set("difficulty", this.getDifficulty());
+        taskSection.set("progress", this.getTaskProgress());
+        return taskSection;
     }
 
     @Override

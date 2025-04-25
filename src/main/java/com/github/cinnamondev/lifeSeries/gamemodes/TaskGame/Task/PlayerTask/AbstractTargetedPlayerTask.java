@@ -2,6 +2,7 @@ package com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.PlayerTask;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import java.util.function.Consumer;
@@ -17,5 +18,14 @@ public abstract class AbstractTargetedPlayerTask extends AbstractPlayerTask impl
         return this.targetedPlayer;
     }
 
+    @Override
+    public ConfigurationSection saveTask() {
+        var playerSection = p.getSave().getConfigurationSection("players");
+        if (playerSection == null) { playerSection = p.getSave().createSection("players"); }
+
+        var taskSection = playerSection.createSection(getTaskKey());
+        taskSection.set("target", getTargetedPlayer().getUniqueId());
+        return taskSection; // hm
+    }
 }
 
