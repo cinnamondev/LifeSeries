@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -68,11 +69,11 @@ public abstract class AbstractPlayerTask implements PlayerTask {
     }
 
     @Override
-    public ItemStack createTaskBook() {
+    public ItemStack createTaskBook(Locale locale) {
         ItemStack book = SecretLife.baseBook(p, 1);
 
-        Component name = GlobalTranslator.render(name(), owningPlayer.locale());
-        ArrayList<Component> pages = descriptionServerTranslate(owningPlayer.locale())
+        Component name = GlobalTranslator.render(name(), locale);
+        ArrayList<Component> pages = descriptionServerTranslate(locale)
                 .lines()
                 .map(Component::text)
                 .map(TextComponent::asComponent)

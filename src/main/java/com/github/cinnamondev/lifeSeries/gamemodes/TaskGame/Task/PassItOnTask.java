@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -41,7 +42,7 @@ public class PassItOnTask extends AbstractPlayerTask implements SessionLongTask,
     @Override
     public void cleanup() {
         p.getServer().getOnlinePlayers().forEach(player -> // go hog wild
-                player.getInventory().removeItemAnySlot(createTaskBook().asQuantity(Integer.MAX_VALUE))
+                player.getInventory().removeItemAnySlot(createTaskBook(owningPlayer.locale()).asQuantity(Integer.MAX_VALUE))
         );
     }
 
@@ -64,8 +65,8 @@ public class PassItOnTask extends AbstractPlayerTask implements SessionLongTask,
     }
 
     @Override
-    public ItemStack createTaskBook() {
-        ItemStack book = super.createTaskBook();
+    public ItemStack createTaskBook(Locale locale) {
+        ItemStack book = super.createTaskBook(locale);
         ItemMeta meta = book.getItemMeta();
         meta.getPersistentDataContainer().set(bookKey, PersistentDataType.STRING, owningPlayer.getUniqueId().toString());
         book.setItemMeta(meta);

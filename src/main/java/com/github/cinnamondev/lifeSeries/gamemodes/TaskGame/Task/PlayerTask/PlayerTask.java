@@ -74,11 +74,11 @@ public interface PlayerTask extends Listener {
     Optional<ConfigurationSection> getConfigurationSection();
     Player getTaskOwner();
     TaskDifficulty getDifficulty();
-    ItemStack createTaskBook();
+    ItemStack createTaskBook(Locale locale);
     ConfigurationSection saveTask();
     String getTaskKey();
     default void acceptGuess() { fail(); }
-    default void givePlayerTaskBook(Player player) { player.give(createTaskBook()); }
+    default void givePlayerTaskBook(Player player) { player.give(createTaskBook(player.locale())); }
     default Component taskProgressExplanation() { return Component.text("No explanation provided"); }
 
     Builder<? extends Builder<?>> builderProvider();
@@ -95,7 +95,7 @@ public interface PlayerTask extends Listener {
         // (if any) are specific to your task. A literal for your task name does not need to be included.
         public LiteralArgumentBuilder<CommandSourceStack> builderCommand(LifeSeries p, LiteralArgumentBuilder<CommandSourceStack> root, Consumer<PlayerTask> onTaskAdded, Consumer<PlayerTask> onTaskCompletion) {
             return root.executes(ctx -> {
-                TaskDifficulty difficulty = TaskDifficulty.difficultyResolver(ctx, "difficulty");
+                TaskDifficulty difficulty =  ctx.getArgument("difficulty", TaskDifficulty.class);
                 ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
                         .resolve(ctx.getSource()).forEach((player) -> onTaskAdded.accept(
                                 this.player(player).onCompletion(onTaskCompletion).difficulty(difficulty).build(p)

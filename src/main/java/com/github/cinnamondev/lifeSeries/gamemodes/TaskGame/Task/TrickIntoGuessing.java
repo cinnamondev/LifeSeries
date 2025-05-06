@@ -82,7 +82,7 @@ public class TrickIntoGuessing extends AbstractPlayerTask{
         public LiteralArgumentBuilder<CommandSourceStack> builderCommand(LifeSeries p, LiteralArgumentBuilder<CommandSourceStack> root, Consumer<PlayerTask> onTaskAdded, Consumer<PlayerTask> onTaskCompletion) {
             return root.then(Commands.literal("saved")
                             .executes(ctx -> {
-                                TaskDifficulty difficulty = TaskDifficulty.difficultyResolver(ctx, "difficulty");
+                                TaskDifficulty difficulty =  ctx.getArgument("difficulty", TaskDifficulty.class);;
                                 ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
                                         .resolve(ctx.getSource()).forEach((player) -> onTaskAdded.accept(
                                                 this.player(player).onCompletion(onTaskCompletion).difficulty(difficulty).randomFakeTask(p).build(p)
@@ -90,7 +90,7 @@ public class TrickIntoGuessing extends AbstractPlayerTask{
                                 return 1;
                             }))
                     .then(Commands.argument("fakeTask", StringArgumentType.greedyString()).executes(ctx -> {
-                        TaskDifficulty difficulty = TaskDifficulty.difficultyResolver(ctx, "difficulty");
+                        TaskDifficulty difficulty =  ctx.getArgument("difficulty", TaskDifficulty.class);;
                         String taskString = ctx.getArgument("fakeTask", String.class);
                         ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
                                 .resolve(ctx.getSource()).forEach((player) -> onTaskAdded.accept(

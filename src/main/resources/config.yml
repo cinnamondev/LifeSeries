@@ -110,6 +110,12 @@ options:
 
   secret-life:
     auto-roll: true # roll at session start
+    group-tasks:
+      only-same-team: true
+      default-assignment-limit: 4 # if this is removed it will be overriden by a fall back value.
+                                  # the way group tasks are selected may mean an absurd proportion of the playerbase
+                                  # is assigned a single group task, so this is neccessary for happy gameplay
+    group-task-only-same-team: true
     watchdog-time: 3600 # ~3 minutes
     gamemaster-enabled: true # set to false to place onus of task guess acceptance on owning player, tasks that use
                              # GM verification will be automatically accepted.
@@ -127,6 +133,8 @@ options:
           - yellow
         deck:               # Tasks that are considered "easy"
           - follow-another-player # todo more tasks
+          - meow-at-others
+          - duck-hunt
       normal:
         teams:
           - yellow
@@ -138,12 +146,17 @@ options:
           - red
         deck:
           - explode-another-player
+          - chest-head
+          - wither-warden-war
     failure:              # prevent a specific team from
       do-not-punish-teams:
         - red
     task-configs:
       defaults:
         generic-radius-threshold: 32
+      test-group-task:
+        min-assignment: 3
+        assignment-limit: 5
       explode-another-player:
         assignment-limit: 1
       pass-it-on:

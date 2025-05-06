@@ -27,12 +27,13 @@ public class TaskLookup {
             Map.entry("waffle-monster", MmmWaffles.Builder.class),
             // these tasks require p.getGame -> CatLife
             Map.entry("meow-at-others", MeowerTask.Builder.class),
-            Map.entry("meow-at-player", MeowAtPlayer.Builder.class)
+            Map.entry("meow-at-player", MeowAtPlayer.Builder.class),
+            Map.entry("test-group-task", TestGroupTask.Builder.class)
     );
 
     public static PlayerTask.Builder<?> getTaskBuilderByKey(String key) {
         try {
-            return tasks.get(key.toLowerCase()) .getDeclaredConstructor().newInstance();
+            return tasks.get(key.toLowerCase()).getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new RuntimeException(e); // we shouldn't expect this to ever fail, the builder should not have
                                            // any parameters.
@@ -60,9 +61,16 @@ public class TaskLookup {
         return getTaskConfigurationSection(p, taskKey)
                 .map(config -> config.getInt("assignment-limit", DEFAULT_LIMIT))
                 .orElse(DEFAULT_LIMIT);
-
     }
     public static int getTaskAssignmentLimit(Plugin p, PlayerTask playerTask) {
+        return getTaskAssignmentLimit(p, playerTask.getTaskKey());
+    }
+    public static int getTaskAssignmentMinimum(Plugin p, String taskKey) {
+        return getTaskConfigurationSection(p, taskKey)
+                .map(config -> config.getInt("min-assignment", -1))
+                .orElse(-1);
+    }
+    public static int getTaskAssignmentMinimum(Plugin p, PlayerTask playerTask) {
         return getTaskAssignmentLimit(p, playerTask.getTaskKey());
     }
 }

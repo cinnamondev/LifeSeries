@@ -10,6 +10,7 @@ import io.papermc.paper.command.brigadier.Commands;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Consumer;
 
 import java.util.*;
 
@@ -56,9 +57,14 @@ public class RerollTask implements CommandContainer.FilledLiteralCommand {
                             return;
                         }
 
+                        secretGame.rollTasks(Collections.singletonList(player), TaskGame.RollMode.HARD, true, true).stream()
+                                .findFirst().ifPresentOrElse(_task -> {}, () -> { // todo
+                                    player.sendMessage(Component.text("couldnt find a task to roll for you! please ask a GM."));
+                                });
 
+                        /*
                         if (currentTask.getDifficulty() == TaskDifficulty.EASY) {
-                            secretGame.rollTaskOfDifficulty(player,
+                            secretGame.rollTaskDifficulty(player,
                                     List.of(TaskDifficulty.MEDIUM, TaskDifficulty.HARD), true, true
                             );
                         } else {
@@ -66,6 +72,7 @@ public class RerollTask implements CommandContainer.FilledLiteralCommand {
                                     Collections.singletonList(TaskDifficulty.HARD), true, true
                             );
                         }
+                        */
                         rerolledPlayers.compute(player.getUniqueId(), (u, r) -> r == null ? 1 : r+1);
                     }, () -> player.sendMessage(Component.translatable("secret-life.taskbook.no-task-assigned")
                             .color(NamedTextColor.RED)

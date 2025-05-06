@@ -6,6 +6,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -25,14 +26,14 @@ public interface TargetedPlayerTask extends PlayerTask {
     abstract class Builder<T extends Builder<T>> extends PlayerTask.Builder<T> {
         protected OfflinePlayer targetPlayer;
         public T target(OfflinePlayer targetPlayer) { this.targetPlayer = targetPlayer; return (T) this; }
-        public T randomTarget(Plugin p) {
-            var candidatePlayers = p.getServer().getOnlinePlayers().stream()
+        public T randomTarget() {
+            var candidatePlayers = Bukkit.getOnlinePlayers().stream()
                     .filter(player -> !player.hasPermission("lf.game.bypass-roll"))
                     .filter(player -> !player.equals(this.owningPlayer))
                     .toList();
 
             if (candidatePlayers.isEmpty()) {
-                throw new RuntimeException(" target candidate found when rolling task for player " + this.owningPlayer.getName());
+                throw new RuntimeException("no target candidate found when rolling task for player " + this.owningPlayer.getName());
             }
             this.targetPlayer = candidatePlayers.get((int) (candidatePlayers.size() * Math.random()));
             //p.getLogger().info("found candidate " + this.targetPlayer.getName());
@@ -42,7 +43,7 @@ public interface TargetedPlayerTask extends PlayerTask {
         public LiteralArgumentBuilder<CommandSourceStack> builderCommand(LifeSeries p, LiteralArgumentBuilder<CommandSourceStack> root, Consumer<PlayerTask> onTaskAdded, Consumer<PlayerTask> onTaskCompletion) {
             return root.then(Commands.argument("targetPlayer", ArgumentTypes.player())
                     .executes(ctx -> {
-                        TaskDifficulty difficulty = TaskDifficulty.difficultyResolver(ctx, "difficulty");
+                        TaskDifficulty difficulty = ctx.getArgument("difficulty", TaskDifficulty.class);
                         Player targetArgument = ctx.getArgument("targetPlayer", PlayerSelectorArgumentResolver.class)
                                 .resolve(ctx.getSource()).getFirst();
                         ctx.getArgument("player", PlayerSelectorArgumentResolver.class)

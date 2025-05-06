@@ -21,6 +21,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
+import java.util.List;
 
 public class TaskAssignmentBuilderSubCommand {
     public static LiteralArgumentBuilder<CommandSourceStack> command(LifeSeries p, TaskGame taskGame) {
@@ -32,7 +33,10 @@ public class TaskAssignmentBuilderSubCommand {
 
         var assignmentCommand = Commands.literal("assign");
         for (LiteralArgumentBuilder<CommandSourceStack> subcommand : assignmentSubCommands) {
-            assignmentCommand = assignmentCommand.then(TaskDifficulty.commandArg("difficulty").then(subcommand));
+            assignmentCommand = assignmentCommand.then(
+                    Commands.argument("difficulty", new TaskDifficulty.DifficultyArgumentType())
+                            .then(subcommand)
+            );
         }
 
         var getTaskCommand = Commands.literal("get")
@@ -79,75 +83,24 @@ public class TaskAssignmentBuilderSubCommand {
         return root;
     }
 
-    private static RequiredArgumentBuilder<CommandSourceStack, String> rollCommand(LifeSeries p, TaskGame taskGame, boolean countdown) {
-        return Commands.argument("difficulty", StringArgumentType.word())
-                .suggests((ctx, builder) -> {
-                    builder.suggest("team");
-                    builder.suggest("any");
-                    builder.suggest("easy");
-                    builder.suggest("medium");
-                    builder.suggest("hard");
-                    return builder.buildFuture();
-                })
-                .executes(ctx -> {
-                    var players = ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
-                            .resolve(ctx.getSource());
-                    if (countdown) {
-                        TitleCountdown.lifeCountdown(p, Audience.audience(players),
-                                Sound.sound(NamespacedKey.minecraft("block.metal_pressure_plate.click_on"), Sound.Source.MASTER, 0.8f, 1),
-                                1,30, () -> roller(
-                                        p,
-                                        taskGame,
-                                        ctx.getSource().getSender(),
-                                        players,
-                                        ctx.getArgument("difficulty", String.class).toLowerCase()
-                                ));
-                    } else { // roll without delay
-                        roller(
-                                p,
-                                taskGame,
-                                ctx.getSource().getSender(),
-                                players,
-                                ctx.getArgument("difficulty", String.class).toLowerCase()
-                        );
-                    }
-                    return 1;
-                });
-    }
-
-    private static void roller(LifeSeries p, TaskGame taskGame, Audience source, Collection<Player> players, String difficulty) {
-        for (Player player : players) {
-            PlayerTask task;
-            try { // TODO: group tasks might look a bit cleaner with a rewrite of the task roller, perhaps instead the task roller
-                // decides which candidates its selected for a task that accepts 'N' players,
-                // then we keep calling the roller until we've whittled it down to an empty list.
-                // OR, perhaps a task is randomly drawn then a pool of candidate players is chosen accordingly. this would
-                // work nicely with the task difficulty system.
-
-                task = switch (difficulty) { // discover which tasks to give
-                    case "easy" -> taskGame.rollTaskOfDifficulty(player, TaskDifficulty.EASY, true, true);
-                    case "medium" -> taskGame.rollTaskOfDifficulty(player, TaskDifficulty.MEDIUM, true, true);
-                    case "hard" -> taskGame.rollTaskOfDifficulty(player, TaskDifficulty.HARD, true, true);
-                    case "team" -> taskGame.rollTask(player, p.getScoreHandler().getTeam(player), true, true);
-                    case "any" -> taskGame.rollTaskOfAnyDifficulty(player, true, true);
-                    default -> throw new IllegalStateException("Unexpected value: " + difficulty);
-                };
-
-                // FOR Now, however, we will just do the lazy method and say a grouptask has involved players
-                // (grouptask selection will require we reidentify players of a candidate team... fustrating!)
-                if (task instanceof GroupTask groupTask) {
-                    var groupTaskPlayers = groupTask.getInvolvedPlayers();
-                    roller(p, taskGame, source, players.stream().filter(groupTaskPlayers::contains).toList(), difficulty);
-                    break;
+    private static RequiredArgumentBuilder<CommandSourceStack, TaskGame.RollMode> rollCommand(LifeSeries p, TaskGame taskGame, boolean countdown) {
+        return Commands.argument("mode", new TaskGame.RollMode.RollerArgument()).executes(ctx -> {
+            var players = ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
+                    .resolve(ctx.getSource());
+            TaskGame.RollMode mode = ctx.getArgument("mode", TaskGame.RollMode.class);
+            Runnable taskRoller = () -> {
+                List<PlayerTask> tasks = taskGame.rollTasks(players, mode, true, true);
+                if (tasks.size() != players.size()) {
+                    ctx.getSource().getSender()
+                            .sendMessage(Component.text("could not find a task for all candidates! check logs"));
                 }
-            } catch (Exception e) {
-                source.sendMessage(
-                        Component.text("Failed to roll task for player ").append(player.displayName())
-                                .hoverEvent(Component.text(e.getMessage()))
-                );
-                //e.printStackTrace();
-                p.getLogger().throwing("TaskAssignmentBuilderSubCommand", "roller", e);
-            }
-        }
+            };
+            if (countdown) {
+                TitleCountdown.lifeCountdown(p, Audience.audience(players),
+                        Sound.sound(NamespacedKey.minecraft("block.metal_pressure_plate.click_on"), Sound.Source.MASTER, 0.8f, 1),
+                        1,30, taskRoller);
+            } else { taskRoller.run(); } // roll without delay
+            return 1;
+        });
     }
 }

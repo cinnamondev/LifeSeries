@@ -183,7 +183,7 @@ public class ScoreHandler {
         updateAllTrackedScoresAndTeams(updater);
     }
 
-    public Collection<Player> getAllAliveOnlinePlayers() {
+    public List<Player> getAllAliveOnlinePlayers() {
         return p.getServer().getOnlinePlayers().stream()
                 .filter(player -> !isPlayerSpectator(player))
                 .map(player -> (Player) player) // cast away from ? extends Player
