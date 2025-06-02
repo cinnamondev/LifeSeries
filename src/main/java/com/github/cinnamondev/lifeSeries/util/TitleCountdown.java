@@ -50,7 +50,7 @@ public class TitleCountdown {
             p.getServer().getScheduler().scheduleSyncDelayedTask(p, () -> {
                 audience.showTitle(title);
                 if (soundIterator.hasNext()) { audience.playSound(soundIterator.next()); }
-            }, delay);
+            }, messageDelay);
             messageDelay += interval;
         }
         p.getServer().getScheduler().scheduleSyncDelayedTask(p, onAllTitlesShown, delay);

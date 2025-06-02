@@ -1,7 +1,7 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task;
+package com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.CatLife.Task;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.CatLife;
+import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.CatLife.CatLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.PlayerTask.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;

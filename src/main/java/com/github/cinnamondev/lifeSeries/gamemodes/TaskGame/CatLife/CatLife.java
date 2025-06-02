@@ -1,10 +1,10 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.CatLife;
+package com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.CatLife;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.SecretLife;
-import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.Commands.CatDisguiseSubCommand;
-import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.Commands.CatSitCommand;
-import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.Commands.MeowCommand;
+import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.CatLife.Commands.CatDisguiseSubCommand;
+import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.CatLife.Commands.CatSitCommand;
+import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.CatLife.Commands.MeowCommand;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.registry.RegistryAccess;

@@ -3,8 +3,6 @@ package com.github.cinnamondev.lifeSeries.gamemodes.TaskGame;
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.PlayerTask.*;
-import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.TaskLookup;
-import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.TestGroupTask;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -19,7 +17,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
-import java.sql.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 

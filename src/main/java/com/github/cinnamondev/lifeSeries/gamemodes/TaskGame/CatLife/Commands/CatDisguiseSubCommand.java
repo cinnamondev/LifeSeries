@@ -1,7 +1,7 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.CatLife.Commands;
+package com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.CatLife.Commands;
 
 import com.github.cinnamondev.lifeSeries.LifeSeries;
-import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.CatLife;
+import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.CatLife.CatLife;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;

@@ -7,7 +7,7 @@ import com.github.cinnamondev.lifeSeries.customRecipe.ShapelessConfigRecipe;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.LimitedLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.Lives;
-import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.CatLife;
+import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.CatLife.CatLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.SecretLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed.Timed;
 import com.github.cinnamondev.lifeSeries.listener.EnchantmentNerfer;

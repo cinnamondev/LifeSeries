@@ -11,6 +11,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
+import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.ClassUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -31,7 +32,7 @@ public abstract class AbstractSharedGroupTask extends AbstractPlayerTask {
 
     public AbstractSharedGroupTask(LifeSeries p, Collection<Player> owningPlayers, Consumer<PlayerTask> onTaskCompletion, TaskDifficulty difficulty) {
         super(p, owningPlayers.stream().findFirst().orElseThrow(), onTaskCompletion, difficulty);
-        tasks = owningPlayers.stream()
+        this.tasks = owningPlayers.stream()
                 .map(player -> Map.entry(player.getUniqueId(), new GroupTask.Builder().task(this).player(player).onCompletion(onTaskCompletion).build(p)))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
@@ -70,6 +71,13 @@ public abstract class AbstractSharedGroupTask extends AbstractPlayerTask {
         taskSection.set("progress", getTaskProgress());
 
         return taskSection;
+    }
+
+    @Override
+    public Component taskProgressExplanation() {
+        return getGluedTasks().values().stream()
+                .map(t -> t.getTaskOwner().name())
+                .reduce(Component.text("Involved Players: "), Component::append);
     }
 
     public abstract static class Builder<T extends Builder<T>> extends PlayerTask.Builder<T> {

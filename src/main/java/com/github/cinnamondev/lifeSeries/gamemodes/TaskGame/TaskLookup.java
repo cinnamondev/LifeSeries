@@ -1,5 +1,8 @@
-package com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task;
+package com.github.cinnamondev.lifeSeries.gamemodes.TaskGame;
 
+import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.CatLife.Task.MeowAtPlayer;
+import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.CatLife.Task.MeowerTask;
+import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.*;
 import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.PlayerTask.PlayerTask;
 import com.google.common.collect.ImmutableMap;
 import org.bukkit.configuration.ConfigurationSection;

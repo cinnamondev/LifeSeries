@@ -5,9 +5,7 @@ import com.github.cinnamondev.lifeSeries.gamemodes.CommandContainer;
 import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Commands.*;
 import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.PlayerTask.PlayerTask;
 import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.PlayerTask.TaskDifficulty;
-import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.TaskLookup;
 import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
-import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -30,7 +28,6 @@ import org.bukkit.event.HandlerList;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public interface TaskGame extends CommandContainer {

@@ -28,7 +28,9 @@ public class LastOneStanding extends AbstractPlayerTask {
                 .getAllAliveOnlinePlayers().stream()
                 .filter(player -> !player.equals(owningPlayer))
                 .toList().size();
-        complete();
+        if (remainingPlayers == 0) {
+            complete();
+        }
     }
 
     @Override

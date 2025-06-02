@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * Generic assignable task that wraps around a 'glue task' (aka `AbstractSharedGroupTask`, implementation required).
  * If a group of players is assigned a task, irregardless of the tasks content, the type of their task is always
  * `GroupTask`. Internally, the specifc task implementation will be derived from `T`.
- * @param <T>
+ * @param
  */
 public final class GroupTask extends AbstractPlayerTask {
     //    T getCommon();
@@ -98,7 +98,7 @@ public final class GroupTask extends AbstractPlayerTask {
         public GroupTask build(LifeSeries p) {
             if (groupTask == null) { throw new RuntimeException("grouptask cannot exist without a glue"); }
             var task = new GroupTask(p, owningPlayer, groupTask, onTaskCompletion);
-            groupTask.getGluedTasks().put(owningPlayer.getUniqueId(), task);
+            //groupTask.getGluedTasks().put(owningPlayer.getUniqueId(), task);
             return task;
         }
     }

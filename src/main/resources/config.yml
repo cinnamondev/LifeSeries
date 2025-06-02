@@ -185,6 +185,21 @@ options:
             quantity: 9
           - name: TNT
             quantity: 16
+      arbitrary-string-task:
+        build-a-house:
+          name: "Build a house"
+          require-verification: true
+          guessable: true
+          allowed-teams:
+            - red
+            - yellow
+            - green
+          is-group: true # default: false
+          group: # this section can be omitted if `is-group` is false.
+            min: 2
+            max: 5
+            limit-to-team: true
+
 
   rewards:
     disable-on-disallowed-team: true
