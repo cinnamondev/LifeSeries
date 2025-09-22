@@ -6,6 +6,8 @@ import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.CatLife.CatLife;
 import com.github.cinnamondev.lifeSeries.util.UtilityComponents;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -21,10 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DisguiseMeAsACat implements CommandContainer.FilledLiteralCommand {
-    private final LifeSeries p;
     private final CatLife game;
-    public DisguiseMeAsACat(LifeSeries p, CatLife game) {
-        this.p = p;
+    public DisguiseMeAsACat(CatLife game) {
         this.game = game;
     }
 
@@ -44,13 +44,12 @@ public class DisguiseMeAsACat implements CommandContainer.FilledLiteralCommand {
                 Commands.literal("catsumize")
                         .requires(src -> src.getSender() instanceof Player)
                         .requires(src -> src.getSender().hasPermission("life.player.cat-customize")),
-                p,
                 game,
                 false
         ).build();
     }
 
-    public static LiteralArgumentBuilder<CommandSourceStack> disguiserCommandTree(LiteralArgumentBuilder<CommandSourceStack> root, LifeSeries p, CatLife game, boolean playersArgPresent) {
+    public static LiteralArgumentBuilder<CommandSourceStack> disguiserCommandTree(LiteralArgumentBuilder<CommandSourceStack> root, CatLife game, boolean playersArgPresent) {
         return root
                 .then(Commands.argument("type", ArgumentTypes.resource(RegistryKey.CAT_VARIANT))
                         .then(Commands.argument("collar", StringArgumentType.word())
@@ -60,39 +59,33 @@ public class DisguiseMeAsACat implements CommandContainer.FilledLiteralCommand {
                                     }
                                     return builder.buildFuture();
                                 })
-                                .executes(ctx -> {
-                                    var optDye = Arrays.stream(DyeColor.values())
-                                            .filter(dye -> ctx.getArgument("collar", String.class).trim()
-                                                    .equalsIgnoreCase(dye.toString()))
-                                            .findFirst();
-                                    if (optDye.isPresent()) {
-                                        if (playersArgPresent) {
-                                            ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
-                                                    .resolve(ctx.getSource()).forEach(player -> game.addPlayerDisguise(player,
-                                                            CatLife.catDisguise(
-                                                            player,
-                                                            ctx.getArgument("type", Cat.Type.class),
-                                                            optDye.get()
-                                                    )));
-                                        } else if (ctx.getSource().getSender() instanceof Player player) {
-                                            game.addPlayerDisguise(player, CatLife.catDisguise(
-                                                    player,
-                                                    ctx.getArgument("type", Cat.Type.class),
-                                                    optDye.get()
-                                            ));
-                                        }
-
-                                    } else {
-                                        ctx.getSource().getSender().sendMessage(UtilityComponents.dyeList());
-                                    }
-                                    return 1;
-                                })
+                                .executes(ctx -> commandExecutor(ctx, game, playersArgPresent))
                         )
                 )
                 .executes(ctx -> {
                     ctx.getSource().getSender().sendMessage(UtilityComponents.dyeList());
                     return 0;
                 });
+    }
+
+    private static int commandExecutor(CommandContext<CommandSourceStack> ctx, CatLife game, boolean playersArgPresent) throws CommandSyntaxException {
+        Cat.Type type = ctx.getArgument("type", Cat.Type.class);
+        DyeColor dye;
+        try {
+            dye = DyeColor.valueOf(StringArgumentType.getString(ctx, "collar").trim().toUpperCase());
+        } catch (IllegalArgumentException e) { // send dye list instead...
+            ctx.getSource().getSender().sendMessage(UtilityComponents.dyeList());
+            return 1;
+        }
+        CatLife.CatDisguise catDisguise = new CatLife.CatDisguise(type, dye);
+
+        if (playersArgPresent) { // this part of the tree is reused elsewhere... so double check!
+            ctx.getArgument("players", PlayerSelectorArgumentResolver.class).resolve(ctx.getSource())
+                    .forEach(player -> game.applyCatDisguise(player, catDisguise, true));
+        } else if (ctx.getSource().getSender() instanceof Player player) {
+            game.applyCatDisguise(player, catDisguise, true);
+        }
+        return 1;
     }
 
     public static Component disguiseTutorial() {

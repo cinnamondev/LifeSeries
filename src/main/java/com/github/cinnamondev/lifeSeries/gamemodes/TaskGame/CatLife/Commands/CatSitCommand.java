@@ -12,11 +12,9 @@ import org.bukkit.entity.Player;
 import java.util.List;
 
 public class CatSitCommand implements CommandContainer.FilledLiteralCommand {
-    private final LifeSeries p;
     private final CatLife game;
 
-    public CatSitCommand(LifeSeries p, CatLife catGame) {
-        this.p = p;
+    public CatSitCommand(CatLife catGame) {
         this.game = catGame;
     }
 

@@ -21,18 +21,18 @@ public class CatDisguiseSubCommand {
                             // attempt to pull players disguise from configuration, failing that set them to an
                             // orange tabby or something.
                             ctx.getArgument("players", PlayerSelectorArgumentResolver.class).resolve(ctx.getSource())
-                                    .forEach(game::tryDisguiseFromConfigOrUseTabby);
+                                    .forEach(game::applyBestCatDisguise);
                             return 1;
                         })
                 )
                 .then(Commands.literal("disable")
                         .executes(ctx -> {
                             ctx.getArgument("players", PlayerSelectorArgumentResolver.class).resolve(ctx.getSource())
-                                    .forEach(game::removePlayerDisguise);
+                                    .forEach(game::removeCatDisguise);
                             return 1;
                         })
                 )
-                .then(DisguiseMeAsACat.disguiserCommandTree(Commands.literal("customize"),p,game, true)));
+                .then(DisguiseMeAsACat.disguiserCommandTree(Commands.literal("customize"), game, true)));
     }
 
 

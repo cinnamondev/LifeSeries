@@ -12,17 +12,15 @@ import org.bukkit.entity.Player;
 import java.util.List;
 
 public class CatVisibilityCommand implements CommandContainer.FilledLiteralCommand {
-    private final LifeSeries p;
     private final CatLife game;
 
-    public CatVisibilityCommand(LifeSeries p, CatLife game) {
-        this.p = p;
+    public CatVisibilityCommand(CatLife game) {
         this.game = game;
     }
 
     @Override
     public List<String> getAliases() {
-        return List.of();
+        return List.of("catvisibility");
     }
 
     @Override
@@ -32,7 +30,7 @@ public class CatVisibilityCommand implements CommandContainer.FilledLiteralComma
 
     @Override
     public LiteralCommandNode<CommandSourceStack> command() {
-        Commands.literal("meowermeoweronthewall")
+        return Commands.literal("meowermeoweronthewall")
                 .requires(src -> src.getSender().hasPermission("life.player.cat-customize"))
                 .requires(src -> src.getSender() instanceof Player)
                 .executes(ctx -> {
@@ -46,7 +44,7 @@ public class CatVisibilityCommand implements CommandContainer.FilledLiteralComma
 
                     }, () -> player.sendMessage(Component.translatable("cat-life.not-disguised")));
                     return 1;
-                });
-        return null;
+                })
+                .build();
     }
 }
