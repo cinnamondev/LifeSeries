@@ -44,10 +44,10 @@ public final class LifeSeries extends JavaPlugin {
     private ScoreHandler scoreHandler;
 
     // listeners
-    @Inject private PlayerListener playerListener;
-    @Inject private EnchantmentNerfer enchantmentNerfer;
-    @Inject private ItemNerfer itemNerfer;
-    @Inject private RevivalItem revivalItem;
+    private PlayerListener playerListener;
+    private EnchantmentNerfer enchantmentNerfer;
+    private ItemNerfer itemNerfer;
+    private RevivalItem revivalItem;
 
     private Game game = null;
     // Game runs in a seperate thread
@@ -66,7 +66,7 @@ public final class LifeSeries extends JavaPlugin {
         getLogger().info(new NamespacedKey(this, "example").toString());
 
         saveFile = new File(getDataFolder(), "save.yml");
-        if (!saveFile.exists()) {
+        if (!saveFile.getParentFile().exists()) {
             if (!saveFile.getParentFile().mkdirs()) {
                 throw new IllegalStateException("Unable to create save directory :(");
             }
@@ -76,7 +76,16 @@ public final class LifeSeries extends JavaPlugin {
 
         scoreHandler = new ScoreHandler(this);
         game = switch(getConfig().getString("mode", null)) {
-            case "cat-life" -> new CatLife(this);
+            case "cat-life" -> {
+                // check if we have LibsDiguises...
+                try {
+                    Class<?> clazz = Class.forName("me.libraryaddict.disguise.disguisetypes.watchers.CatWatcher");
+                } catch (ClassNotFoundException e) {
+                    getLogger().severe("LibsDisguises is not present!!!!!!! REQUIRED for cat life.");
+                    throw new RuntimeException(e);
+                }
+                yield new CatLife(this);
+            }
             case "secret-life" -> new SecretLife(this);
             case "limited-life" -> new LimitedLife(this);
             case "timed" -> new Timed(this);
@@ -86,10 +95,6 @@ public final class LifeSeries extends JavaPlugin {
         };
         getLogger().info("Gamemode is" + game.toString());
 
-        // injector for plugin and common dependencies
-        var binder = new PluginBinderModule(this);
-        Injector injector = binder.createInjector();
-
         // translation
         TranslationRegistry registry = TranslationRegistry.create(new NamespacedKey(this, "translations"));
         ResourceBundle bundle = ResourceBundle.getBundle(
@@ -97,15 +102,20 @@ public final class LifeSeries extends JavaPlugin {
                 Locale.UK,
                 UTF8ResourceBundleControl.get()
         );
+
         registry.defaultLocale(Locale.UK);
         registry.registerAll(Locale.UK, bundle, true);
         registry.registerAll(Locale.US, bundle, true);
         GlobalTranslator.translator().addSource(registry);
 
         // listener bring up
+        this.playerListener = new PlayerListener(this);
         Bukkit.getPluginManager().registerEvents(playerListener, this);
+        this.enchantmentNerfer = new EnchantmentNerfer(this);
         Bukkit.getPluginManager().registerEvents(enchantmentNerfer, this);
+        this.itemNerfer = new ItemNerfer(this);
         Bukkit.getPluginManager().registerEvents(itemNerfer, this);
+        this.revivalItem = new RevivalItem(this);
         Bukkit.getPluginManager().registerEvents(revivalItem, this);
         if (game instanceof Listener gameListener) {
             Bukkit.getPluginManager().registerEvents(gameListener, this);
@@ -135,7 +145,9 @@ public final class LifeSeries extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        game.onServerDisable();
+        if (game != null) { // plugin can be disabled in a weird state.
+            game.onServerDisable();
+        }
         // Plugin shutdown logic
         if (getConfig().getBoolean("options.pause-on-server-stop", false)) {
             pauseSession();

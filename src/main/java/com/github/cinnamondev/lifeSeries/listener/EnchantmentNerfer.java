@@ -24,7 +24,7 @@ public class EnchantmentNerfer implements Listener {
     protected final Plugin p;
     private final List<NamespacedKey> blacklistedEnchants = new ArrayList<>();
 
-    @Inject
+
     public EnchantmentNerfer(Plugin p) {
         this.p = p;
         var bannedEnchants = p.getConfig().getStringList("banned-enchantments.blocklist");

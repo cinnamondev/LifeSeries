@@ -35,7 +35,7 @@ public class RevivalItem implements Listener, RecipeProvider<Recipe> {
     protected final LifeSeries p;
     protected final NamespacedKey key;
     protected final ConfigurationSection config;
-    @Inject
+
     public RevivalItem(LifeSeries p) {
         this.p = p;
 

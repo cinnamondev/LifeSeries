@@ -31,7 +31,7 @@ public class ItemNerfer implements Listener {
     protected final Plugin p;
     private final List<Material> bannedItems; // future: use itemtype
 
-    @Inject
+
     public ItemNerfer(Plugin p) {
         this.p = p;
         List<String> bannedNames = p.getConfig().getStringList("banned-items");

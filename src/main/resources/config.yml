@@ -84,10 +84,6 @@ custom-recipes:
 
 
 options:
-  spawn-eggs:
-    droppable: true
-    chance: 5 # 0-100
-
   boogeyman:
     auto-roll: true # roll at session start
     min: 1
@@ -199,6 +195,7 @@ options:
             min: 2
             max: 5
             limit-to-team: true
+
 
 
   rewards:
