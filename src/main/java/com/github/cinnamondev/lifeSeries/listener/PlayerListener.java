@@ -18,10 +18,13 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
+/**
+ * listens for common game events (PlayerDeath) and handles spectator respawn (ensure item drop)
+ */
 public class PlayerListener implements Listener {
     private final LifeSeries p;
 
-    @Inject
+
     public PlayerListener(LifeSeries p) {
         this.p = p;
     }

@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ScoreHandler {
     protected LifeSeries p;
@@ -78,6 +79,11 @@ public class ScoreHandler {
         return newScore;
     }
 
+    /**
+     * returns the player score. if the player is not already tracked, they will have a default score assigned.
+     * @param uuid uuid of player
+     * @return score
+     */
     public int getScore(UUID uuid) {
         int score = playerData.getInt(uuid.toString() + ".score", -1);
         if (score == -1) {
@@ -86,35 +92,50 @@ public class ScoreHandler {
         }
         return score;
     }
+    /// {@link ScoreHandler#getScore(OfflinePlayer)}
     public int getScore(OfflinePlayer player) {  return getScore(player.getUniqueId()); }
     protected void setScore(UUID uuid, int score) { playerData.set(uuid.toString() + ".score", score); }
-    protected void setScore(OfflinePlayer player, int score) { setScore(player.getUniqueId(), score); }
     protected int addScore(UUID uuid, int score) {
         int newScore = Math.max(getScore(uuid) + score, 0);
         setScore(uuid, newScore);
         return newScore;
     }
-    public int addScore(OfflinePlayer player, int score) { return addScore(player.getUniqueId(), score); }
 
     public Optional<TeamMeta> tryForTeam(String teamName) {
         return rankedTeams.stream().filter(teamMeta -> teamMeta.getScoreboardTeam().getName().equals(teamName)).findFirst();
     }
+    ///  get team corresponding to provided score
     public TeamMeta getTeam(int score) {
         return rankedTeams.stream().filter(_team -> score >= _team.getMininumScore()).findFirst().orElse(spectatorTeam);
     }
+    ///  get team corresponding to uuid (like all of these methods, the 'default' score will be used where it doesnt exist)
     public TeamMeta getTeam(UUID uuid) { return getTeam(getScore(uuid)); }
+    ///  {@link ScoreHandler#getTeam(UUID)}
     public TeamMeta getTeam(OfflinePlayer player) { return getTeam(getScore(player.getUniqueId())); }
     public TeamMeta getSpectatorTeam() { return this.spectatorTeam; }
     public boolean isPlayerSpectator(UUID uuid) { return getTeam(uuid).equals(spectatorTeam); }
     public boolean isPlayerSpectator(OfflinePlayer player) { return getTeam(player).equals(spectatorTeam); }
 
     public SortedSet<TeamMeta> getRankedTeams() { return new TreeSet<>(this.rankedTeams); }
-    /// update a players score according to the returned value of `updater`. works for any player uuid, if they are not
-    /// already tracked, they will be assigned the default score before `updater` is called. if the player is online
-    /// and their team changes, `onlinePlayerTeamHasChanged` will be called.
+    /**
+     * Updates a player score according to the result of `updater`. Works for any UUID, falls back to default score if
+     * they were not already tracked.
+     *
+     * If player is online *and* their team changes score is below minimum, `onTeamChange` will be called. The players
+     * team will always be updated.
+     *
+     * NOTE: This function does not ensure players who 'transition' to a dead team are killed. Generally you should
+     * be looking at {@link ScoreHandler#updatePlayerScoreAndTeam(UUID, BiFunction)}
+     * instead. If you call this function, you should generally make sure that spectators are handled if appropriate.
+     * (excluding i.e. revival clock)
+     *
+     * @param uuid UUID of player (online or offline, tracked or untracked)
+     * @param updater
+     * @param onTeamChange
+     */
     public void updatePlayerScoreAndTeam(UUID uuid,
                                          BiFunction<UUID, Integer, Integer> updater,
-                                         BiConsumer<Player, TeamMeta> onlinePlayerTeamHasChanged) {
+                                         BiConsumer<Player, TeamMeta> onTeamChange) {
         TeamMeta oldTeam = getTeam(uuid);
         setScore(uuid, Math.max(updater.apply(uuid, getScore(uuid)),0));
         TeamMeta newTeam = getTeam(uuid);
@@ -127,26 +148,31 @@ public class ScoreHandler {
             }
             newScoreboardTeam.addPlayer(player);
             if (!oldTeam.equals(newTeam)) { // changed team
-                onlinePlayerTeamHasChanged.accept(player, newTeam);
+                onTeamChange.accept(player, newTeam);
             }
         }
     }
-
-    /// update a players score according to the returned value of `updater`. works for any player uuid, if they are not
-    /// already tracked, they will be assigned the default score before `updater` is called. if the player is online,
-    /// and they run out of time (player has changed team to spectatorTeam), the player will be killed.
-    public void updatePlayerScoreAndTeam(UUID uuid,  BiFunction<UUID, Integer, Integer> updater) {
-        updatePlayerScoreAndTeam(uuid, updater, (player, team) -> {
-            if (isPlayerSpectator(uuid)) { p.getServer().getScheduler().runTask(p, () -> player.setHealth(0)); }
-        });
-    }
-
+    /// {@link ScoreHandler#updatePlayerScoreAndTeam(OfflinePlayer, BiFunction, BiConsumer)}
     public void updatePlayerScoreAndTeam(OfflinePlayer player,
                                          BiFunction<UUID, Integer, Integer> updater,
                                          BiConsumer<Player, TeamMeta> onlinePlayerTeamHasChanged) {
         updatePlayerScoreAndTeam(player.getUniqueId(), updater, onlinePlayerTeamHasChanged);
     }
 
+    /**
+     * Update a player score according to `updater`. Works for any player UUID, even if it was not being tracked before.
+     * Will use default score value if it is not set prior. If the player is online and runs out of score, they will
+     * change team to spectatorTeam and be killed.
+     * @param uuid UUID of player (online or offline, tracked or untracked)
+     * @param updater
+     */
+    public void updatePlayerScoreAndTeam(UUID uuid,  BiFunction<UUID, Integer, Integer> updater) {
+        updatePlayerScoreAndTeam(uuid, updater, (player, team) -> {
+            if (isPlayerSpectator(uuid)) { p.getServer().getScheduler().runTask(p, () -> player.setHealth(0)); }
+        });
+    }
+    
+    /// {@link ScoreHandler#updatePlayerScoreAndTeam(UUID, BiFunction)}
     public void updatePlayerScoreAndTeam(OfflinePlayer player,  BiFunction<UUID, Integer, Integer> updater) {
         updatePlayerScoreAndTeam(player.getUniqueId(), updater);
     }
@@ -190,13 +216,12 @@ public class ScoreHandler {
                 .toList();
     }
 
-    public Collection<UUID> listTrackedUUIDs() {
-        return playerData.getKeys(false).stream().map(UUID::fromString).collect(Collectors.toList());
+    public Stream<UUID> listTrackedUUIDs() {
+        return playerData.getKeys(false).stream().map(UUID::fromString);
     }
 
-    public Collection<OfflinePlayer> listTrackedPlayers() {
+    public Stream<OfflinePlayer> listTrackedPlayers() {
         return playerData.getKeys(false).stream()
-                .map(uuidString -> p.getServer().getOfflinePlayer(UUID.fromString(uuidString)))
-                .collect(Collectors.toList());
+                .map(uuidString -> p.getServer().getOfflinePlayer(UUID.fromString(uuidString)));
     }
 }

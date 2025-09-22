@@ -16,12 +16,12 @@ import org.bukkit.inventory.meta.BookMeta;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Generic assignable task that wraps around a 'glue task' (aka `AbstractSharedGroupTask`, implementation required).
  * If a group of players is assigned a task, irregardless of the tasks content, the type of their task is always
  * `GroupTask`. Internally, the specifc task implementation will be derived from `T`.
- * @param
  */
 public final class GroupTask extends AbstractPlayerTask {
     //    T getCommon();
@@ -43,10 +43,9 @@ public final class GroupTask extends AbstractPlayerTask {
     Consumer<PlayerTask> getTaskConsumer() { return this.taskConsumer; }
     public UUID getTaskUUID() { return groupTask.getTaskUUID(); }
     public AbstractSharedGroupTask getSharedTask() { return this.groupTask; }
-    public Collection<Player> getInvolvedPlayers() {
+    public Stream<Player> getInvolvedPlayers() {
         return groupTask.getGluedTasks().values().stream()
-                .map(AbstractPlayerTask::getTaskOwner)
-                .toList();
+                .map(AbstractPlayerTask::getTaskOwner);
     }
 
     @Override public boolean isTaskRerollable() { return groupTask.isTaskRerollable(); }

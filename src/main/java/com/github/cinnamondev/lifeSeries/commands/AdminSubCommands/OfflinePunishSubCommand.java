@@ -16,7 +16,7 @@ public class OfflinePunishSubCommand {
                 .executes(ctx -> {
                     List<UUID> onlineUUIDs = p.getServer().getOnlinePlayers().stream().map(Entity::getUniqueId)
                             .toList();
-                    p.getScoreHandler().listTrackedUUIDs().stream().filter(uuid -> !onlineUUIDs.contains(uuid))
+                    p.getScoreHandler().listTrackedUUIDs().filter(uuid -> !onlineUUIDs.contains(uuid))
                             .forEach(uuid -> p.getScoreHandler().updatePlayerScoreAndTeam(uuid, (_uuid, score) ->
                                     score - p.getConfig().getInt("options.punishment.offline")
                             ));
