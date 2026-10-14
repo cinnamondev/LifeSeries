@@ -35,13 +35,14 @@ public class BirdKillerTask extends KillMobsTask {
 
     @Override
     public String descriptionServerTranslate(Locale locale) {
-        return GlobalTranslator.translator().translate("secret-life.tasks." + getTaskKey() + ".description", locale)
+        return GlobalTranslator.translator().translate("secret-life.tasks.duck-hunt.description", locale)
                 .format(String.valueOf(getThreshold()));
     }
 
     @Override
     public Component description() {
-        return Component.translatable("secret-life.tasks." + getTaskKey() + ".description", String.valueOf(getThreshold()));
+        return Component.translatable("secret-life.tasks.duck-hunt.description")
+                .arguments(Component.text(String.valueOf(getThreshold())));
     }
 
     @Override

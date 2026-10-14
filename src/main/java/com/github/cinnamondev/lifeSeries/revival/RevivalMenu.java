@@ -4,6 +4,7 @@ import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.google.common.collect.Lists;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.DeathProtection;
+import io.papermc.paper.registry.data.dialog.DialogRegistryEntry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;

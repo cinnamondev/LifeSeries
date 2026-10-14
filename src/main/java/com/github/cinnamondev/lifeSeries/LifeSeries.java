@@ -58,6 +58,7 @@ public final class LifeSeries extends JavaPlugin {
     //private int scoreHandlerUpdaterTaskID;
     private boolean doAutosave = true;
 
+    public void withGame(Game game) { this.game = game; }
     @Override
     public void onEnable() {
         saveDefaultConfig(); // if doesnt exist
@@ -75,24 +76,7 @@ public final class LifeSeries extends JavaPlugin {
         saveFileCfg = YamlConfiguration.loadConfiguration(saveFile);
 
         scoreHandler = new ScoreHandler(this);
-        game = switch(getConfig().getString("mode", null)) {
-            case "cat-life" -> {
-                // check if we have LibsDiguises...
-                try {
-                    Class<?> clazz = Class.forName("me.libraryaddict.disguise.disguisetypes.watchers.CatWatcher");
-                } catch (ClassNotFoundException e) {
-                    getLogger().severe("LibsDisguises is not present!!!!!!! REQUIRED for cat life.");
-                    throw new RuntimeException(e);
-                }
-                yield new CatLife(this);
-            }
-            case "secret-life" -> new SecretLife(this);
-            case "limited-life" -> new LimitedLife(this);
-            case "timed" -> new Timed(this);
-            case "lives" -> new Lives(this);
-            case null -> throw new RuntimeException("Null-y game, we're screwed!");
-            default -> throw new RuntimeException("Unexpected value: " + getConfig().getString("mode", null));
-        };
+
         getLogger().info("Gamemode is" + game.toString());
 
         // translation

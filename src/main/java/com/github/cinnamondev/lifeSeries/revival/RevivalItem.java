@@ -55,8 +55,8 @@ public class RevivalItem implements Listener, RecipeProvider<Recipe> {
                 .color(NamedTextColor.LIGHT_PURPLE));
 
         itemMeta.getPersistentDataContainer().set(key, PersistentDataType.BOOLEAN, true);
-        itemMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ATTRIBUTES);
-        itemMeta.setUnbreakable(true);
+
+
         itemMeta.setEnchantmentGlintOverride(true);
         itemMeta.setMaxStackSize(1);
         itemMeta.setItemModel(NamespacedKey.fromString(config.getString("model", "minecraft:clock")));

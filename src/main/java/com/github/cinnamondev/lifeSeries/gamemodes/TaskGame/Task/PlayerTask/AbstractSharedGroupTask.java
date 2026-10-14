@@ -81,7 +81,7 @@ public abstract class AbstractSharedGroupTask extends AbstractPlayerTask {
     }
 
     public abstract static class Builder<T extends Builder<T>> extends PlayerTask.Builder<T> {
-        protected Collection<Player> players;
+        protected ArrayList<Player> players = new ArrayList<>();
         protected UUID taskUUID = UUID.randomUUID();
 
         protected List<Player> resolveAllPlayers(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
@@ -105,12 +105,12 @@ public abstract class AbstractSharedGroupTask extends AbstractPlayerTask {
                     .executes(executor);
         }
 
-        public T players(Player... players) { this.players = Arrays.stream(players).toList(); return (T) this; }
-        public T players(Collection<Player> players) { this.players = players; return (T) this; }
+        public T players(Player... players) { this.players = new ArrayList<>(Arrays.stream(players).toList()); return (T) this; }
+        public T players(Collection<Player> players) { this.players = new ArrayList<>(players); return (T) this; }
         /// optional argument to set the uuid of the group task so we can restore.
         public T uuid(UUID taskUUID) { this.taskUUID = taskUUID; return (T) this; }
         @Override
-        public T player(Player owningPlayer) { return this.players(owningPlayer); }
+        public T player(Player additionalPlayer) { players.add(additionalPlayer); return (T) this; }
 
         @Override public abstract AbstractSharedGroupTask build(LifeSeries p);
     }

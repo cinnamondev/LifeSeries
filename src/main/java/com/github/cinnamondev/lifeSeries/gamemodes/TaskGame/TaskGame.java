@@ -17,6 +17,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
+import me.libraryaddict.disguise.utilities.mineskin.models.structures.MineSkinRateLimit;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -31,16 +32,21 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 public interface TaskGame extends CommandContainer {
-    record TaskMeta(String key, TaskDifficulty difficulty, int min, int max, int assigned) {
+    record TaskMeta(String key, TaskDifficulty difficulty, int min, int max) {
         PlayerTask.Builder<?> builder() { return TaskLookup.getTaskBuilderByKey(key); }
     }
 
-    List<TaskMeta> getConfiguredTasks(TaskDifficulty difficulty);
+    Map<TaskMeta, Integer> getConfiguredTasks(TaskDifficulty difficulty);
     List<TaskDifficulty> availableDifficultiesForTeam(TeamMeta teamMeta);
-    default List<TaskMeta> getAllTasks() {
-        return Arrays.stream(TaskDifficulty.values())
-                .flatMap(difficulty -> getConfiguredTasks(difficulty).stream())
-                .toList();
+    default boolean canTeamDoTask(TeamMeta team, TaskMeta task) {
+        return availableDifficultiesForTeam(team).contains(task.difficulty);
+    }
+    default Map<TaskMeta, Integer> getAllTasks() {
+        HashMap<TaskMeta, Integer> map = new HashMap<>();
+        for (var difficulty: TaskDifficulty.values()) {
+            map.putAll(getConfiguredTasks(difficulty));
+        }
+        return map;
     }
 
     default void onTaskCompletion(PlayerTask secretTask) {
@@ -57,6 +63,9 @@ public interface TaskGame extends CommandContainer {
     void onTaskFailure(PlayerTask secretTask);
 
     Map<UUID, PlayerTask> assignedTasks();
+
+    List<PlayerTask> rollTasks(List<Player> players, RollMode rollMode, boolean respectLimits, boolean add);
+
     void addSecretTask(PlayerTask secretTask);
     void removeSecretTask(OfflinePlayer taskOwner);
     default void removeSecretTask(PlayerTask secretTask) { removeSecretTask(secretTask.getTaskOwner()); }
@@ -72,6 +81,39 @@ public interface TaskGame extends CommandContainer {
     boolean canRerollTask(TeamMeta reroller);
     boolean canRerollTask(OfflinePlayer reroller);
 
+
+    public enum LimitMode {
+        NONE, GROUPS, ALL;
+
+        public static class RollerArgument implements CustomArgumentType.Converted<LimitMode, String> {
+            private static final DynamicCommandExceptionType ERROR_NOT_ROLL = new DynamicCommandExceptionType(name ->
+                    MessageComponentSerializer.message().serialize(Component.text(name + " is not a valid roll mode."))
+            );
+
+            @Override
+            public LimitMode convert(String nativeType) throws CommandSyntaxException {
+                return switch (nativeType.toLowerCase()) {
+                    case "none" ->              LimitMode.NONE;
+                    case "groups", "group" ->   LimitMode.GROUPS;
+                    case "all" ->               LimitMode.ALL;
+                    default -> throw ERROR_NOT_ROLL.create(nativeType);
+                };
+            }
+
+            @Override
+            public ArgumentType<String> getNativeType() {
+                return StringArgumentType.word();
+            }
+
+            @Override
+            public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
+                Stream.of("none", "groups", "all")
+                        .filter(difficulty -> difficulty.startsWith(builder.getRemainingLowerCase()))
+                        .forEach(builder::suggest);
+                return builder.buildFuture();
+            }
+        }
+    }
     public enum RollMode {
         EASY, MEDIUM, HARD, TEAM, ANY;
 
@@ -118,7 +160,7 @@ public interface TaskGame extends CommandContainer {
      * @param add If true, add the task to the game.
      * @return
      */
-    List<PlayerTask> rollTasks(List<Player> players, RollMode rollMode, boolean respectLimits, boolean add);
+    List<PlayerTask> rollTasks(Map<TaskMeta, Integer> _tasks, List<Player> _players, boolean useTeams, LimitMode limitMode);
 
     @Override
     default Collection<LiteralArgumentBuilder<CommandSourceStack>> adminSubCommands(LifeSeries p) {

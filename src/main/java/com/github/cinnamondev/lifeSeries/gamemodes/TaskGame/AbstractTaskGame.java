@@ -19,6 +19,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class AbstractTaskGame implements TaskGame, Game {
     protected final LifeSeries p;
@@ -81,24 +82,24 @@ public abstract class AbstractTaskGame implements TaskGame, Game {
     }
 
     @Override
-    public List<TaskMeta> getConfiguredTasks(TaskDifficulty difficulty) {
+    public Map<TaskMeta, Integer> getConfiguredTasks(TaskDifficulty difficulty) {
         ConfigurationSection section = p.getConfig().getConfigurationSection("options.secret-life.task-deck");
-        if (section == null) return Collections.emptyList();
+        if (section == null) return Collections.emptyMap();
         List<String> keys = switch (difficulty) {
             case TaskDifficulty.EASY -> section.getStringList("easy.deck");
             case TaskDifficulty.MEDIUM -> section.getStringList("normal.deck");
             case TaskDifficulty.HARD -> section.getStringList("hard.deck");
             default -> Collections.emptyList();
         };
-        return keys.stream().map(k ->
-            new TaskMeta(
-                    k,
-                    difficulty,
-                    TaskLookup.getTaskAssignmentMinimum(p, k),
-                    TaskLookup.getTaskAssignmentLimit(p,k),
-                    searchForTaskByKey(k).size()
-            )
-        ).toList();
+        return keys.stream().map(k -> Map.entry(
+                new TaskMeta(
+                        k,
+                        difficulty,
+                        TaskLookup.getTaskAssignmentMinimum(p, k),
+                        TaskLookup.getTaskAssignmentLimit(p,k)
+                ),
+                searchForTaskByKey(k).size()
+        )).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @Override
@@ -115,6 +116,85 @@ public abstract class AbstractTaskGame implements TaskGame, Game {
                 .toList();
     }
 
+    @Override
+    public List<PlayerTask> rollTasks(Map<TaskMeta, Integer> _tasks, List<Player> _players, boolean useTeams, LimitMode limitMode) {
+        // lhs: task rhs: how many players assigned
+        //_tasks.values()
+        ///ArrayList<MutablePair<TaskMeta, Integer>> tasks = _tasks.entrySet().stream()
+        ///        .forEach(e -> {
+        ///        })
+        ///        .collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<PlayerTask> finalTasks = new ArrayList<>();
+        ArrayList<TaskMeta> tasks = new ArrayList<>();
+        ArrayList<Integer> assigned =  new ArrayList<>();
+        _tasks.forEach((key, value) -> {
+            tasks.add(key);
+            assigned.add(value);
+        });
+
+        //HashMap<TaskMeta, Integer> tasks = new HashMap<>(_tasks);
+        //tasks.shuff
+        ArrayList<Player> players = new ArrayList<>(_players);
+        Collections.shuffle(players);
+        Random rand = new Random();
+
+        while (!tasks.isEmpty() && !players.isEmpty()) {
+            int index = rand.nextInt(tasks.size());
+            TaskMeta task = tasks.get(index);
+            PlayerTask.Builder<?> builder = task.builder();
+
+            if (builder instanceof AbstractSharedGroupTask.Builder<?> b) {
+                // group tasks consume more players
+                Stream<Player> playerIStream = players.stream().unordered()
+                        .limit(switch (limitMode) {
+                            case NONE -> (1+rand.nextInt(players.size())); // not ideal
+                            case GROUPS, ALL -> (task.min() + rand.nextInt(task.max()));
+                        });
+                if (useTeams) {
+                    playerIStream = playerIStream
+                            .filter(player -> this.canTeamDoTask(p.getScoreHandler().getTeam(player), task));
+                }
+                List<Player> candidates = playerIStream.collect(Collectors.toList());
+                players.removeAll(candidates);
+                builder = b.players(candidates);
+                tasks.remove(index); // for gameplay experience, it seems best that only one instance of a specific group task can exist.
+            } else { // normal tasks
+                Player candidate;
+                if (useTeams) {
+                    // if we use teams we have to do a more expensive search...
+                    var oPlayer = players.stream()
+                            .filter(player -> this.canTeamDoTask(p.getScoreHandler().getTeam(player), task))
+                            .findFirst();
+                    if (oPlayer.isPresent()) {
+                        candidate = oPlayer.get();
+                    } else {
+                        tasks.remove(index); // DEAD END: no candidate players for this task.
+                        continue;
+                    }
+                } else { candidate = players.removeLast(); }
+
+                builder = builder.player(candidate);
+                players.remove(candidate);
+                // remove if assignment limit reached.
+                if (limitMode == LimitMode.ALL) {
+                    var assignedCount = assigned.get(index) + 1;
+                    if (assignedCount > task.max()) {
+                        tasks.remove(index);
+                        assigned.remove(index);
+                    } else { assigned.set(index, assignedCount); }
+                }
+            }
+
+            if (builder instanceof TargetedPlayerTask.Builder<?> b) { b.randomTarget(); }
+        }
+
+        if (!players.isEmpty()) {
+            p.getLogger().warning("rollTasks - Could not assign a task to all players!!!!!"
+                    + players.stream().map(Player::getName).collect(Collectors.joining(", ")));
+        }
+        return finalTasks;
+    }
+/*
     @Override
     public List<PlayerTask> rollTasks(List<Player> players, RollMode rollMode, boolean respectLimits, boolean add) {
         //  TODO: this will need bettering later.  this is kinda scrappy ? (the whole function, really)
@@ -236,7 +316,7 @@ public abstract class AbstractTaskGame implements TaskGame, Game {
         if (add) { finalTasks.forEach(this::addSecretTask); }
         return finalTasks;
     }
-
+*/
 
     @Override
     public void addSecretTask(PlayerTask secretTask) {

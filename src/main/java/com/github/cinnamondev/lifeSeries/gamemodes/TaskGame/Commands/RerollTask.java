@@ -4,6 +4,7 @@ import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.CommandContainer;
 import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.TaskGame;
 import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.Task.PlayerTask.TaskDifficulty;
+import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.TaskLookup;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -56,11 +57,9 @@ public class RerollTask implements CommandContainer.FilledLiteralCommand {
                                     .color(NamedTextColor.RED));
                             return;
                         }
-
-                        secretGame.rollTasks(Collections.singletonList(player), TaskGame.RollMode.HARD, true, true).stream()
-                                .findFirst().ifPresentOrElse(_task -> {}, () -> { // todo
-                                    player.sendMessage(Component.text("couldnt find a task to roll for you! please ask a GM."));
-                                });
+                        secretGame.rollTasks(secretGame.getConfiguredTasks(TaskDifficulty.HARD), Collections.singletonList(player), true, TaskGame.LimitMode.ALL).stream().findFirst().ifPresentOrElse(secretGame::addSecretTask, () -> { // todo
+                            player.sendMessage(Component.text("couldnt find a task to roll for you! please ask a GM."));
+                        });
 
                         /*
                         if (currentTask.getDifficulty() == TaskDifficulty.EASY) {

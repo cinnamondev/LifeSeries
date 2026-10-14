@@ -60,7 +60,7 @@ public class TaskLookup {
     }
 
     public static int getTaskAssignmentLimit(Plugin p, String taskKey) {
-        final int DEFAULT_LIMIT = Integer.MAX_VALUE;
+        final int DEFAULT_LIMIT = p.getConfig().getInt("options.secret-life.group-tasks.default-assignment-limit", 8);
         return getTaskConfigurationSection(p, taskKey)
                 .map(config -> config.getInt("assignment-limit", DEFAULT_LIMIT))
                 .orElse(DEFAULT_LIMIT);
@@ -70,8 +70,8 @@ public class TaskLookup {
     }
     public static int getTaskAssignmentMinimum(Plugin p, String taskKey) {
         return getTaskConfigurationSection(p, taskKey)
-                .map(config -> config.getInt("min-assignment", -1))
-                .orElse(-1);
+                .map(config -> config.getInt("min-assignment", 1))
+                .orElse(1);
     }
     public static int getTaskAssignmentMinimum(Plugin p, PlayerTask playerTask) {
         return getTaskAssignmentLimit(p, playerTask.getTaskKey());

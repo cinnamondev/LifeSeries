@@ -19,6 +19,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.Map;
 
 public class TaskAssignmentBuilderSubCommand {
     public static LiteralArgumentBuilder<CommandSourceStack> command(LifeSeries p, TaskGame taskGame) {
@@ -85,8 +86,16 @@ public class TaskAssignmentBuilderSubCommand {
             var players = ctx.getArgument("players", PlayerSelectorArgumentResolver.class)
                     .resolve(ctx.getSource());
             TaskGame.RollMode mode = ctx.getArgument("mode", TaskGame.RollMode.class);
+            boolean useTeams = false;
+            Map<TaskGame.TaskMeta, Integer> map = switch (mode) {
+                case EASY: yield taskGame.getConfiguredTasks(TaskDifficulty.EASY);
+                case MEDIUM: yield taskGame.getConfiguredTasks(TaskDifficulty.MEDIUM);
+                case HARD: yield taskGame.getConfiguredTasks(TaskDifficulty.HARD);
+                case TEAM: useTeams = true;
+                case ANY: yield taskGame.getAllTasks();
+            };
             Runnable taskRoller = () -> {
-                List<PlayerTask> tasks = taskGame.rollTasks(players, mode, true, true);
+                List<PlayerTask> tasks = taskGame.rollTasks(map, players, true, TaskGame.LimitMode.ALL);
                 if (tasks.size() != players.size()) {
                     ctx.getSource().getSender()
                             .sendMessage(Component.text("could not find a task for all candidates! check logs"));
