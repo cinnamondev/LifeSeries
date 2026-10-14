@@ -21,4 +21,4 @@ buildNumber.properties
 .idea/**/*
 
 upload-jar-restart.ps1
-
+server/
