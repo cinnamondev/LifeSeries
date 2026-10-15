@@ -22,3 +22,8 @@ buildNumber.properties
 
 upload-jar-restart.ps1
 server/
+
+build
+run
+.gradle
+gradle

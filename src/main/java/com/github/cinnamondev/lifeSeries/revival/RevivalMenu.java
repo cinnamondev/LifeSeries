@@ -113,9 +113,11 @@ public class RevivalMenu implements InventoryHolder, Listener {
         );
         itemOff.setItemMeta(meta);
 
-        ToggleButton button = new ToggleButton(itemOn, itemOff,true, inventory, slot, (player, state) ->
-                teleportToPlayer = state
-        );
+        ToggleButton button = new ToggleButton(itemOn, itemOff,true, inventory, slot, (player, state) -> {
+            if (player.hasPermission("life.revival.toggle-spawn-point")) {
+                teleportToPlayer = state;
+            }
+        });
         button.updateDisplayBlock();
         return button;
     }

@@ -1,25 +1,25 @@
-mode: cat-life
+mode: timed
 
-starting-score: 9
+starting-score: 86400
 
 server-locale: en_US # default to en_US if not specified. as interactable menus (revival menu)
-                     # cannot have items be translated server side, we need to specify which bundle to get them from
-                     # here.
+  # cannot have items be translated server side, we need to specify which bundle to get them from
+# here.
 
 categories:
   green:
     colour: GREEN
-    score: 6 # mininum number of minutes required to be in this category OR mininum number of lives.
+    score: 57600 # mininum number of minutes required to be in this category OR mininum number of lives.
 
   yellow:
     colour: YELLOW
-    score: 3
+    score: 28800
     can-kill:
       - green
 
   red:
-    colour: 'RED' # as displayed in tab & above head
-    score: 1 # the lowest category should set 0 here to ignore this category entirely.
+    colour: RED # as displayed in tab & above head
+    score: 0 # the lowest category should set 0 here to ignore this category entirely.
     can-kill: # does not prevent PvP, just determines which categories players can be rewarded time from.
       - red
       - yellow
@@ -37,8 +37,8 @@ banned-items:
 banned-enchantments:
   max-level: 3 # set to -1 to disable. 0 will disable enchantments entirely.
   # blocklist of enchantments.
-  blocklist:
-    - bane_of_arthropods
+  #blocklist:
+  #  - bane_of_arthropods
 
 revival:
   enabled: true
@@ -53,11 +53,14 @@ revival:
   item:
     name: "Revival Clock"
     block: CLOCK
-    #model: "cosmetics:witch_hat" # comment out to omit
-    recipe: [ DIRT, DIRT, DIRT,     # replace empty slots with EMPTY
-              DIRT, DIRT, DIRT,
-              DIRT, DIRT, DIRT ]
-  added-score: 300
+    model: 0 # to allow you to give the revival item a custom model. set to something ignorable otherwise.
+    #recipe: [ BLAZE_ROD, DIAMOND_BLOCK, BLAZE_ROD,     # replace empty slots with EMPTY
+    #          REDSTONE_BLOCK, CLOCK, REDSTONE_BLOCK,
+    #          GOLDEN_APPLE, DIAMOND_BLOCK, GOLDEN_APPLE ]
+    recipe: [ BLAZE_ROD,      NETHERITE_INGOT,  BLAZE_ROD,     # replace empty slots with EMPTY
+              REDSTONE_BLOCK, CLOCK,            REDSTONE_BLOCK,
+              GOLDEN_APPLE,   DIAMOND_BLOCK,    GOLDEN_APPLE ]
+  added-score: 10800
 
 custom-recipes:
   minimal-saddle:
@@ -70,7 +73,7 @@ custom-recipes:
     recipe: [ PAPER,  SAND,       PAPER,
               SAND,   GUNPOWDER,  SAND,
               PAPER,  SAND,       PAPER ]
-  slimeballs:
+  craftable-balls:
     quantity: 3
     block: SLIME_BALL
     recipe: [ EMPTY,    BONE_MEAL,   EMPTY,
@@ -84,108 +87,31 @@ custom-recipes:
 
 
 options:
-  spawn-eggs:
-    droppable: true
-    chance: 5 # 0-100
-
   boogeyman:
-    auto-roll: true # roll at session start
-    min: 1
+    min: 3
     max: 3
     failure:
-      do-not-punish-teams:
+      do-not-punish-teams: # if a red player is boogey, they cannot be punished.
         - red
       punish-lowest-team: false
       demote-to-next-team: true
       demotion-score: 10000 # used if `demote-to-next-team` is false
-    lowest-tier-is-penalised: false # lowest lives team is not penalized when true. (i.e if red is allowed, reds wont -2h)
     punish-boogeys: true # auto punish boogeys at end of session
 
     allowed-teams: # names must match categories in `categories` configuration.
-      - green
+      - green      # red player is not allowed to be boogeyman in this scenario
       - yellow
-
-  cat-life:
-    auto-disguise: true
-
-  secret-life:
-    auto-roll: true # roll at session start
-    watchdog-time: 3600 # ~3 minutes
-    gamemaster-enabled: true # set to false to place onus of task guess acceptance on owning player, tasks that use
-                             # GM verification will be automatically accepted.
-    can-guess-tasks:
-      - red
-      - yellow
-    can-reroll:
-      times: 1
-      teams:
-        - red
-    task-deck:
-      easy:                 # Currently there is no concept outside of `easy, medium, hard`. do not try to add additional categories.
-        teams:              # Teams that are eligible to recieve these tasks
-          - green
-          - yellow
-        deck:               # Tasks that are considered "easy"
-          - follow-another-player # todo more tasks
-      normal:
-        teams:
-          - yellow
-          - red
-        deck:
-          - follow-another-player
-      hard:
-        teams:
-          - red
-        deck:
-          - explode-another-player
-    failure:              # prevent a specific team from
-      do-not-punish-teams:
-        - red
-    task-configs:
-      defaults:
-        generic-radius-threshold: 32
-      explode-another-player:
-        assignment-limit: 1
-      pass-it-on:
-        save-old-task: true
-      waffle-monster:
-        item:
-          recipe: [ WHEAT, WHEAT, EMPTY,
-                    WHEAT, WHEAT, EMPTY,
-                    EMPTY, EMPTY, EMPTY ]
-          block: CAKE
-          model: lifeseries:waffle
-        sounds:
-          spawn: lifeseries:waffle-spawn
-          death: lifeseries:waffle-death
-      chest-head:
-        grace: 30
-        head-url: "http://textures.minecraft.net/texture/275bcff2e74deed37a319a1f404e70d06a5f360cacee99c71346f38560cbd72a"
-        ball-launcher:
-          enabled: true
-          prevent-sharing: true
-          #model: "cosmetics:witch_hat" # omit if you just want breeze balls.
-        loot:
-          - name: revival-item # refer to as special
-            quantity: 1
-          - name: DIAMOND
-            quantity: 9
-          - name: TNT
-            quantity: 16
 
   rewards:
     disable-on-disallowed-team: true
     kill: 1800
     boogey-kill: 3600
-    task-success: 0
 
   punishment:
     disable-on-disallowed-team: false
     offline: 7200
     death: 3600
-    boogey-death: 7200 # boogeyman
-    task-failure: 7200 # secret/cat life
-
+    boogey-death: 7200
 
   # Options for player's final death (i.e. RED -> SPECTATOR)
   final-death:
@@ -205,4 +131,7 @@ options:
     warn-players: true
     # kick players at end of session
     # bypass permission: life.bypass.kick
-    kick-at-end: true
+    kick-at-end: false
+    # for servers running behind a proxy that supports bungeecord messaging. if this is a valid option,
+    # and `kick-at-end` is also true, each player is sent to the specified server.
+    send-to-server: survival-2025 # set to null or remove if not desired.

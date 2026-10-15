@@ -7,8 +7,6 @@ import com.github.cinnamondev.lifeSeries.customRecipe.ShapelessConfigRecipe;
 import com.github.cinnamondev.lifeSeries.gamemodes.Game;
 import com.github.cinnamondev.lifeSeries.gamemodes.LimitedLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.Lives;
-import com.github.cinnamondev.lifeSeries.gamemodes.CatLife.CatLife;
-import com.github.cinnamondev.lifeSeries.gamemodes.TaskGame.SecretLife;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed.Timed;
 import com.github.cinnamondev.lifeSeries.listener.EnchantmentNerfer;
 import com.github.cinnamondev.lifeSeries.listener.ItemNerfer;
@@ -20,8 +18,7 @@ import com.google.inject.Injector;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.translation.GlobalTranslator;
-import net.kyori.adventure.translation.TranslationRegistry;
-import net.kyori.adventure.util.UTF8ResourceBundleControl;
+import net.kyori.adventure.translation.TranslationStore;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -67,17 +64,12 @@ public final class LifeSeries extends JavaPlugin {
 
         saveFile = new File(getDataFolder(), "save.yml");
         if (!saveFile.exists()) {
-            if (!saveFile.getParentFile().mkdirs()) {
-                throw new IllegalStateException("Unable to create save directory :(");
-            }
             saveResource("save.yml", false);
         }
         saveFileCfg = YamlConfiguration.loadConfiguration(saveFile);
 
         scoreHandler = new ScoreHandler(this);
         game = switch(getConfig().getString("mode", null)) {
-            case "cat-life" -> new CatLife(this);
-            case "secret-life" -> new SecretLife(this);
             case "limited-life" -> new LimitedLife(this);
             case "timed" -> new Timed(this);
             case "lives" -> new Lives(this);
@@ -91,16 +83,16 @@ public final class LifeSeries extends JavaPlugin {
         Injector injector = binder.createInjector();
 
         // translation
-        TranslationRegistry registry = TranslationRegistry.create(new NamespacedKey(this, "translations"));
+        final var store = TranslationStore.messageFormat(new NamespacedKey(this, "translations"));
+
         ResourceBundle bundle = ResourceBundle.getBundle(
                 "bundles.Bundle",
-                Locale.UK,
-                UTF8ResourceBundleControl.get()
+                Locale.UK
         );
-        registry.defaultLocale(Locale.UK);
-        registry.registerAll(Locale.UK, bundle, true);
-        registry.registerAll(Locale.US, bundle, true);
-        GlobalTranslator.translator().addSource(registry);
+        store.defaultLocale(Locale.UK);
+        store.registerAll(Locale.UK, bundle, true);
+        store.registerAll(Locale.US, bundle, true);
+        GlobalTranslator.translator().addSource(store);
 
         // listener bring up
         Bukkit.getPluginManager().registerEvents(playerListener, this);
