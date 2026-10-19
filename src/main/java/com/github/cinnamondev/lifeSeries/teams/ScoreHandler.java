@@ -151,6 +151,18 @@ public class ScoreHandler {
         updatePlayerScoreAndTeam(player.getUniqueId(), updater);
     }
 
+    public ConfigurationSection getPlayerData(UUID uuid) {
+        ConfigurationSection s = playerData.getConfigurationSection(uuid.toString());
+        if (s == null) {
+            s = playerData.createSection(uuid.toString());
+        }
+        return s;
+    }
+
+    public ConfigurationSection getPlayerData(OfflinePlayer player) {
+        return getPlayerData(player.getUniqueId());
+    }
+
     /// update all tracked players score according to the returned value of `updater`. works for any player uuid,
     /// if they are not already tracked, they will be assigned the default score before `updater` is called.
     /// if the player is online, and they change team category (including running out of time),

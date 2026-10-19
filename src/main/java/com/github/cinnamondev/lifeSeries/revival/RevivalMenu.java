@@ -11,6 +11,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -149,6 +151,10 @@ public class RevivalMenu implements InventoryHolder, Listener {
                                 revived.teleport(world.getSpawnLocation());
                             }
                         }
+                        if (reviver instanceof Player reviverPlayer) {
+                            int uses = p.getScoreHandler().getPlayerData(reviverPlayer).getInt("revival.use", 0);
+                            p.getScoreHandler().getPlayerData(reviverPlayer).set("revival.use", uses + 1);
+                        }
                         revived.setGameMode(GameMode.SURVIVAL);
                         announceRevival(revived);
                     });
@@ -173,6 +179,15 @@ public class RevivalMenu implements InventoryHolder, Listener {
 
     private void announceRevival(Player player) {
         if (p.getConfig().getBoolean("revival.announce.title.enabled", true)) {
+            if (p.getConfig().getBoolean("revival.announce.locator-bar.enabled", false)) {
+                AttributeInstance waypointAttr = player.getAttribute(Attribute.WAYPOINT_TRANSMIT_RANGE);
+                if (waypointAttr != null) {
+                    waypointAttr.setBaseValue(Double.MAX_VALUE);
+                    p.getServer().getScheduler().runTaskLater(p, () -> {
+                        waypointAttr.setBaseValue(0.00f);
+                    }, p.getConfig().getInt("revival.announce.locator-bar.time", 200));
+                }
+            }
             if (!p.getConfig().getBoolean("revival.announce.title.totem", false)) {
                 p.getServer().showTitle(Title.title(
                         Component.translatable("revival-item.announce-revival")

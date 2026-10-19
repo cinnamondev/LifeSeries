@@ -13,14 +13,19 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Utility;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -75,6 +80,11 @@ public class RevivalItem implements Listener, RecipeProvider<Recipe> {
         if (a != Action.RIGHT_CLICK_AIR && a != Action.RIGHT_CLICK_BLOCK) { return; }
         if (e.getItem().getItemMeta().getPersistentDataContainer().getOrDefault(key, PersistentDataType.BOOLEAN, false)) {
             // it is the revival item
+            int useCounter = p.getScoreHandler().getPlayerData(e.getPlayer()).getInt("revival.use",0);
+            if (useCounter >= p.getConfig().getInt("revival.limits.use", Integer.MAX_VALUE)) {
+                e.getPlayer().sendMessage(Component.translatable("revival.use-limit", config.getString("name-plural", "Revival Items")));
+                return;
+            }
             e.getPlayer().openInventory(
                     getPlayersMenu(e.getPlayer()).getInventory()
             );
@@ -97,6 +107,31 @@ public class RevivalItem implements Listener, RecipeProvider<Recipe> {
         }
     }
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void preventExcessiveCrafts(CraftItemEvent e) {
+        if (!(e.getView().getPlayer() instanceof Player player)) { return; }
+
+        if (e.getRecipe().equals(recipe())) {
+            ConfigurationSection section = p.getScoreHandler().getPlayerData(player.getUniqueId());
+            int craftCounter = section.getInt("revival.crafts", 0);
+            if (craftCounter >= p.getConfig().getInt("revival.limits.craft",Integer.MAX_VALUE)) {
+                e.setCancelled(true); // prevent crafting
+                player.sendMessage(Component.translatable("revival.craft-limit", config.getString("name-plural", "Revival Items")));
+                return;
+            }
+            section.set("revival.crafts", craftCounter + 1);
+        };
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void revivalBarDisable(PlayerJoinEvent e) {
+        if (p.getConfig().getBoolean("revival.announce.locator-bar.enabled", false)) {
+            AttributeInstance waypointAttr = e.getPlayer().getAttribute(Attribute.WAYPOINT_TRANSMIT_RANGE);
+            if (waypointAttr != null) {
+                waypointAttr.setBaseValue(0.00f);
+            }
+        }
+    }
     @Override
     public Recipe recipe() {
         return recipe.recipe();
