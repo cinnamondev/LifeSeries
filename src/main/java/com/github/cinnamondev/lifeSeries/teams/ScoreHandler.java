@@ -100,7 +100,7 @@ public class ScoreHandler {
         return rankedTeams.stream().filter(teamMeta -> teamMeta.getScoreboardTeam().getName().equals(teamName)).findFirst();
     }
     public TeamMeta getTeam(int score) {
-        return rankedTeams.stream().filter(_team -> score >= _team.getMininumScore()).findFirst().orElse(spectatorTeam);
+        return rankedTeams.stream().filter(_team -> score > _team.getMininumScore()).findFirst().orElse(spectatorTeam);
     }
     public TeamMeta getTeam(UUID uuid) { return getTeam(getScore(uuid)); }
     public TeamMeta getTeam(OfflinePlayer player) { return getTeam(getScore(player.getUniqueId())); }
@@ -137,7 +137,9 @@ public class ScoreHandler {
     /// and they run out of time (player has changed team to spectatorTeam), the player will be killed.
     public void updatePlayerScoreAndTeam(UUID uuid,  BiFunction<UUID, Integer, Integer> updater) {
         updatePlayerScoreAndTeam(uuid, updater, (player, team) -> {
-            if (isPlayerSpectator(uuid)) { p.getServer().getScheduler().runTask(p, () -> player.setHealth(0)); }
+            if (isPlayerSpectator(uuid)) {
+                p.getServer().getScheduler().runTask(p, () -> player.setHealth(0));
+            }
         });
     }
 

@@ -1,3 +1,4 @@
+import xyz.jpenilla.resourcefactory.bukkit.Permission
 import xyz.jpenilla.resourcefactory.paper.PaperPluginYaml
 
 plugins {
@@ -55,6 +56,50 @@ paperPluginYaml {
     authors.add("cinnamondev")
     dependencies {
         server("LibsDisguises", PaperPluginYaml.Load.BEFORE, false)
+    }
+
+    permissions {
+        register("life.admin") {
+            description = "Admin commands"
+            default = Permission.Default.OP
+        }
+        register("life.admin.game") {
+            description = "Admin commands Game Specific"
+            default = Permission.Default.OP
+        }
+        register("life.admin.revival") {
+            description = "lf revival"
+            default = Permission.Default.OP
+        }
+        register("life.admin.session") {
+            description = "Admin commands for lf session"
+            default = Permission.Default.OP
+        }
+        register("life.bypass.kick") {
+            description = "end of session kick bypass"
+            default = Permission.Default.OP
+        }
+        register("life.boogeyman") {
+            description = "Am I The Boogeyman? Command"
+            default = Permission.Default.TRUE
+        }
+        register("life.revival") {
+            description = "revival base permission"
+            default = Permission.Default.TRUE
+        }
+        register("life.revival.toggle-spawn-point") {
+            description = "allow players to choose where revived players respawn"
+            default = Permission.Default.FALSE
+        }
+        register("life.bypass.banned-enchantments") {
+            description = "bypass enchant limits"
+            default = Permission.Default.OP
+        }
+        register("life.bypass.banned-items") {
+            description = "bypass item limits"
+            default = Permission.Default.OP
+        }
+
     }
 }
 
