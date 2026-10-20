@@ -29,7 +29,7 @@ public final class AdminCommand {
 
         if (p.getRevivalItem() != null) {
             p.getLogger().info("revival item is availalbwe");
-            command = command.then(RevivalSubCommand.command(p.getRevivalItem()));
+            command = command.then(RevivalSubCommand.command(p));
         }
 
         return command.build();

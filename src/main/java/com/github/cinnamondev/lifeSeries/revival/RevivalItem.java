@@ -82,7 +82,8 @@ public class RevivalItem implements Listener, RecipeProvider<Recipe> {
             // it is the revival item
             int useCounter = p.getScoreHandler().getPlayerData(e.getPlayer()).getInt("revival.use",0);
             if (useCounter >= p.getConfig().getInt("revival.limits.use", Integer.MAX_VALUE)) {
-                e.getPlayer().sendMessage(Component.translatable("revival.use-limit", config.getString("name-plural", "Revival Items")));
+                e.getPlayer().sendMessage(Component.translatable("revival.use-limit")
+                        .arguments(Component.text(config.getString("name-plural", "Revival Items"))));
                 return;
             }
             e.getPlayer().openInventory(
@@ -111,12 +112,13 @@ public class RevivalItem implements Listener, RecipeProvider<Recipe> {
     public void preventExcessiveCrafts(CraftItemEvent e) {
         if (!(e.getView().getPlayer() instanceof Player player)) { return; }
 
-        if (e.getRecipe().equals(recipe())) {
+        if (e.getRecipe().getResult().getItemMeta().getPersistentDataContainer().getOrDefault(key, PersistentDataType.BOOLEAN, false)) {
             ConfigurationSection section = p.getScoreHandler().getPlayerData(player.getUniqueId());
             int craftCounter = section.getInt("revival.crafts", 0);
             if (craftCounter >= p.getConfig().getInt("revival.limits.craft",Integer.MAX_VALUE)) {
                 e.setCancelled(true); // prevent crafting
-                player.sendMessage(Component.translatable("revival.craft-limit", config.getString("name-plural", "Revival Items")));
+                player.sendMessage(Component.translatable("revival.craft-limit")
+                        .arguments(Component.text(config.getString("name-plural", "Revival Items"))));
                 return;
             }
             section.set("revival.crafts", craftCounter + 1);
@@ -125,7 +127,7 @@ public class RevivalItem implements Listener, RecipeProvider<Recipe> {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void revivalBarDisable(PlayerJoinEvent e) {
-        if (p.getConfig().getBoolean("revival.announce.locator-bar.enabled", false)) {
+        if (p.getConfig().getBoolean("revival.announce.locator-bar.enabled/", false)) {
             AttributeInstance waypointAttr = e.getPlayer().getAttribute(Attribute.WAYPOINT_TRANSMIT_RANGE);
             if (waypointAttr != null) {
                 waypointAttr.setBaseValue(0.00f);

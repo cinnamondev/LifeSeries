@@ -47,6 +47,9 @@ tasks {
     }
     runServer {
         minecraftVersion("26.2")
+        downloadPlugins {
+            modrinth("luckperms", "v5.5.71-bukkit")
+        }
     }
 }
 

@@ -26,7 +26,7 @@ public class UtilityComponents {
         Style style = (time >= 0) ? Style.style(NamedTextColor.GREEN, TextDecoration.BOLD)
                 : Style.style(NamedTextColor.RED, TextDecoration.BOLD);
         String timeString = DurationFormatUtils.formatDuration(
-                timeUnit.toSeconds(time) * 1000L,
+                timeUnit.toSeconds(time < 0 ? -1 * time : time) * 1000L,
                 "'" + sign + "'HH':'mm':'ss",
                 true);
 

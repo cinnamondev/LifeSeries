@@ -4,14 +4,18 @@ import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman.AbstractBoogeyman;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed.TimeSubCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed.Timed;
+import com.github.cinnamondev.lifeSeries.util.UtilityComponents;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 public class LimitedLife extends AbstractBoogeyman implements Game {
@@ -33,6 +37,25 @@ public class LimitedLife extends AbstractBoogeyman implements Game {
         } else {
             return super.onKilled(p, killed, killer); // let default implementation handle it
         }
+    }
+
+    @Override
+    public boolean onKilled(LifeSeries p, Player killed, int punishment) {
+        boolean isFinalDeath = super.onKilled(p, killed, punishment);
+        killed.showTitle(Title.title(
+                UtilityComponents.playerTimeChange(-1 * punishment, TimeUnit.SECONDS),
+                Component.empty()
+        ));
+        return isFinalDeath;
+    }
+
+    @Override
+    public void rewardKiller(LifeSeries p, Player killer, int reward) {
+        super.rewardKiller(p, killer, reward);
+        killer.showTitle(Title.title(
+                UtilityComponents.playerTimeChange(reward, TimeUnit.SECONDS),
+                Component.empty()
+        ));
     }
 
     @Override
