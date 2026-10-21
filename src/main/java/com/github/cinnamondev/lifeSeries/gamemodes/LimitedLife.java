@@ -4,17 +4,16 @@ import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.github.cinnamondev.lifeSeries.gamemodes.Boogeyman.AbstractBoogeyman;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed.TimeSubCommand;
 import com.github.cinnamondev.lifeSeries.gamemodes.Timed.Timed;
+import com.github.cinnamondev.lifeSeries.teams.TeamMeta;
 import com.github.cinnamondev.lifeSeries.util.UtilityComponents;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -24,6 +23,42 @@ public class LimitedLife extends AbstractBoogeyman implements Game {
         super(p);
     }
 
+    private Map<UUID,Integer> initialScores = null;
+    private int initialUntracked = -1;
+
+    @Override
+    public void onGameStart() {
+        super.onGameStart();
+        initialUntracked = p.getScoreHandler().getUntrackedScore();
+        initialScores = p.getScoreHandler().getAllTrackedScores();
+    }
+
+    @Override
+    public void onGameStop() {
+        super.onGameStop();
+        if (initialScores != null) {
+            var finalScores = p.getScoreHandler().getAllTrackedScores();
+
+            finalScores.forEach((uuid, score) -> {
+                TeamMeta team = p.getScoreHandler().getTeam(uuid);
+                int playerStartScore = initialScores.getOrDefault(uuid, p.getScoreHandler().getUntrackedScore());
+                p.getComponentLogger().info(
+                        Component.text("").append(
+                                Component.text(Objects.requireNonNullElse(p.getServer().getOfflinePlayer(uuid).getName(), uuid.toString()))
+                                        .style(p.getScoreHandler().getTeam(uuid).style())
+                        ).append(Component.text(" has a time of ")).append(
+                                UtilityComponents.playerTime(
+                                        score,
+                                        TimeUnit.SECONDS,
+                                        team.getColor()
+                                )
+                        ).append(Component.text(" ("))
+                                .append(UtilityComponents.playerTimeChange(score - playerStartScore, TimeUnit.SECONDS))
+                                .append(Component.text(")"))
+                );
+            });
+        }
+    }
 
     @Override
     public boolean onKilled(LifeSeries p, Player killed, Player killer) {

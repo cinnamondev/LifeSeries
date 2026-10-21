@@ -19,6 +19,11 @@ public abstract class AbstractBoogeyman implements Boogeyman, Game {
     }
 
     @Override
+    public void onGameStop() {
+        punishBoogeymen();
+    }
+
+    @Override
     public void punishBoogeymen() {
         for (UUID uuid : getBoogeyList()) {
             TeamMeta playerTeam = p.getScoreHandler().getTeam(uuid);
@@ -28,12 +33,17 @@ public abstract class AbstractBoogeyman implements Boogeyman, Game {
                     .<TeamMeta>mapMulti(Optional::ifPresent)
                     .anyMatch(playerTeam::equals);
             if (playerTeamNotPunishable || p.getScoreHandler().isPlayerSpectator(uuid)) { continue; }
-            if (p.getConfig().getBoolean("options.boogeyman.demote-to-next-team", false)) {
+            if (p.getConfig().getBoolean("options.boogeyman.failure.demote-to-next-team", false)) {
                 int teamMinScore = playerTeam.getMininumScore();
                 p.getScoreHandler().updatePlayerScoreAndTeam(uuid, (_uuid, _score) -> teamMinScore);
+                p.getLogger().info("Player " + p.getServer().getOfflinePlayer(uuid).getName()
+                        + " demoted to " + p.getScoreHandler().getTeam(teamMinScore).getScoreboardTeam().getName()
+                        + " (Boogey Punishment)");
             } else {
                 int demotionScore = p.getConfig().getInt("options.boogeyman.failure.demotion-score", 0);
                 p.getScoreHandler().updatePlayerScoreAndTeam(uuid, (_uuid, score) -> score - demotionScore);
+                p.getLogger().info("Player " + p.getServer().getOfflinePlayer(uuid).getName()
+                        + " given boogey punishment");
             }
         }
     }

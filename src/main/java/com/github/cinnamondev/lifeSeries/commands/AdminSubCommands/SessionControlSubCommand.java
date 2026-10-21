@@ -3,6 +3,7 @@ package com.github.cinnamondev.lifeSeries.commands.AdminSubCommands;
 import com.github.cinnamondev.lifeSeries.LifeSeries;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -27,11 +28,13 @@ public class SessionControlSubCommand {
                         .executes(ctx -> { p.stopSession(); return 1;}))
                 .then(Commands.literal("end")
                         .executes(ctx -> {
-                            p.endOfSession();
                             sessionEndAction(p,0);
                             return 1;
                         })
-                        .then(Commands.argument("delay", ArgumentTypes.time()).executes(ctx -> 1))
+                        .then(Commands.argument("delay", IntegerArgumentType.integer(1)).executes(ctx -> {
+                            sessionEndAction(p, ctx.getArgument("delay", Integer.class)*20);
+                            return 1;
+                        }))
                 )
                 .then(Commands.literal("pause").executes(ctx -> {
                     p.pauseSession();
@@ -65,6 +68,7 @@ public class SessionControlSubCommand {
         }
 
         p.getServer().getScheduler().runTaskLater(p, () -> {
+            p.endOfSession();
             if (p.getConfig().getBoolean("options.end-of-session.kick-at-end", false)) {
                 String server = p.getConfig().getString("options.end-of-session.send-to-server", "null");
                 if (server.equalsIgnoreCase("null")) {

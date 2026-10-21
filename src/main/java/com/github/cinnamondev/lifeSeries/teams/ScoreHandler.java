@@ -63,6 +63,13 @@ public class ScoreHandler {
         )));
     }
 
+    public Map<UUID, Integer> getAllTrackedScores() {
+        return playerData.getKeys(false)
+                .stream()
+                .map(UUID::fromString)
+                .map(uuid -> Map.entry(uuid, getScore(uuid)))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
     public int getUntrackedScore() {
         int score = save.getInt("untrackedScore",-1);
         if (score == -1) {

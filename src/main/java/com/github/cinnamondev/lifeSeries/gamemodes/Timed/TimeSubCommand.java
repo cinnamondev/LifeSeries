@@ -177,7 +177,7 @@ public class TimeSubCommand {
 
         if (tellPlayer) {
             player.showTitle(Title.title(
-                    UtilityComponents.playerTimeChange(Math.abs(newScore - oldScore), TimeUnit.SECONDS),
+                    UtilityComponents.playerTimeChange(newScore - oldScore, TimeUnit.SECONDS),
                     Component.empty()
             ));
         }
