@@ -152,6 +152,9 @@ public class RevivalMenu implements InventoryHolder, Listener {
                             }
                         }
                         if (reviver instanceof Player reviverPlayer) {
+                            if (!reviverPlayer.hasPermission("life.revival.clock-use-bypass")) {
+                                removeClockFromPlayer(reviverPlayer);
+                            }
                             int uses = p.getScoreHandler().getPlayerData(reviverPlayer).getInt("revival.use", 0);
                             p.getScoreHandler().getPlayerData(reviverPlayer).set("revival.use", uses + 1);
                         }
@@ -161,6 +164,18 @@ public class RevivalMenu implements InventoryHolder, Listener {
         });
         button.updateDisplayBlock();
         return button;
+    }
+
+    private void removeClockFromPlayer(Player player) {
+        ItemStack[] inv = player.getInventory().getContents();
+        for (int i = 0; i < inv.length; i++) {
+            ItemStack stack = inv[i];
+            if (stack == null) { continue; }
+            if (p.getRevivalItem().isRevivalClock(stack)) {
+                player.getInventory().setItem(i, null);
+                break;
+            }
+        }
     }
 
     private void summonParticleBeam(Player player) {
@@ -207,7 +222,7 @@ public class RevivalMenu implements InventoryHolder, Listener {
                     p.getServer().getScheduler().runTaskLater(p, () -> {
                         onlinePlayer.playEffect(EntityEffect.PROTECTED_FROM_DEATH);
                         onlinePlayer.sendEquipmentChange(onlinePlayer, EquipmentSlot.OFF_HAND, currentOffHand);
-                    },2);
+                    },5);
 
                 });
                 // show players totem :o

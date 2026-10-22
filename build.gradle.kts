@@ -25,13 +25,13 @@ repositories {
 dependencies {
     implementation("com.google.inject:guice:7.0.0")
     implementation("org.apache.commons:commons-collections4:4.6.0")
-    paperweight.paperDevBundle("26.2.build.+")
+    paperweight.paperDevBundle("26.3.build.+")
     //compileOnly("io.papermc.paper:paper-api:26.1.2.build.+")
 }
 
 group = "com.github.cinnamondev"
 version = "1.0-SNAPSHOT"
-description = "life series."
+description = "Life Series Plugin"
 java {
         toolchain.languageVersion = JavaLanguageVersion.of(25)
 }
@@ -46,7 +46,7 @@ tasks {
         options.encoding = Charsets.UTF_8.name() // We want UTF-8 for everything
     }
     runServer {
-        minecraftVersion("26.2")
+        minecraftVersion("26.3")
         downloadPlugins {
             modrinth("luckperms", "v5.5.71-bukkit")
         }
@@ -100,6 +100,10 @@ paperPluginYaml {
         }
         register("life.bypass.banned-items") {
             description = "bypass item limits"
+            default = Permission.Default.OP
+        }
+        register ("life.revival.clock-use-bypass") {
+            description = "bypass clock use"
             default = Permission.Default.OP
         }
 
