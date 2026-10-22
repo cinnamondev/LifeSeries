@@ -230,8 +230,8 @@ public class RevivalMenu implements InventoryHolder, Listener {
         if (meta == null) { return item; }
         meta.setOwningPlayer(player);
         meta.displayName(
-                Component.translatable("revival-item.buttons.revive-player")
-                        .arguments(player.displayName())
+                GlobalTranslator.render(Component.translatable("revival-item.buttons.revive-player")
+                        .arguments(player.displayName()), locale)
         );
         item.setItemMeta(meta);
 

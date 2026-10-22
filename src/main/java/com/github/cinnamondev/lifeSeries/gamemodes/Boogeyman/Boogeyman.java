@@ -21,7 +21,7 @@ public interface Boogeyman extends CommandContainer {
 
     default boolean isBoogeyman(UUID uuid) { return getBoogeyList().contains(uuid); }
     default boolean isBoogeyman(OfflinePlayer offlinePlayer) { return isBoogeyman(offlinePlayer.getUniqueId()); }
-    default void cureBoogeyman(UUID uuid) { getBoogeyList().remove(uuid); }
+    default void cureBoogeyman(UUID uuid) { getBoogeyList().removeIf(uuid1 -> uuid1.equals(uuid)); }
     default void addBoogeyman(UUID uuid) { getBoogeyList().add(uuid); }
     default void addBoogeyman(OfflinePlayer player) { addBoogeyman(player.getUniqueId()); }
     /// remove player from list apply reward

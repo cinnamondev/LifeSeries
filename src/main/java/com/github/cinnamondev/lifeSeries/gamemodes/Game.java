@@ -33,14 +33,14 @@ public interface Game extends Runnable, CommandContainer {
         TeamMeta killerTeam = p.getScoreHandler().getTeam(killer);
         TeamMeta killedTeam = p.getScoreHandler().getTeam(killed);
 
-        if (!killerTeam.equals(killedTeam)) {
+        if (killerTeam.canKillTeam(killedTeam)) {
             return onKilled(p,
                     killed, p.getConfig().getInt("options.punishment.death"),
                     killer, p.getConfig().getInt("options.rewards.kill")
             );
         } else {
-            if (!p.getConfig().getBoolean("options.rewards.disable-on-disallowed-team")) {
-                rewardKiller(p, killed, p.getConfig().getInt("options.rewards.kill"));
+            if (!p.getConfig().getBoolean("options.rewards.disable-on-disallowed-team", false)) {
+                rewardKiller(p, killer, p.getConfig().getInt("options.rewards.kill"));
             }
             if (!p.getConfig().getBoolean("options.punishment.disable-on-disallowed-team")) {
                 return onKilled(p, killed);

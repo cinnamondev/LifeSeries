@@ -19,7 +19,7 @@ public class RevivalSubCommand {
                 .requires(src -> (src.getSender() instanceof Player player) && player.hasPermission("life.admin.revival"))
                 .then(Commands.literal("limits").then(Commands.argument("player", ArgumentTypes.player())
                         .then(Commands.literal("crafts")
-                                .then(Commands.literal("set").then(Commands.argument("uses", IntegerArgumentType.integer(0)))
+                                .then(Commands.literal("set").then(Commands.argument("crafts", IntegerArgumentType.integer(0))
                                         .executes(ctx -> {
                                             int crafts = ctx.getArgument("crafts", Integer.class);
                                             ctx.getArgument("player", PlayerSelectorArgumentResolver.class)
@@ -29,18 +29,18 @@ public class RevivalSubCommand {
                                                     });
                                             return Command.SINGLE_SUCCESS;
                                         })
-                                ))
+                                )))
                         .then(Commands.literal("uses")
-                                .then(Commands.literal("set").then(Commands.argument("uses", IntegerArgumentType.integer(0)))
+                                .then(Commands.literal("set").then(Commands.argument("uses", IntegerArgumentType.integer(0))
                                         .executes(ctx -> {
-                                            int uses = ctx.getArgument("use", Integer.class);
+                                            int uses = ctx.getArgument("uses", Integer.class);
                                             ctx.getArgument("player", PlayerSelectorArgumentResolver.class)
                                                     .resolve(ctx.getSource()).forEach(player -> {
                                                         ConfigurationSection s = p.getScoreHandler().getPlayerData(player);
                                                         s.set("revival.use", uses);
                                                     });
                                             return Command.SINGLE_SUCCESS;                                        })
-                                ))
+                                )))
 
                 ))
                 .executes(ctx -> {

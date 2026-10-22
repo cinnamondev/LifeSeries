@@ -35,7 +35,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 public class RevivalItem implements Listener, RecipeProvider<Recipe> {
-    private final HashMap<UUID, RevivalMenu> menus = new HashMap<>();
+    //private final HashMap<UUID, RevivalMenu> menus = new HashMap<>();
     private final ConfigRecipe<?> recipe;
     protected final LifeSeries p;
     protected final NamespacedKey key;
@@ -93,7 +93,7 @@ public class RevivalItem implements Listener, RecipeProvider<Recipe> {
     }
 
     public RevivalMenu getPlayersMenu(Player player) {
-        return menus.computeIfAbsent(player.getUniqueId(), (_uuid) -> new RevivalMenu(p, recipe.item(), player.locale()));
+        return new RevivalMenu(p, recipe.item(), player.locale());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

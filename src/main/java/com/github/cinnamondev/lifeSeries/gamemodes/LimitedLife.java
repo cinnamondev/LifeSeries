@@ -61,20 +61,6 @@ public class LimitedLife extends AbstractBoogeyman implements Game {
     }
 
     @Override
-    public boolean onKilled(LifeSeries p, Player killed, Player killer) {
-        if (isBoogeyman(killer)) {
-            cureBoogeyman(killer);
-            killer.sendMessage("You have been cured!");
-            return super.onKilled(p,
-                    killed, p.getConfig().getInt("options.punishment.boogey-death"),
-                    killer, p.getConfig().getInt("options.rewards.boogey-kill")
-            );
-        } else {
-            return super.onKilled(p, killed, killer); // let default implementation handle it
-        }
-    }
-
-    @Override
     public boolean onKilled(LifeSeries p, Player killed, int punishment) {
         boolean isFinalDeath = super.onKilled(p, killed, punishment);
         killed.showTitle(Title.title(
